@@ -1,4 +1,4 @@
-import 'package:flutter_mblog/model/user.dart';
+import 'package:flutter_mblog/model/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Configs.dart';
 
@@ -24,19 +24,19 @@ class Shared_pre {
     return Token;
   }
 
-  static Future<User> Shared_getUser() async {
+  static Future<UserModel> Shared_getUser() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String email = preferences.get(Constants.Shared_Email);
     String name = preferences.get(Constants.Shared_Name);
     String mobile = preferences.get(Constants.Shared_Mobile);
-    return User(
+    return UserModel(
         mobile: mobile,
         email: email,
         username: name,
         );
   }
 
-  static Future<String>  Shared_setUser(User name) async {
+  static Future<String>  Shared_setUser(UserModel name) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     preferences.setString(Constants.Shared_Email, name.email);
     preferences.setString(Constants.Shared_Mobile, name.mobile);

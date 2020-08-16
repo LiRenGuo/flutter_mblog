@@ -1,7 +1,7 @@
 
 import 'dart:convert' show json;
 
-class User {
+class UserModel {
 
   String id;
   String username;
@@ -41,7 +41,7 @@ class User {
   int ctime;
   List<Object> configs;
 
-    User({
+    UserModel({
 this.id,
 this.username,
 this.firstname,
@@ -81,7 +81,7 @@ this.ctime,
 this.configs,
     });
 
-  factory User.fromJson(jsonRes){ if(jsonRes == null) return null;
+  factory UserModel.fromJson(jsonRes){ if(jsonRes == null) return null;
 
 
     List<Object> configs = jsonRes['configs'] is List ? []: null; 
@@ -89,7 +89,7 @@ this.configs,
  for (var item in jsonRes['configs']) { if (item != null) { configs.add(item);  }
     }
     }
-return User(
+return UserModel(
     id : jsonRes['id'],
     username : jsonRes['username'],
     firstname : jsonRes['firstname'],

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter_mblog/model/user.dart';
+import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/login_page.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
@@ -24,7 +24,7 @@ class Oauth_2 {
       Map parsed = json.decode(result);
       print(result);
       print(">>>>>>刷新token"+client.credentials.refreshToken);
-      Shared_pre.Shared_setUser(User.fromJson(parsed));
+      Shared_pre.Shared_setUser(UserModel.fromJson(parsed));
       Shared_pre.Shared_setToken(client.credentials.accessToken);
       Shared_pre.Shared_setResToken(client.credentials.refreshToken);
       return 'success';

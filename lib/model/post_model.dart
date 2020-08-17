@@ -1,4 +1,25 @@
 class PostModel {
+  List<PostItem> resultList;
+  PostModel({this.resultList});
+  PostModel.fromJson(Map<String, dynamic> json) {
+    if(json['content'] != null) {
+      resultList = new List<PostItem>();
+      json['content'].forEach((v) {
+        resultList.add(new PostItem.fromJson(v));
+      });
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    if (this.resultList != null) {
+      data['resultList'] = this.resultList.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+}
+
+class PostItem {
   String id;
   String pid;
   String content;
@@ -12,7 +33,7 @@ class PostModel {
   int pubtime;
   int ctime;
 
-  PostModel(
+  PostItem(
       {this.id,
         this.pid,
         this.content,
@@ -26,7 +47,7 @@ class PostModel {
         this.pubtime,
         this.ctime});
 
-  PostModel.fromJson(Map<String, dynamic> json) {
+PostItem.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     pid = json['pid'];
     content = json['content'];

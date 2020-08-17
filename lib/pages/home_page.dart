@@ -1,4 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_mblog/dao/post_dao.dart';
+import 'package:flutter_mblog/model/post_model.dart';
+import 'package:flutter_mblog/widget/post_card.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -6,6 +11,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int page = 0;
+  List<PostItem> items = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +39,24 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Container(
         child: ListView.builder(
-          itemBuilder: (context, index) => _item(),
+          itemCount: items.length,
+          itemBuilder: (context, index) => _item(items[index]),
         ),
       ),
+      backgroundColor: Color(0xfff5f5f5),
     );
   }
 
-  _item() {}
+  _item(PostItem item) {
+    return Container(
+      child: PostCard(item: item),
+    );
+  }
+
+  _loadData() async {
+    PostModel postModel = await PostDao.getList(page);
+    setState(() {
+      items = postModel.resultList;
+    });
+  }
 }

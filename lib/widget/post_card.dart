@@ -1,5 +1,7 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/model/post_model.dart';
+import 'package:flutter_mblog/pages/my_page.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 
 class PostCard extends StatelessWidget {
@@ -50,7 +52,7 @@ class PostCard extends StatelessWidget {
             ),
           ),
           Container(
-            child: Text(item.content, style: TextStyle(fontSize: 16)),
+            child: _content(context),
           ),
           if(item.photos.length != 0) _photoItem(),
           Divider(
@@ -84,7 +86,7 @@ class PostCard extends StatelessWidget {
           constraints: BoxConstraints.expand(),
           child: Image.network(
             item.photos[0],
-            fit: BoxFit.fill,
+            fit: BoxFit.cover,
             height: 200,
           ),
         ),
@@ -180,6 +182,36 @@ class PostCard extends StatelessWidget {
         )
       ],
     );
+  }
+  _content(BuildContext context) {
+    String content = item.content;
+    TextStyle contentStyle = TextStyle(color: Colors.black, fontSize: 16);
+    //如果字数过长
+    if (content.length > 150) {
+      content =  content.substring(0, 148) + ' ... ';
+      return RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                  text: content,
+                  style: contentStyle
+              ),
+              TextSpan(
+                  text: '全文',
+                  style: TextStyle(color: Colors.blue, fontSize: 16),
+                  recognizer: TapGestureRecognizer()..onTap = () => _tapRecognizer(context)
+              )
+            ],
+          )
+      );
+    }
+    return Text(content, style: contentStyle);
+  }
+
+  _tapRecognizer(BuildContext context) {
+    Navigator.push(context, MaterialPageRoute(
+        builder: (context) => MyPage()
+    ));
   }
 
 }

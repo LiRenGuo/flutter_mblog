@@ -48,7 +48,9 @@ class Constants{
   static final UserRealnameFontSize = 15.0;
   static final Shared_Token = 'Shared_Token';
   static final Shared_ResToken = 'Shared_ResToken';
+  static final Shared_Username = 'Shared_username';
   static final Shared_Name = 'Shared_name';
+  static final Shared_Avatar = 'Shared_avatar';
   static final Shared_ReailName = 'Shared_reailname';
   static final Shared_Image= 'Shared_image';
   static final Shared_Email= 'Shared_email';

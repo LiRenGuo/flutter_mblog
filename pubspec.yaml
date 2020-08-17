@@ -55,6 +55,7 @@ flutter:
     - images/ic_home_comment.webp
     - images/ic_home_like.webp
     - images/ic_home_liked.webp
+    - images/ic_home_compose.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

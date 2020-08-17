@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/model/post_model.dart';
+import 'package:flutter_mblog/widget/my_drawer.dart';
 import 'package:flutter_mblog/widget/post_card.dart';
 
 class HomePage extends StatefulWidget {
@@ -23,13 +25,24 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: MyDrawer(),
       appBar: AppBar(
         backgroundColor: Colors.white,
         leading: Container(
           padding: EdgeInsets.all(5),
-          child: CircleAvatar(
-            radius: 36,
-            backgroundImage: NetworkImage('http://thirdwx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTLYicLia9bCyRQhpCG3ofQ4dQhouIRlvnTv3DCox8v0sj9Tk01TmD3xPZTjFLxmARgEKy27T0RSC6UA/132'),
+          child: Builder(
+            builder: (context) =>
+                InkWell(
+                  onTap: () => Scaffold.of(context).openDrawer(),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                        color: Colors.white
+                    ),
+                    child: ClipOval(
+                        child: Image.network('http://thirdwx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTLYicLia9bCyRQhpCG3ofQ4dQhouIRlvnTv3DCox8v0sj9Tk01TmD3xPZTjFLxmARgEKy27T0RSC6UA/132')
+                    ),
+                  ),
+                )
           ),
         ),
         title: Text(

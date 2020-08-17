@@ -54,11 +54,9 @@ class PostCard extends StatelessWidget {
           ),
           if(item.photos.length != 0) _photoItem(),
           Divider(
-            height: 2.0,
+            height: 20.0,
           ),
-          Container(
-            child: Text('ccccc'),
-          )
+          _bottomAction()
         ],
       )
     );
@@ -104,6 +102,84 @@ class PostCard extends StatelessWidget {
         ),
       );
     }
+  }
+
+  _bottomAction() {
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Flexible(
+          flex: 1,
+          child: InkWell(
+            onTap: () {
+              print("clicked...");
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Image.asset(
+                  'images/ic_home_forward.png',
+                  width: 22,
+                  height: 22,
+                ),
+                Container(
+                  margin: EdgeInsets.only(left: 4),
+                  child: Text(item.forwardCount == 0 ? '转发' : item.forwardCount.toString(), style: TextStyle(color: Colors.black, fontSize: 13)),
+                )
+              ],
+            ),
+          ),
+        ),
+        Flexible(
+          flex: 1,
+          child: InkWell(
+            onTap: () {
+              print("clicked...");
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Image.asset(
+                  'images/ic_home_comment.webp',
+                  width: 22,
+                  height: 22,
+                ),
+                Container(
+                  margin: EdgeInsets.only(left: 4),
+                  child: Text(item.commentCount == 0 ? '评论' : item.commentCount.toString(), style: TextStyle(color: Colors.black, fontSize: 13)),
+                )
+              ],
+            ),
+          ),
+        ),
+        Flexible(
+          flex: 1,
+          child: InkWell(
+            onTap: () {
+              print("clicked...");
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Image.asset(
+                  item.islike ? 'images/ic_home_liked.webp' : 'images/ic_home_like.webp',
+                  width: 22,
+                  height: 22,
+                ),
+                Container(
+                  margin: EdgeInsets.only(left: 4),
+                  child: Text(item.likeCount == 0 ? '赞' : item.likeCount.toString() , style: TextStyle(color: Colors.black, fontSize: 13)),
+                )
+              ],
+            ),
+          ),
+        )
+      ],
+    );
   }
 
 }

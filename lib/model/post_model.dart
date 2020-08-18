@@ -1,6 +1,7 @@
 class PostModel {
+  int totalPages;
   List<PostItem> resultList;
-  PostModel({this.resultList});
+  PostModel({this.resultList, this.totalPages});
   PostModel.fromJson(Map<String, dynamic> json) {
     if(json['content'] != null) {
       resultList = new List<PostItem>();
@@ -8,6 +9,7 @@ class PostModel {
         resultList.add(new PostItem.fromJson(v));
       });
     }
+    totalPages = json['totalPages'];
   }
 
   Map<String, dynamic> toJson() {
@@ -15,6 +17,7 @@ class PostModel {
     if (this.resultList != null) {
       data['resultList'] = this.resultList.map((v) => v.toJson()).toList();
     }
+    data['totalPages'] = totalPages;
     return data;
   }
 }

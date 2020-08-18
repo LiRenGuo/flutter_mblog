@@ -18,7 +18,9 @@ class MyApp extends StatelessWidget {
         primaryColor: Colors.white,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MinePage(),
+      home: SafeArea(
+        child: LoginPage(),
+      ),
       debugShowCheckedModeBanner: false,
     );
   }

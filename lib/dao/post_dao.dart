@@ -8,11 +8,10 @@ const MY_POST_LIST_URL = "http://mblog.yunep.com/api/post/my";
 
 class PostDao {
 
-  static Future<PostModel> getList(int page) async {
-    final response = await dio.get(POST_LIST_URL, queryParameters: { "page": page });
+  static Future<PostModel> getList(int page, int pageSize) async {
+    final response = await dio.get(POST_LIST_URL, queryParameters: { "page": page, "size": pageSize});
     if(response.statusCode == 200) {
       final responseData = response.data;
-      print("response = ${responseData['content']}");
       return PostModel.fromJson(responseData);
     } else {
       throw Exception('loading data error.....');

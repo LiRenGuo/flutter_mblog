@@ -1,8 +1,6 @@
-
 import 'dart:convert' show json;
 
 class UserModel {
-
   String id;
   String username;
   Object firstname;
@@ -15,8 +13,8 @@ class UserModel {
   String status;
   Object certcode;
   Object rank;
-  Object following;
-  Object followers;
+  int following;
+  int followers;
   Object posts;
   String name;
   String banner;
@@ -40,93 +38,99 @@ class UserModel {
   Object description;
   int ctime;
   List<Object> configs;
+  bool islike;
 
-    UserModel({
-this.id,
-this.username,
-this.firstname,
-this.lastname,
-this.email,
-this.code,
-this.mobile,
-this.lastPasswordResetDate,
-this.type,
-this.status,
-this.certcode,
-this.rank,
-this.following,
-this.followers,
-this.posts,
-this.name,
-this.banner,
-this.avatar,
-this.nickname,
-this.homepage,
-this.intro,
-this.sex,
-this.birthday,
-this.bloodtype,
-this.hometown,
-this.edulevel,
-this.religion,
-this.hobby,
-this.signature,
-this.districtid,
-this.address,
-this.postcode,
-this.language,
-this.timezone,
-this.description,
-this.ctime,
-this.configs,
-    });
+  UserModel({
+    this.id,
+    this.username,
+    this.firstname,
+    this.lastname,
+    this.email,
+    this.code,
+    this.mobile,
+    this.lastPasswordResetDate,
+    this.type,
+    this.status,
+    this.certcode,
+    this.rank,
+    this.following,
+    this.followers,
+    this.posts,
+    this.name,
+    this.banner,
+    this.avatar,
+    this.nickname,
+    this.homepage,
+    this.intro,
+    this.sex,
+    this.birthday,
+    this.bloodtype,
+    this.hometown,
+    this.edulevel,
+    this.religion,
+    this.hobby,
+    this.signature,
+    this.districtid,
+    this.address,
+    this.postcode,
+    this.language,
+    this.timezone,
+    this.description,
+    this.ctime,
+    this.configs,
+  });
 
-  factory UserModel.fromJson(jsonRes){ if(jsonRes == null) return null;
+  factory UserModel.fromJson(jsonRes) {
+    if (jsonRes == null) return null;
 
-
-    List<Object> configs = jsonRes['configs'] is List ? []: null; 
-    if(configs!=null) {
- for (var item in jsonRes['configs']) { if (item != null) { configs.add(item);  }
+    List<Object> configs = jsonRes['configs'] is List ? [] : null;
+    if (configs != null) {
+      for (var item in jsonRes['configs']) {
+        if (item != null) {
+          configs.add(item);
+        }
+      }
     }
-    }
-return UserModel(
-    id : jsonRes['id'],
-    username : jsonRes['username'],
-    firstname : jsonRes['firstname'],
-    lastname : jsonRes['lastname'],
-    email : jsonRes['email'],
-    code : jsonRes['code'],
-    mobile : jsonRes['mobile'],
-    lastPasswordResetDate : jsonRes['lastPasswordResetDate'],
-    type : jsonRes['type'],
-    status : jsonRes['status'],
-    certcode : jsonRes['certcode'],
-    rank : jsonRes['rank'],
-    following : jsonRes['following'],
-    followers : jsonRes['followers'],
-    posts : jsonRes['posts'],
-    name : jsonRes['name'],
-    banner : jsonRes['banner'],
-    avatar : jsonRes['avatar'],
-    nickname : jsonRes['nickname'],
-    homepage : jsonRes['homepage'],
-    intro : jsonRes['intro'],
-    sex : jsonRes['sex'],
-    birthday : jsonRes['birthday'],
-    bloodtype : jsonRes['bloodtype'],
-    hometown : jsonRes['hometown'],
-    edulevel : jsonRes['edulevel'],
-    religion : jsonRes['religion'],
-    hobby : jsonRes['hobby'],
-    signature : jsonRes['signature'],
-    districtid : jsonRes['districtid'],
-    address : jsonRes['address'],
-    postcode : jsonRes['postcode'],
-    language : jsonRes['language'],
-    timezone : jsonRes['timezone'],
-    description : jsonRes['description'],
-    ctime : jsonRes['ctime'],
- configs:configs,);}
+    return UserModel(
+      id: jsonRes['id'],
+      username: jsonRes['username'],
+      firstname: jsonRes['firstname'],
+      lastname: jsonRes['lastname'],
+      email: jsonRes['email'],
+      code: jsonRes['code'],
+      mobile: jsonRes['mobile'],
+      lastPasswordResetDate: jsonRes['lastPasswordResetDate'],
+      type: jsonRes['type'],
+      status: jsonRes['status'],
+      certcode: jsonRes['certcode'],
+      rank: jsonRes['rank'],
+      following: jsonRes['following'],
+      followers: jsonRes['followers'],
+      posts: jsonRes['posts'],
+      name: jsonRes['name'],
+      banner: jsonRes['banner'],
+      avatar: jsonRes['avatar'],
+      nickname: jsonRes['nickname'],
+      homepage: jsonRes['homepage'],
+      intro: jsonRes['intro'],
+      sex: jsonRes['sex'],
+      birthday: jsonRes['birthday'],
+      bloodtype: jsonRes['bloodtype'],
+      hometown: jsonRes['hometown'],
+      edulevel: jsonRes['edulevel'],
+      religion: jsonRes['religion'],
+      hobby: jsonRes['hobby'],
+      signature: jsonRes['signature'],
+      districtid: jsonRes['districtid'],
+      address: jsonRes['address'],
+      postcode: jsonRes['postcode'],
+      language: jsonRes['language'],
+      timezone: jsonRes['timezone'],
+      description: jsonRes['description'],
+      ctime: jsonRes['ctime'],
+      configs: configs,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -166,9 +170,10 @@ return UserModel(
         'description': description,
         'ctime': ctime,
         'configs': configs,
-};
+      };
+
   @override
-String  toString() {
+  String toString() {
     return json.encode(this);
   }
 }

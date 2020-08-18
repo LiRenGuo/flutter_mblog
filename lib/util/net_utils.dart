@@ -9,9 +9,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 var dio = new Dio();
 
 class NetUtils {
+
   static Future get(String url, {Map<String, dynamic> params}) async {
-    var responseaa;
-    responseaa = await Shared_pre.Shared_getToken().then((aa) async {
+    var responseToken;
+    responseToken = await Shared_pre.Shared_getToken().then((aa) async {
       Options options = Options(headers: {'Authorization': 'Bearer $aa'});
       try {
         var response = await dio.get(url, options: options);
@@ -20,7 +21,7 @@ class NetUtils {
         return a.response.statusCode;
       }
     });
-    return responseaa;
+    return responseToken;
   }
 
   static Future delete(String url) async {

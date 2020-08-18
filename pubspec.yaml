@@ -32,6 +32,9 @@ dependencies:
   oauth2: ^1.5.0
   shared_preferences: ^0.5.8
   fluttertoast: ^7.0.2
+  date_format: ^1.0.8
+  common_utils: ^1.2.1
+  image_picker: ^0.6.7+4
 
 dev_dependencies:
   flutter_test:
@@ -55,6 +58,10 @@ flutter:
     - images/ic_home_comment.webp
     - images/ic_home_like.webp
     - images/ic_home_liked.webp
+    - images/ic_vector_camera_stroke.png
+    - images/ic_vector_calendar.png
+    - images/retweet_stroke.png
+    - images/test1.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

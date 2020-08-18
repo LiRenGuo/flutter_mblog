@@ -2,7 +2,7 @@ import 'dart:ui';
 
 class AppColors {
   static const TabIconActive = 0xff66ccff;
-  
+
 
 
 }
@@ -21,7 +21,6 @@ class Test{
 
 class Url{
   static final ipaddress = "http://mblog.yunep.com";
-
   static final PostComment = "${ipaddress}/api/comment/post/";//获取文章评论
   static final UserUrl = "${ipaddress}/api/profile";//获取登录用户信息
   static final PostUrl = "${ipaddress}/api/post";//获取主页

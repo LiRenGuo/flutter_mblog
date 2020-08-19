@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
+import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:flutter_mblog/widget/loading_container.dart';
 import 'package:flutter_mblog/widget/my_drawer.dart';
@@ -41,11 +42,19 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          print("post.");
+          Navigator.push(context, MaterialPageRoute(
+            builder: (context) => PostPublishPage(avatar: userModel.avatar)
+          ));
         },
         child: Image.asset('images/ic_home_compose.png', fit: BoxFit.cover, scale: 3.0),
         backgroundColor: Colors.blue

@@ -32,6 +32,8 @@ dependencies:
   oauth2: ^1.5.0
   shared_preferences: ^0.5.8
   fluttertoast: ^7.0.2
+  multi_image_picker: ^4.7.10
+  device_info: ^0.4.1+4
 
 dev_dependencies:
   flutter_test:
@@ -56,6 +58,14 @@ flutter:
     - images/ic_home_like.webp
     - images/ic_home_liked.webp
     - images/ic_home_compose.png
+    - images/icon_add.png
+    - images/icon_emotion.png
+    - images/icon_gif.png
+    - images/icon_image.webp
+    - images/icon_topic.png
+    - images/icon_mention.png
+    - images/mine_feedback_ic_del.png
+    - images/mine_feedback_add_image.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

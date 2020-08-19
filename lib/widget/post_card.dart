@@ -1,14 +1,19 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/my_page.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
+import 'package:flutter_mblog/widget/image_all_screen_look.dart';
+
+import 'fade_route.dart';
 
 class PostCard extends StatelessWidget {
   final PostItem item;
+  final int index;
 
-  const PostCard({Key key, this.item}) : super(key: key);
+  const PostCard({Key key, this.item, this.index}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -57,20 +62,20 @@ class PostCard extends StatelessWidget {
                 ],
               ),
             ),
-            InkWell(
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    alignment: Alignment.topLeft,
+            Column(
+              children: <Widget>[
+                Container(
+                  alignment: Alignment.topLeft,
+                  child: InkWell(
                     child: _content(context),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => HomeDetailPage(item)));
+                    },
                   ),
-                  if (item.photos.length != 0) _photoItem(),
-                ],
-              ),
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => HomeDetailPage(item)));
-              },
+                ),
+                if (item.photos.length != 0) _photoItem(context),
+              ],
             ),
             Divider(
               height: 20.0,
@@ -80,45 +85,57 @@ class PostCard extends StatelessWidget {
         ));
   }
 
-  List<Widget> _buildList() {
-    return item.photos.map((img) => _item(img)).toList();
-  }
-
-  Widget _item(String img) {
-    return Container(
-      child: Image.network(
-        img,
-        fit: BoxFit.cover,
-      ),
-    );
-  }
-
-  _photoItem() {
+  _photoItem(BuildContext context) {
     if (item.photos.length == 1) {
-      return Container(
-        height: 200,
-        margin: EdgeInsets.only(top: 10),
-        child: ConstrainedBox(
-          constraints: BoxConstraints.expand(),
-          child: Image.network(
-            item.photos[0],
-            fit: BoxFit.cover,
-            height: 200,
+      return GestureDetector(
+        onTap: () => _showImage(context, 1),
+        child: Container(
+          height: 200,
+          margin: EdgeInsets.only(top: 10),
+          child: ConstrainedBox(
+            constraints: BoxConstraints.expand(),
+            child: _cachedImage(item.photos[0]),
           ),
         ),
       );
     } else {
       return Container(
-        margin: EdgeInsets.only(top: 10),
-        child: GridView.count(
-            shrinkWrap: true,
-            crossAxisCount: 3,
-            mainAxisSpacing: 5,
-            crossAxisSpacing: 5,
-            physics: NeverScrollableScrollPhysics(),
-            children: _buildList()),
-      );
+          margin: EdgeInsets.only(top: 10),
+          child: GridView.count(
+              shrinkWrap: true,
+              crossAxisCount: 3,
+              mainAxisSpacing: 5,
+              crossAxisSpacing: 5,
+              physics: NeverScrollableScrollPhysics(),
+              children: _buildList(context)),
+        );
     }
+  }
+
+  List<Widget> _buildList(BuildContext context) {
+    return Iterable.generate(item.photos.length).map((index) => _item(item.photos[index], index, context)).toList();
+  }
+
+  Widget _item(String img, int index, BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showImage(context, index),
+      child: Container(
+        child: _cachedImage(img),
+      ),
+    );
+  }
+
+  _cachedImage(String img) {
+    return CachedNetworkImage(
+      imageUrl: img,
+      fit: BoxFit.cover,
+      placeholder: (context, url) {
+        return Container(
+          height: 20,
+          child: Center(child: CircularProgressIndicator()),
+        );
+      },
+    );
   }
 
   _bottomAction() {
@@ -235,4 +252,14 @@ class PostCard extends StatelessWidget {
   _tapRecognizer(BuildContext context) {
     Navigator.push(context, MaterialPageRoute(builder: (context) => MyPage()));
   }
+
+  _showImage(BuildContext context, int index) {
+    Navigator.of(context).push(FadeRoute(
+        page: ImageAllScreenLook(
+          imgDataArr:item.photos,
+          index: index,
+        )
+    ));
+  }
+
 }

@@ -96,7 +96,7 @@ class _HomePageState extends State<HomePage> {
             child: ListView.builder(
               controller: _scrollController,
               itemCount: items.length,
-              itemBuilder: (context, index) => _item(items[index]),
+              itemBuilder: (context, index) => _item(items[index], index),
             ),
           ),
         ),
@@ -105,9 +105,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  _item(PostItem item) {
+  _item(PostItem item, int index) {
     return Container(
-      child: PostCard(item: item),
+      child: PostCard(item: item, index: index),
     );
   }
 

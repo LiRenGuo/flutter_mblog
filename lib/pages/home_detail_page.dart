@@ -1,0 +1,13 @@
+import 'package:flutter/material.dart';
+
+class HomeDetailPage extends StatefulWidget {
+  @override
+  _HomeDetailPageState createState() => _HomeDetailPageState();
+}
+
+class _HomeDetailPageState extends State<HomeDetailPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}

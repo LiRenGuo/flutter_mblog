@@ -34,6 +34,7 @@ class Oauth_2 {
   }
 
   static ResToken(BuildContext context) {
+    print("Token过期，重新刷新");
     Shared_pre.Shared_getResToken().then((token) async {
       Map<String, dynamic> Params = {
         'grant_type': 'refresh_token',

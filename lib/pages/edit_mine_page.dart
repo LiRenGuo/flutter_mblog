@@ -41,7 +41,7 @@ class _EditMinePageState extends State<EditMinePage> {
   UserModel _userModel;
 
   getUserInfo() {
-    return UserDao.getUserInfo();
+    return UserDao.getUserInfo(context);
   }
 
   @override
@@ -88,9 +88,11 @@ class _EditMinePageState extends State<EditMinePage> {
     return Container(
       child: Scaffold(
         appBar: AppBar(
+          iconTheme: IconThemeData(color: Colors.blue),
+          backgroundColor: Colors.white,
           title: Text(
             "编辑个人资料",
-            style: TextStyle(fontWeight: FontWeight.w600),
+            style: TextStyle(fontWeight: FontWeight.w600,color: Colors.black),
           ),
           actions: <Widget>[
             Padding(

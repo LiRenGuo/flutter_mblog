@@ -36,6 +36,9 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    //TODO
+    _unameController.text = "13590298696";
+    _pwdController.text = "aa123456";
 
     return Scaffold(
       appBar: AppBar(

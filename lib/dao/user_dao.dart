@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
+import 'package:flutter_mblog/util/shared_pre.dart';
 
 import '../util/net_utils.dart';
 import '../util/oauth.dart';
@@ -9,12 +10,16 @@ import '../util/oauth.dart';
 const USER_INFO_URL = "http://mblog.yunep.com/api/profile";
 
 class UserDao{
-  static Future<UserModel> getUserInfo() async {
-    final response = await dio.get(USER_INFO_URL);
+  static Future<UserModel> getUserInfo(BuildContext context) async {
+    String token =  await Shared_pre.Shared_getToken();
+    Options options = Options(headers: {'Authorization': 'Bearer $token'});
+    final response = await dio.get(USER_INFO_URL,options: options);
     if(response.statusCode == 200) {
       final responseData = response.data;
       print("response = ${responseData}");
       return UserModel.fromJson(responseData);
+    }else if(response.statusCode == 401){
+      Oauth_2.ResToken(context);
     } else {
       throw Exception('loading data error.....');
     }

@@ -48,14 +48,14 @@ class _MinePageState extends State<MinePage>
   }
 
   _getMyPostListNo(int page) async {
-    MyPostModel myPostModel = await PostDao.getMyPostList(page);
+    MyPostModel myPostModel = await PostDao.getMyPostList(context,page);
     setState(() {
       _myPostModel.addAll(myPostModel.itemList);
     });
   }
 
   _getUserInfo() async {
-    UserModel info = await UserDao.getUserInfo();
+    UserModel info = await UserDao.getUserInfo(context);
     setState(() {
       _userModel = info;
       isok = true;
@@ -63,9 +63,8 @@ class _MinePageState extends State<MinePage>
   }
 
   _getMyPostList() async {
-    MyPostModel myPostModel = await PostDao.getMyPostList(page);
+    MyPostModel myPostModel = await PostDao.getMyPostList(context,page);
     setState(() {
-      print("myPostModel size ${myPostModel.itemList.length}");
       _myPostModel = myPostModel.itemList;
       totalElements = myPostModel.totalElements;
       isLoadingMyPost = true;
@@ -83,7 +82,6 @@ class _MinePageState extends State<MinePage>
   @override
   Widget build(BuildContext context) {
     if (isok) {
-      print("重新加载");
       setState(() {
         int i = 0;
         _myPostModel.forEach((element) {
@@ -91,21 +89,20 @@ class _MinePageState extends State<MinePage>
             i++;
           }
         });
+        print("重新加载 $i");
         tabHeight = AdaptiveTools.setPx(275.0) * _myPostModel.length;
-        tabHeight = tabHeight - (AdaptiveTools.setPx(165) * i);
+        tabHeight = tabHeight - (AdaptiveTools.setPx(160) * i);
       });
     }
     print(tabHeight);
     return Scaffold(
       appBar: AppBar(
-        leading: Icon(
-          Icons.chevron_left,
-          color: Colors.blue,
-        ),
+        iconTheme: IconThemeData(color: Colors.blue),
+        backgroundColor: Colors.white,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Container(child: Text(_userModel?.name ?? "")),
+            Container(child: Text(_userModel?.name ?? "" , style: TextStyle(color: Colors.black),)),
             Container(
               child: Text(
                 "${totalElements ?? 0} 推文",

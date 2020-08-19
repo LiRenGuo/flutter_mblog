@@ -1,14 +1,13 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/model/post_model.dart';
-import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/my_page.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 
-class PostCard extends StatelessWidget {
+class PostDetailCard extends StatelessWidget {
   final PostItem item;
 
-  const PostCard({Key key, this.item}) : super(key: key);
+  const PostDetailCard({Key key, this.item}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +18,6 @@ class PostCard extends StatelessWidget {
           color: Colors.white,
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
               margin: EdgeInsets.only(bottom: 10),
@@ -57,27 +55,18 @@ class PostCard extends StatelessWidget {
                 ],
               ),
             ),
-            InkWell(
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    alignment: Alignment.topLeft,
-                    child: _content(context),
-                  ),
-                  if (item.photos.length != 0) _photoItem(),
-                ],
-              ),
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => HomeDetailPage(item)));
-              },
+            Column(
+              children: <Widget>[
+                Container(
+                  alignment: Alignment.topLeft,
+                  child: _content(context),
+                ),
+                if (item.photos.length != 0) _photoItem(),
+              ],
             ),
-            Divider(
-              height: 20.0,
-            ),
-            _bottomAction()
           ],
-        ));
+        )
+    );
   }
 
   List<Widget> _buildList() {

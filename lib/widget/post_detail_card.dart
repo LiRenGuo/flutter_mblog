@@ -1,8 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/pages/my_page.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
+import 'package:flutter_mblog/widget/fade_route.dart';
+import 'package:flutter_mblog/widget/image_all_screen_look.dart';
 
 class PostDetailCard extends StatelessWidget {
   final PostItem item;
@@ -61,7 +64,7 @@ class PostDetailCard extends StatelessWidget {
                   alignment: Alignment.topLeft,
                   child: _content(context),
                 ),
-                if (item.photos.length != 0) _photoItem(),
+                if (item.photos.length != 0) _photoItem(context),
               ],
             ),
           ],
@@ -69,30 +72,51 @@ class PostDetailCard extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildList() {
-    return item.photos.map((img) => _item(img)).toList();
+  _showImage(BuildContext context, int index) {
+    Navigator.of(context).push(FadeRoute(
+        page: ImageAllScreenLook(
+          imgDataArr:item.photos,
+          index: index,
+        )
+    ));
   }
 
-  Widget _item(String img) {
-    return Container(
-      child: Image.network(
-        img,
-        fit: BoxFit.cover,
+  List<Widget> _buildList(BuildContext context) {
+    return Iterable.generate(item.photos.length).map((index) => _item(item.photos[index], index, context)).toList();
+  }
+
+  Widget _item(String img, int index, BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showImage(context, index),
+      child: Container(
+        child: _cachedImage(img),
       ),
     );
   }
 
-  _photoItem() {
+  _cachedImage(String img) {
+    return CachedNetworkImage(
+      imageUrl: img,
+      fit: BoxFit.cover,
+      placeholder: (context, url) {
+        return Container(
+          height: 20,
+          child: Center(child: CircularProgressIndicator()),
+        );
+      },
+    );
+  }
+
+  _photoItem(BuildContext context) {
     if (item.photos.length == 1) {
-      return Container(
-        height: 200,
-        margin: EdgeInsets.only(top: 10),
-        child: ConstrainedBox(
-          constraints: BoxConstraints.expand(),
-          child: Image.network(
-            item.photos[0],
-            fit: BoxFit.cover,
-            height: 200,
+      return GestureDetector(
+        onTap: () => _showImage(context, 1),
+        child: Container(
+          height: 200,
+          margin: EdgeInsets.only(top: 10),
+          child: ConstrainedBox(
+            constraints: BoxConstraints.expand(),
+            child: _cachedImage(item.photos[0]),
           ),
         ),
       );
@@ -105,7 +129,7 @@ class PostDetailCard extends StatelessWidget {
             mainAxisSpacing: 5,
             crossAxisSpacing: 5,
             physics: NeverScrollableScrollPhysics(),
-            children: _buildList()),
+            children: _buildList(context)),
       );
     }
   }

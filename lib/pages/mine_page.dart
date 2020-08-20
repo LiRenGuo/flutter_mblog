@@ -1,17 +1,17 @@
-import 'dart:math';
+import 'dart:async';
 
 import 'package:date_format/date_format.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/model/mypost_model.dart';
-import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/edit_mine_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
-import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
-import 'package:flutter_mblog/util/time_to_simple.dart';
+import 'package:flutter_mblog/widget/fade_route.dart';
+import 'package:flutter_mblog/widget/image_all_screen_look.dart';
+import 'package:like_button/like_button.dart';
 
 import '../dao/user_dao.dart';
 
@@ -80,6 +80,7 @@ class _MinePageState extends State<MinePage>
     print("下拉刷新");
     setState(() {
       _getUserInfo();
+      _getMyPostList();
     });
     return null;
   }
@@ -233,7 +234,7 @@ class _MinePageState extends State<MinePage>
                                       Container(
                                         child: Image.asset(
                                             "images/ic_vector_calendar.png"),
-                                        height: AdaptiveTools.setPx(23),
+                                        height: AdaptiveTools.setPx(20),
                                       ),
                                       SizedBox(
                                         width: 4,
@@ -355,21 +356,63 @@ class Tweets extends StatelessWidget {
     int i = 0;
     return Column(
       children: _item.map((e){
-        return body(e);
+        return body(e,context);
       }).toList(),
     );
+  }
+  Future<bool> onLike(bool isLiked, MyPostItem postItem) {
+    final Completer<bool> completer = new Completer<bool>();
+    Timer(const Duration(milliseconds: 200), () {
+      if(postItem.islike) {
+        print("dislike...");
+        PostDao.dislike(postItem.id);
+      } else {
+        print("like...${postItem.id}");
+        PostDao.like(postItem.id);
+      }
+      postItem.likeCount = postItem.islike ? postItem.likeCount + 1 : postItem.likeCount - 1;
+      postItem.islike = !postItem.islike;
+      completer.complete(postItem.islike);
+    });
+    return completer.future;
+   }
 
-    /*return Container(
-      child: ListView.builder(
-          physics: NeverScrollableScrollPhysics(),
-          itemCount: _item.length,
-          itemBuilder: (context, i) {
-            return ;
-          }),
-    );*/
+  _buildLikeButton( MyPostItem postItem) {
+    return LikeButton(
+      size: 22,
+      onTap: (bool isLiked) {
+        return onLike(isLiked, postItem);
+      },
+      likeBuilder: (bool isLiked){
+        return Image.asset(postItem.islike ? 'images/ic_home_liked.webp' : 'images/ic_home_like.webp');
+      },
+      isLiked: postItem.islike,
+      likeCount:postItem.likeCount,
+      countBuilder: (int count, bool isLiked, String text) {
+        final ColorSwatch<int> color = isLiked ? Colors.pinkAccent : Colors.grey;
+        Widget result;
+        if (count == 0) {
+          result = Text(
+            '赞',
+            style: TextStyle(color: color),
+          );
+        } else
+          result = Text(
+            count >= 1000
+                ? (count / 1000.0).toStringAsFixed(1) + 'k'
+                : text,
+            style: TextStyle(color: color),
+          );
+
+        return result;
+      },
+      likeCountAnimationType: postItem.likeCount < 1000
+          ? LikeCountAnimationType.part
+          : LikeCountAnimationType.none,
+    );
   }
 
-  Widget body(MyPostItem _item){
+  Widget body(MyPostItem _item,BuildContext context){
     return Padding(
       child: Column(
         children: <Widget>[
@@ -440,7 +483,7 @@ class Tweets extends StatelessWidget {
                     ),
                     Container(
                       padding: EdgeInsets.all(15),
-                      child: image(_item.photos),
+                      child: image(_item.photos,context),
                     ),
                     Container(
                       child: Row(
@@ -459,17 +502,7 @@ class Tweets extends StatelessWidget {
                             height: AdaptiveTools.setPx(20),
                           ),
                           Container(
-                            child: Row(
-                              children: <Widget>[
-                                Image.asset(_item.islike
-                                    ? "images/ic_home_liked.webp"
-                                    : "images/ic_home_like.webp"),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Text("${_item.likeCount.toString()}")
-                              ],
-                            ),
+                            child: _buildLikeButton(_item),
                             height: AdaptiveTools.setPx(20),
                           ),
                           Container(
@@ -503,17 +536,31 @@ class Tweets extends StatelessWidget {
     );
   }
 
-  Widget image(List<String> images) {
+  _showImage(BuildContext context,List<String> images, int index) {
+    Navigator.of(context).push(FadeRoute(
+        page: ImageAllScreenLook(
+          imgDataArr:images,
+          index: index,
+        )
+    ));
+  }
+
+  Widget image(List<String> images,BuildContext context) {
     Widget imageWidget;
     switch (images.length) {
       case 1:
-        imageWidget = Container(
-          height: AdaptiveTools.setPx(165),
-          decoration: BoxDecoration(
-              image: DecorationImage(
-                  image: NetworkImage(images[0]), fit: BoxFit.cover),
-              border: Border.all(color: Colors.black26),
-              borderRadius: BorderRadius.all(Radius.circular(18))),
+        imageWidget = InkWell(
+          child: Container(
+            height: AdaptiveTools.setPx(165),
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: NetworkImage(images[0]), fit: BoxFit.cover),
+                border: Border.all(color: Colors.black26),
+                borderRadius: BorderRadius.all(Radius.circular(18))),
+          ),
+          onTap: (){
+            _showImage(context, images, 0);
+          },
         );
         break;
       case 2:
@@ -525,26 +572,36 @@ class Tweets extends StatelessWidget {
           child: Row(
             children: <Widget>[
               Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                      image: DecorationImage(
-                          image: NetworkImage(images[0]), fit: BoxFit.cover),
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(18),
-                          bottomLeft: Radius.circular(18))),
+                child: InkWell(
+                  child: Container(
+                    decoration: BoxDecoration(
+                        image: DecorationImage(
+                            image: NetworkImage(images[0]), fit: BoxFit.cover),
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(18),
+                            bottomLeft: Radius.circular(18))),
+                  ),
+                  onTap: (){
+                    _showImage(context, images, 0);
+                  },
                 ),
               ),
               SizedBox(
                 width: 3,
               ),
               Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                      image: DecorationImage(
-                          image: NetworkImage(images[1]), fit: BoxFit.cover),
-                      borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(18),
-                          bottomRight: Radius.circular(18))),
+                child: InkWell(
+                  child: Container(
+                    decoration: BoxDecoration(
+                        image: DecorationImage(
+                            image: NetworkImage(images[1]), fit: BoxFit.cover),
+                        borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(18),
+                            bottomRight: Radius.circular(18))),
+                  ),
+                  onTap: (){
+                    _showImage(context, images, 1);
+                  },
                 ),
               )
             ],
@@ -560,13 +617,18 @@ class Tweets extends StatelessWidget {
           child: Row(
             children: <Widget>[
               Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                      image: DecorationImage(
-                          image: NetworkImage(images[0]), fit: BoxFit.cover),
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(18),
-                          bottomLeft: Radius.circular(18))),
+                child: InkWell(
+                  child: Container(
+                    decoration: BoxDecoration(
+                        image: DecorationImage(
+                            image: NetworkImage(images[0]), fit: BoxFit.cover),
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(18),
+                            bottomLeft: Radius.circular(18))),
+                  ),
+                  onTap: (){
+                    _showImage(context, images, 0);
+                  },
                 ),
               ),
               SizedBox(
@@ -576,26 +638,36 @@ class Tweets extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[1]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                topRight: Radius.circular(18))),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[1]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  topRight: Radius.circular(18))),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 1);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[2]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                bottomRight: Radius.circular(18))),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[2]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  bottomRight: Radius.circular(18))),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 2);
+                        },
                       ),
                     )
                   ],
@@ -617,27 +689,37 @@ class Tweets extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[0]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(18),
-                            )),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[0]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(18),
+                              )),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 0);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[1]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(18))),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[1]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(18))),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 1);
+                        },
                       ),
                     )
                   ],
@@ -650,26 +732,36 @@ class Tweets extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[2]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                topRight: Radius.circular(18))),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[2]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  topRight: Radius.circular(18))),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 2);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[3]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                bottomRight: Radius.circular(18))),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[3]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  bottomRight: Radius.circular(18))),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 3);
+                        },
                       ),
                     )
                   ],
@@ -691,27 +783,37 @@ class Tweets extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[0]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(18),
-                            )),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[0]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(18),
+                              )),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 0);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[3]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(18))),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[3]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(18))),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 3);
+                        },
                       ),
                     )
                   ],
@@ -724,12 +826,17 @@ class Tweets extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: NetworkImage(images[2]),
-                              fit: BoxFit.cover),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[2]),
+                                fit: BoxFit.cover),
+                          ),
                         ),
+                        onTap: (){
+                          _showImage(context, images, 2);
+                        },
                       ),
                     ),
                   ],
@@ -742,26 +849,36 @@ class Tweets extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[1]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                topRight: Radius.circular(18))),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[1]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  topRight: Radius.circular(18))),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 1);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[4]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                bottomRight: Radius.circular(18))),
+                      child:InkWell(
+                        child:  Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[4]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  bottomRight: Radius.circular(18))),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 4);
+                        },
                       ),
                     )
                   ],
@@ -783,27 +900,37 @@ class Tweets extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[0]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(18),
-                            )),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[0]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(18),
+                              )),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 0);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[1]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(18))),
+                      child: InkWell(
+                        onTap: (){
+                          _showImage(context, images, 1);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[1]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(18))),
+                        ),
                       ),
                     )
                   ],
@@ -816,24 +943,34 @@ class Tweets extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
                             image: DecorationImage(
                                 image: NetworkImage(images[2]),
                                 fit: BoxFit.cover),
-                            ),
+                          ),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 2);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
+                      child:InkWell(
+                        child:  Container(
+                          decoration: BoxDecoration(
                             image: DecorationImage(
                                 image: NetworkImage(images[3]),
                                 fit: BoxFit.cover),
-                            ),
+                          ),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 3);
+                        },
                       ),
                     )
                   ],
@@ -846,26 +983,36 @@ class Tweets extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[4]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                topRight: Radius.circular(18))),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[4]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  topRight: Radius.circular(18))),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 4);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[5]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                bottomRight: Radius.circular(18))),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[5]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  bottomRight: Radius.circular(18))),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 5);
+                        },
                       ),
                     )
                   ],
@@ -887,69 +1034,54 @@ class Tweets extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[0]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(18),
-                            )),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: NetworkImage(images[1]),
-                              fit: BoxFit.cover),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[0]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(18),
+                              )),
                         ),
+                        onTap: (){
+                          _showImage(context, images, 0);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
                             image: DecorationImage(
                                 image: NetworkImage(images[1]),
                                 fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(18))),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: NetworkImage(images[2]),
-                              fit: BoxFit.cover),
+                          ),
                         ),
+                        onTap: (){
+                          _showImage(context, images, 1);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: NetworkImage(images[3]),
-                              fit: BoxFit.cover),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[2]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(18))),
                         ),
+                        onTap: (){
+                          _showImage(context, images, 2);
+                        },
                       ),
                     )
                   ],
@@ -962,25 +1094,75 @@ class Tweets extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[3]),
+                                fit: BoxFit.cover),
+                          ),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 3);
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
                             image: DecorationImage(
                                 image: NetworkImage(images[4]),
                                 fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                topRight: Radius.circular(18))),
+                          ),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 4);
+                        },
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 3,
+              ),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[5]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  topRight: Radius.circular(18))),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 5);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: NetworkImage(images[5]),
-                              fit: BoxFit.cover),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[6]),
+                                fit: BoxFit.cover),
+                          ),
                         ),
+                        onTap: (){
+                          _showImage(context, images, 6);
+                        },
                       ),
                     )
                   ],
@@ -1002,39 +1184,54 @@ class Tweets extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[0]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(18),
-                            )),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: NetworkImage(images[1]),
-                              fit: BoxFit.cover),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[0]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(18),
+                              )),
                         ),
+                        onTap: (){
+                          _showImage(context, images, 0);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
                             image: DecorationImage(
                                 image: NetworkImage(images[1]),
                                 fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(18))),
+                          ),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 1);
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[2]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(18))),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 2);
+                        },
                       ),
                     )
                   ],
@@ -1047,67 +1244,92 @@ class Tweets extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: NetworkImage(images[2]),
-                              fit: BoxFit.cover),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[3]),
+                                fit: BoxFit.cover),
+                          ),
                         ),
+                        onTap: (){
+                          _showImage(context, images, 3);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: NetworkImage(images[3]),
-                              fit: BoxFit.cover),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: NetworkImage(images[3]),
-                              fit: BoxFit.cover),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
                             image: DecorationImage(
                                 image: NetworkImage(images[4]),
                                 fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                topRight: Radius.circular(18))),
+                          ),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 4);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: NetworkImage(images[5]),
-                              fit: BoxFit.cover),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[5]),
+                                fit: BoxFit.cover),
+                          ),
                         ),
+                        onTap: (){
+                          _showImage(context, images, 5);
+                        },
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 3,
+              ),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[6]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  topRight: Radius.circular(18))),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 6);
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[7]),
+                                fit: BoxFit.cover),
+                          ),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 7);
+                        },
                       ),
                     )
                   ],
@@ -1129,39 +1351,54 @@ class Tweets extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[0]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(18),
-                            )),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[0]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(18),
+                              )),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 0);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
                             image: DecorationImage(
                                 image: NetworkImage(images[1]),
                                 fit: BoxFit.cover),
-                            ),
+                          ),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 1);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[1]),
-                                fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(18))),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[2]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(18))),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 2);
+                        },
                       ),
                     )
                   ],
@@ -1174,80 +1411,110 @@ class Tweets extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: NetworkImage(images[2]),
-                              fit: BoxFit.cover),
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[3]),
+                                fit: BoxFit.cover),
+                          ),
                         ),
+                        onTap: (){
+                          _showImage(context, images, 3);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: NetworkImage(images[3]),
-                              fit: BoxFit.cover),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: NetworkImage(images[3]),
-                              fit: BoxFit.cover),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
                             image: DecorationImage(
                                 image: NetworkImage(images[4]),
                                 fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                topRight: Radius.circular(18))),
+                          ),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 4);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
                             image: DecorationImage(
                                 image: NetworkImage(images[5]),
                                 fit: BoxFit.cover),
-                            ),
+                          ),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 5);
+                        },
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 3,
+              ),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[6]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  topRight: Radius.circular(18))),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 6);
+                        },
                       ),
                     ),
                     SizedBox(
                       height: 3,
                     ),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
                             image: DecorationImage(
-                                image: NetworkImage(images[5]),
+                                image: NetworkImage(images[7]),
                                 fit: BoxFit.cover),
-                            borderRadius: BorderRadius.only(
-                                bottomRight: Radius.circular(18))),
+                          ),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 7);
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: NetworkImage(images[8]),
+                                  fit: BoxFit.cover),
+                              borderRadius: BorderRadius.only(
+                                  bottomRight: Radius.circular(18))),
+                        ),
+                        onTap: (){
+                          _showImage(context, images, 8);
+                        },
                       ),
                     )
                   ],

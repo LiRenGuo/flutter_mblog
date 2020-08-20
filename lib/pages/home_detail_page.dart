@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:date_format/date_format.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
@@ -5,8 +9,11 @@ import 'package:flutter_mblog/model/post_comment_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
+import 'package:flutter_mblog/widget/fade_route.dart';
+import 'package:flutter_mblog/widget/image_all_screen_look.dart';
 import 'package:flutter_mblog/widget/post_card.dart';
 import 'package:flutter_mblog/widget/post_detail_card.dart';
+import 'package:like_button/like_button.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 
 class HomeDetailPage extends StatefulWidget {
@@ -182,44 +189,68 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
     }
   }
 
+  _showImage(BuildContext context,List<String> images, int index) {
+    Navigator.of(context).push(FadeRoute(
+        page: ImageAllScreenLook(
+          imgDataArr:images,
+          index: index,
+        )
+    ));
+  }
+
   Widget image(List<String> images) {
     Widget imageWidget;
     switch (images.length) {
       case 1:
-        imageWidget = Container(
-          margin: EdgeInsets.only(top: 10),
-          height: AdaptiveTools.setPx(165),
-          width: AdaptiveTools.setPx(165),
-          decoration: BoxDecoration(
-            image: DecorationImage(
-                image: NetworkImage(images[0]), fit: BoxFit.cover),
-            border: Border.all(color: Colors.black26),
+        imageWidget = InkWell(
+          onTap: (){
+            _showImage(context, images, 0);
+          },
+          child: Container(
+            margin: EdgeInsets.only(top: 10),
+            height: AdaptiveTools.setPx(165),
+            width: AdaptiveTools.setPx(165),
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: NetworkImage(images[0]), fit: BoxFit.cover),
+              border: Border.all(color: Colors.black26),
+            ),
           ),
         );
         break;
       case 2:
         imageWidget = Row(
           children: <Widget>[
-            Container(
-              margin: EdgeInsets.only(top: 10,bottom: 5),
-              height: AdaptiveTools.setPx(165),
-              width: AdaptiveTools.setPx(150),
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: NetworkImage(images[0]), fit: BoxFit.cover),
-                border: Border.all(color: Colors.black26),
+            InkWell(
+              child: Container(
+                margin: EdgeInsets.only(top: 10,bottom: 5),
+                height: AdaptiveTools.setPx(165),
+                width: AdaptiveTools.setPx(150),
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: NetworkImage(images[0]), fit: BoxFit.cover),
+                  border: Border.all(color: Colors.black26),
+                ),
               ),
+              onTap: (){
+                _showImage(context, images, 0);
+              },
             ),
             SizedBox(width: AdaptiveTools.setPx(10),),
-            Container(
-              margin: EdgeInsets.only(top: 10,bottom: 5),
-              height: AdaptiveTools.setPx(165),
-              width: AdaptiveTools.setPx(150),
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: NetworkImage(images[1]), fit: BoxFit.cover),
-                border: Border.all(color: Colors.black26),
+            InkWell(
+              child: Container(
+                margin: EdgeInsets.only(top: 10,bottom: 5),
+                height: AdaptiveTools.setPx(165),
+                width: AdaptiveTools.setPx(150),
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                      image: NetworkImage(images[1]), fit: BoxFit.cover),
+                  border: Border.all(color: Colors.black26),
+                ),
               ),
+              onTap: (){
+                _showImage(context, images, 1);
+              },
             )
           ],
         );
@@ -244,13 +275,56 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
     });
   }
 
-  Future<void> ilikePost(String postId, bool flag) async {
-    String result = await PostDao.postILike(context, flag, postId);
-    if (result == "success") {
-      setState(() {
-        widget.item.islike = true;
-      });
-    }
+  _buildLikeButton() {
+    return LikeButton(
+      size: 22,
+      onTap: (bool isLiked) {
+        return onLike(isLiked, widget.item);
+      },
+      likeBuilder: (bool isLiked){
+        return Image.asset(widget.item.islike ? 'images/ic_home_liked.webp' : 'images/ic_home_like.webp');
+      },
+      isLiked: widget.item.islike,
+      likeCount: widget.item.likeCount,
+      countBuilder: (int count, bool isLiked, String text) {
+        final ColorSwatch<int> color = isLiked ? Colors.pinkAccent : Colors.grey;
+        Widget result;
+        if (count == 0) {
+          result = Text(
+            '赞',
+            style: TextStyle(color: color),
+          );
+        } else
+          result = Text(
+            count >= 1000
+                ? (count / 1000.0).toStringAsFixed(1) + 'k'
+                : text,
+            style: TextStyle(color: color),
+          );
+
+        return result;
+      },
+      likeCountAnimationType: widget.item.likeCount < 1000
+          ? LikeCountAnimationType.part
+          : LikeCountAnimationType.none,
+    );
+  }
+
+  Future<bool> onLike(bool isLiked, PostItem postItem) {
+    final Completer<bool> completer = new Completer<bool>();
+    Timer(const Duration(milliseconds: 200), () {
+      if(postItem.islike) {
+        print("dislike...");
+        PostDao.dislike(widget.item.id);
+      } else {
+        print("like...${widget.item.id}");
+        PostDao.like(widget.item.id);
+      }
+      postItem.likeCount = postItem.islike ? widget.item.likeCount + 1 : widget.item.likeCount - 1;
+      postItem.islike = !postItem.islike;
+      completer.complete(postItem.islike);
+    });
+    return completer.future;
   }
 
   _bottomAction(PostItem item) {
@@ -444,34 +518,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
         ),
         Flexible(
           flex: 1,
-          child: InkWell(
-            onTap: () {
-              print("clicked...");
-              if (item.islike == false) {
-                PostDao.postILike(context, true, item.id);
-                setState(() {});
-              }
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Image.asset(
-                  item.islike
-                      ? 'images/ic_home_liked.webp'
-                      : 'images/ic_home_like.webp',
-                  width: 22,
-                  height: 22,
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 4),
-                  child: Text(
-                      item.likeCount == 0 ? '赞' : item.likeCount.toString(),
-                      style: TextStyle(color: Colors.black, fontSize: 13)),
-                )
-              ],
-            ),
-          ),
+          child: _buildLikeButton(),
         )
       ],
     );

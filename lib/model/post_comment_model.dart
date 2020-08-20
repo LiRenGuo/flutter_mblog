@@ -27,13 +27,16 @@ class PostCommentItem {
   User user;
   String content;
   int ctime;
+  List<String> photos;
 
-  PostCommentItem({this.id, this.user, this.content, this.ctime});
+
+  PostCommentItem({this.id, this.user, this.content, this.ctime,this.photos});
 
   PostCommentItem.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     user = json['user'] != null ? new User.fromJson(json['user']) : null;
     content = json['content'];
+    photos = json['photos'].cast<String>();
     ctime = json['ctime'];
   }
 

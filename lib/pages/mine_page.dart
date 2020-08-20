@@ -1,13 +1,16 @@
 import 'dart:math';
 
 import 'package:date_format/date_format.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/model/mypost_model.dart';
+import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/edit_mine_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/Configs.dart';
+import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/time_to_simple.dart';
 
 import '../dao/user_dao.dart';
@@ -29,6 +32,8 @@ class _MinePageState extends State<MinePage>
   double tabHeight = 310;
   int page = 0;
 
+  int _currentPage = 0;
+
   ScrollController _controller = new ScrollController();
 
   @override
@@ -48,7 +53,7 @@ class _MinePageState extends State<MinePage>
   }
 
   _getMyPostListNo(int page) async {
-    MyPostModel myPostModel = await PostDao.getMyPostList(context,page);
+    MyPostModel myPostModel = await PostDao.getMyPostList(context, page);
     setState(() {
       _myPostModel.addAll(myPostModel.itemList);
     });
@@ -63,7 +68,7 @@ class _MinePageState extends State<MinePage>
   }
 
   _getMyPostList() async {
-    MyPostModel myPostModel = await PostDao.getMyPostList(context,page);
+    MyPostModel myPostModel = await PostDao.getMyPostList(context, page);
     setState(() {
       _myPostModel = myPostModel.itemList;
       totalElements = myPostModel.totalElements;
@@ -94,7 +99,13 @@ class _MinePageState extends State<MinePage>
         tabHeight = tabHeight - (AdaptiveTools.setPx(160) * i);
       });
     }
-    print(tabHeight);
+    List<Widget> pageWidget = [
+      Tweets(_myPostModel),
+      TweetsOrReply(),
+      Media(),
+      Like()
+    ];
+    ;
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.blue),
@@ -102,7 +113,11 @@ class _MinePageState extends State<MinePage>
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Container(child: Text(_userModel?.name ?? "" , style: TextStyle(color: Colors.black),)),
+            Container(
+                child: Text(
+              _userModel?.name ?? "",
+              style: TextStyle(color: Colors.black),
+            )),
             Container(
               child: Text(
                 "${totalElements ?? 0} 推文",
@@ -283,6 +298,11 @@ class _MinePageState extends State<MinePage>
                         labelColor: Colors.blue,
                         controller: tabController,
                         indicatorWeight: 4,
+                        onTap: (index) {
+                          setState(() {
+                            _currentPage = index;
+                          });
+                        },
                         tabs: <Widget>[
                           Tab(
                             text: "推文",
@@ -299,20 +319,18 @@ class _MinePageState extends State<MinePage>
                         ],
                       ),
                     ),
-                    Container(
-                      height: tabHeight,
-                      child: Container(
-                        child: TabBarView(
-                          controller: tabController,
-                          children: [
-                            Tweets(_myPostModel),
-                            TweetsOrReply(),
-                            Media(),
-                            Like()
-                          ],
-                        ),
-                      ),
-                    )
+                    pageWidget[_currentPage]
+                    /*Flexible(
+                             child: TabBarView(
+                               controller: tabController,
+                               children: [
+                                 Tweets(_myPostModel),
+                                 TweetsOrReply(),
+                                 Media(),
+                                 Like()
+                               ],
+                             ),
+                           ),*/
                   ],
                 ),
                 onRefresh: _onRefresh,
@@ -334,151 +352,154 @@ class Tweets extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("size ${_item[0].islike}");
-    return Container(
+    int i = 0;
+    return Column(
+      children: _item.map((e){
+        return body(e);
+      }).toList(),
+    );
+
+    /*return Container(
       child: ListView.builder(
           physics: NeverScrollableScrollPhysics(),
           itemCount: _item.length,
           itemBuilder: (context, i) {
-            return Padding(
-              child: Column(
-                children: <Widget>[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Expanded(
-                        child: Stack(
-                          children: <Widget>[
-                            Align(
-                              alignment: FractionalOffset.topLeft,
-                              child: Container(
-                                margin: EdgeInsets.only(
-                                    left: AdaptiveTools.setPx(7)),
-                                alignment: Alignment.topLeft,
-                                child: CircleAvatar(
-                                  backgroundImage:
-                                      NetworkImage(_item[i].user.avatar),
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                        flex: 1,
-                      ),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Row(
-                              children: <Widget>[
-                                Row(
-                                  children: <Widget>[
-                                    Container(
-                                      child: Text(
-                                        _item[i].user.name,
-                                        style: TextStyle(
-                                          letterSpacing: 2,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 4,
-                                    ),
-                                    Container(
-                                      child: Text("@${_item[i].user.username}"),
-                                    ),
-                                    Container(
-                                      child: Text(
-                                          "  ·  ${TimeToSimple.timeToSimple(_item[i].ctime)}"),
-                                    ),
-                                  ],
-                                ),
-                                Container(
-                                  alignment: Alignment.topRight,
-                                  child: Icon(
-                                    Icons.keyboard_arrow_down,
-                                    color: Colors.black54,
-                                    size: AdaptiveTools.setPx(19),
-                                  ),
-                                ),
-                              ],
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            ),
-                            Container(
-                              margin:
-                                  EdgeInsets.only(top: AdaptiveTools.setPx(3)),
-                              child: Text(_item[i].content),
-                            ),
-                            Container(
-                              padding: EdgeInsets.all(15),
-                              child: image(_item[i].photos),
-                            ),
-                            Container(
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Container(
-                                    child: Row(
-                                      children: <Widget>[
-                                        Image.asset(
-                                            "images/ic_home_comment.webp"),
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        Text(
-                                            "${_item[i].commentCount.toString()}")
-                                      ],
-                                    ),
-                                    height: AdaptiveTools.setPx(20),
-                                  ),
-                                  Container(
-                                    child: Row(
-                                      children: <Widget>[
-                                        Image.asset(_item[i].islike
-                                            ? "images/ic_home_liked.webp"
-                                            : "images/ic_home_like.webp"),
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        Text("${_item[i].likeCount.toString()}")
-                                      ],
-                                    ),
-                                    height: AdaptiveTools.setPx(20),
-                                  ),
-                                  Container(
-                                    child: Image.asset(
-                                      "images/retweet_stroke.png",
-                                      color: Colors.black54,
-                                    ),
-                                    height: AdaptiveTools.setPx(17),
-                                  ),
-                                  Container(
-                                    child: Image.asset(
-                                        "images/ic_home_forward.png"),
-                                    height: AdaptiveTools.setPx(20),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        flex: 6,
-                      ),
-                    ],
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(top: 10),
-                    height: 1,
-                    color: Colors.black12,
-                  )
-                ],
-              ),
-              padding: EdgeInsets.fromLTRB(10, 5, 10, 10),
-            );
+            return ;
           }),
+    );*/
+  }
+
+  Widget body(MyPostItem _item){
+    return Padding(
+      child: Column(
+        children: <Widget>[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Expanded(
+                child: Stack(
+                  children: <Widget>[
+                    Align(
+                      alignment: FractionalOffset.topLeft,
+                      child: Container(
+                        margin: EdgeInsets.only(left: AdaptiveTools.setPx(7)),
+                        alignment: Alignment.topLeft,
+                        child: CircleAvatar(
+                          backgroundImage: NetworkImage(_item.user.avatar),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+                flex: 1,
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Row(
+                          children: <Widget>[
+                            Container(
+                              child: Text(
+                                _item.user.name,
+                                style: TextStyle(
+                                  letterSpacing: 2,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 4,
+                            ),
+                            Container(
+                              child: Text("@${_item.user.username}"),
+                            ),
+                            Container(
+                              child: Text(
+                                  "  ·  ${TimeUtil.parse(_item.ctime.toString())}"),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          alignment: Alignment.topRight,
+                          child: Icon(
+                            Icons.keyboard_arrow_down,
+                            color: Colors.black54,
+                            size: AdaptiveTools.setPx(19),
+                          ),
+                        ),
+                      ],
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
+                      child: Text(_item.content),
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(15),
+                      child: image(_item.photos),
+                    ),
+                    Container(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Container(
+                            child: Row(
+                              children: <Widget>[
+                                Image.asset("images/ic_home_comment.webp"),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text("${_item.commentCount.toString()}")
+                              ],
+                            ),
+                            height: AdaptiveTools.setPx(20),
+                          ),
+                          Container(
+                            child: Row(
+                              children: <Widget>[
+                                Image.asset(_item.islike
+                                    ? "images/ic_home_liked.webp"
+                                    : "images/ic_home_like.webp"),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text("${_item.likeCount.toString()}")
+                              ],
+                            ),
+                            height: AdaptiveTools.setPx(20),
+                          ),
+                          Container(
+                            child: Image.asset(
+                              "images/retweet_stroke.png",
+                              color: Colors.black54,
+                            ),
+                            height: AdaptiveTools.setPx(17),
+                          ),
+                          Container(
+                            child: Image.asset("images/ic_home_forward.png"),
+                            height: AdaptiveTools.setPx(20),
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                flex: 6,
+              ),
+            ],
+          ),
+          Container(
+            margin: EdgeInsets.only(top: 10),
+            height: 1,
+            color: Colors.black12,
+          )
+        ],
+      ),
+      padding: EdgeInsets.fromLTRB(10, 5, 10, 10),
     );
   }
 
@@ -654,6 +675,584 @@ class Tweets extends StatelessWidget {
                   ],
                 ),
               )
+            ],
+          ),
+        );
+        break;
+      case 5:
+        imageWidget = Container(
+          height: AdaptiveTools.setPx(165),
+          decoration: BoxDecoration(
+              border: Border.all(color: Colors.black26),
+              borderRadius: BorderRadius.all(Radius.circular(18))),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[0]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(18),
+                            )),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[3]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(18))),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 3,
+              ),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: NetworkImage(images[2]),
+                              fit: BoxFit.cover),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 3,
+              ),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[1]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(18))),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[4]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                                bottomRight: Radius.circular(18))),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+        break;
+      case 6:
+        imageWidget = Container(
+          height: AdaptiveTools.setPx(165),
+          decoration: BoxDecoration(
+              border: Border.all(color: Colors.black26),
+              borderRadius: BorderRadius.all(Radius.circular(18))),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[0]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(18),
+                            )),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[1]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(18))),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 3,
+              ),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[2]),
+                                fit: BoxFit.cover),
+                            ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[3]),
+                                fit: BoxFit.cover),
+                            ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 3,
+              ),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[4]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(18))),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[5]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                                bottomRight: Radius.circular(18))),
+                      ),
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
+        );
+        break;
+      case 7:
+        imageWidget = Container(
+          height: AdaptiveTools.setPx(165),
+          decoration: BoxDecoration(
+              border: Border.all(color: Colors.black26),
+              borderRadius: BorderRadius.all(Radius.circular(18))),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[0]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(18),
+                            )),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: NetworkImage(images[1]),
+                              fit: BoxFit.cover),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[1]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(18))),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 3,
+              ),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: NetworkImage(images[2]),
+                              fit: BoxFit.cover),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: NetworkImage(images[3]),
+                              fit: BoxFit.cover),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 3,
+              ),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[4]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(18))),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: NetworkImage(images[5]),
+                              fit: BoxFit.cover),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+        break;
+      case 8:
+        imageWidget = Container(
+          height: AdaptiveTools.setPx(165),
+          decoration: BoxDecoration(
+              border: Border.all(color: Colors.black26),
+              borderRadius: BorderRadius.all(Radius.circular(18))),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[0]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(18),
+                            )),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: NetworkImage(images[1]),
+                              fit: BoxFit.cover),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[1]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(18))),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 3,
+              ),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: NetworkImage(images[2]),
+                              fit: BoxFit.cover),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: NetworkImage(images[3]),
+                              fit: BoxFit.cover),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: NetworkImage(images[3]),
+                              fit: BoxFit.cover),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 3,
+              ),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[4]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(18))),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: NetworkImage(images[5]),
+                              fit: BoxFit.cover),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+        break;
+      case 9:
+        imageWidget = Container(
+          height: AdaptiveTools.setPx(165),
+          decoration: BoxDecoration(
+              border: Border.all(color: Colors.black26),
+              borderRadius: BorderRadius.all(Radius.circular(18))),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[0]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(18),
+                            )),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[1]),
+                                fit: BoxFit.cover),
+                            ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[1]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(18))),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 3,
+              ),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: NetworkImage(images[2]),
+                              fit: BoxFit.cover),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: NetworkImage(images[3]),
+                              fit: BoxFit.cover),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: NetworkImage(images[3]),
+                              fit: BoxFit.cover),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 3,
+              ),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[4]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                                topRight: Radius.circular(18))),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[5]),
+                                fit: BoxFit.cover),
+                            ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(images[5]),
+                                fit: BoxFit.cover),
+                            borderRadius: BorderRadius.only(
+                                bottomRight: Radius.circular(18))),
+                      ),
+                    )
+                  ],
+                ),
+              ),
             ],
           ),
         );

@@ -73,6 +73,8 @@ flutter:
     - images/ic_vector_calendar.png
     - images/retweet_stroke.png
     - images/return.png
+    - images/send.png
+    - images/Unfold.png
     - images/test1.png
 
   # An image asset can refer to one or more resolution-specific "variants", see

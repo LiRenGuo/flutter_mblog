@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/model/post_comment_model.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/widget/post_card.dart';
 import 'package:flutter_mblog/widget/post_detail_card.dart';
+import 'package:multi_image_picker/multi_image_picker.dart';
 
 class HomeDetailPage extends StatefulWidget {
   PostItem item;
@@ -19,10 +21,13 @@ class HomeDetailPage extends StatefulWidget {
 class _HomeDetailPageState extends State<HomeDetailPage> {
   bool isok = false;
   PostCommentModel _postCommentModel;
+  TextEditingController _commentEditingController = new TextEditingController();
+  FocusNode _commentFocus = FocusNode();
+  List<Asset> fileList = List<Asset>();
 
   getPostDetail() async {
     PostCommentModel postCommentModel =
-    await PostDao.getCommentList(widget.item.id);
+        await PostDao.getCommentList(widget.item.id);
     setState(() {
       _postCommentModel = postCommentModel;
       isok = true;
@@ -35,7 +40,6 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
     super.initState();
     getPostDetail();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -62,10 +66,12 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                       height: 5,
                       color: Colors.black12,
                     ),
-                    isok ? commentist() : Container(
-                      height: 0,
-                      width: 0,
-                    )
+                    isok
+                        ? commentist()
+                        : Container(
+                            height: 0,
+                            width: 0,
+                          )
                   ],
                 ),
               ),
@@ -80,15 +86,16 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
     );
   }
 
-  Widget commentist(){
+  Widget commentist() {
     if (_postCommentModel.content.length != 0) {
       List<Widget> commentWidget = _postCommentModel.content.map((e) {
+        print(e.photos.toString());
         return Container(
           child: Padding(
             padding: EdgeInsets.all(10),
             child: Column(
               children: <Widget>[
-                Container (
+                Container(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -99,7 +106,9 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                           )
                         ],
                       ),
-                      SizedBox(width: AdaptiveTools.setPx(10),),
+                      SizedBox(
+                        width: AdaptiveTools.setPx(10),
+                      ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
@@ -113,32 +122,134 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                                   child: Text("@${e.user.username}"),
                                 ),
                                 Container(
-                                  child: Text(" · ${TimeUtil.parse(e.ctime.toString())}"),
+                                  child: Text(
+                                      " · ${TimeUtil.parse(e.ctime.toString())}"),
                                 )
                               ],
                             ),
                           ),
-                          SizedBox(height: 100,),
+                          SizedBox(
+                            height: 4,
+                          ),
                           Container(
                             child: Text(e.content),
-                          )
+                          ),
+                          e.photos!=null && e.photos.isNotEmpty?image(e.photos):Container(width: 0,height: 0,),
                         ],
                       )
                     ],
                   ),
+                ),
+                SizedBox(
+                  height: 5,
+                ),
+                Container(
+                  height: 1,
+                  color: Colors.black12,
                 )
               ],
             ),
           ),
         );
       }).toList();
+      commentWidget.insert(
+          0,
+          Container(
+            margin: EdgeInsets.fromLTRB(5, 2, 0, 3),
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "评论",
+              style: TextStyle(fontSize: AdaptiveTools.setPx(18)),
+            ),
+          ));
+      commentWidget.insert(
+          1,
+          Container(
+            height: 1,
+            color: Colors.black12,
+          ));
       return Column(
         children: commentWidget,
       );
-    }else{
+    } else {
       return Container(
-        child: Text("暂无数据"),
+        margin: EdgeInsets.all(AdaptiveTools.setPx(10)),
+        child: Text(
+          "还没有评论",
+          style: TextStyle(fontSize: AdaptiveTools.setPx(16)),
+        ),
       );
+    }
+  }
+
+  Widget image(List<String> images) {
+    Widget imageWidget;
+    switch (images.length) {
+      case 1:
+        imageWidget = Container(
+          margin: EdgeInsets.only(top: 10),
+          height: AdaptiveTools.setPx(165),
+          width: AdaptiveTools.setPx(165),
+          decoration: BoxDecoration(
+            image: DecorationImage(
+                image: NetworkImage(images[0]), fit: BoxFit.cover),
+            border: Border.all(color: Colors.black26),
+          ),
+        );
+        break;
+      case 2:
+        imageWidget = Row(
+          children: <Widget>[
+            Container(
+              margin: EdgeInsets.only(top: 10,bottom: 5),
+              height: AdaptiveTools.setPx(165),
+              width: AdaptiveTools.setPx(150),
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: NetworkImage(images[0]), fit: BoxFit.cover),
+                border: Border.all(color: Colors.black26),
+              ),
+            ),
+            SizedBox(width: AdaptiveTools.setPx(10),),
+            Container(
+              margin: EdgeInsets.only(top: 10,bottom: 5),
+              height: AdaptiveTools.setPx(165),
+              width: AdaptiveTools.setPx(150),
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: NetworkImage(images[1]), fit: BoxFit.cover),
+                border: Border.all(color: Colors.black26),
+              ),
+            )
+          ],
+        );
+        break;
+      default:
+        imageWidget = Container(
+          height: 0,
+          width: 0,
+        );
+        break;
+    }
+    return imageWidget;
+  }
+
+  Future<void> sendComeent(PostItem item) async {
+    PostCommentItem commentItem = await PostDao.sendComment(
+        context, item.id, _commentEditingController.text,fileList);
+    setState(() {
+      _postCommentModel.content.insert(0, commentItem);
+      _commentEditingController.text = "";
+      fileList.clear();
+    });
+  }
+
+  Future<void> ilikePost(String postId, bool flag) async {
+    String result = await PostDao.postILike(context, flag, postId);
+    if (result == "success") {
+      setState(() {
+        widget.item.islike = true;
+      });
     }
   }
 
@@ -178,7 +289,137 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
           flex: 1,
           child: InkWell(
             onTap: () {
-              print("clicked...");
+              showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return Container(
+                      child: Padding(
+                        child: Container(
+                          child: Column(
+                            children: <Widget>[
+                              Row(
+                                children: <Widget>[
+                                  Expanded(
+                                      child: Container(
+                                        child: TextField(
+                                          autofocus: true,
+                                          decoration: InputDecoration(
+                                              enabledBorder: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black38)),
+                                              focusedBorder: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                      color: Colors.black38)),
+                                              contentPadding: EdgeInsets.all(10),
+                                              hintText: "请输入你的评论"),
+                                          maxLines: 4,
+                                          controller: _commentEditingController,
+                                        ),
+                                        padding: EdgeInsets.all(3),
+                                      )),
+                                  Container(
+                                    child: Column(
+                                      children: <Widget>[
+                                        InkWell(
+                                          child: Container(
+                                            child: Image.asset("images/Unfold.png"),
+                                          ),
+                                          onTap: () {
+                                            print("Unfold");
+                                          },
+                                        ),
+                                        SizedBox(height: AdaptiveTools.setPx(27),),
+                                        InkWell(
+                                          child: Container(
+                                            child: Text("发送",style: TextStyle(color: Colors.white),),
+                                            decoration: BoxDecoration(
+                                                border: Border.all(color: Colors.black54),
+                                              color: Colors.black54
+                                            ),
+                                            padding: EdgeInsets.all(5),
+                                          ),
+                                          onTap: () {
+                                            print("send");
+                                            if (_commentEditingController.text.length !=
+                                                0) {
+                                              sendComeent(item);
+                                              Navigator.pop(context);
+                                            }
+                                          },
+                                        )
+                                      ],
+                                    ),
+                                    margin: EdgeInsets.all(3),
+                                  )
+                                ],
+                              ),
+                              Container(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                                    InkWell(
+                                      child: Stack(
+                                        children: <Widget>[
+                                          Container(
+                                            child: Image.asset("images/icon_image.webp"),
+                                            height:AdaptiveTools.setPx(23),
+                                            margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
+                                          ),
+                                          fileList.length != 0 ? Container(
+                                            child: Text(fileList.length.toString(),style: TextStyle(fontSize: AdaptiveTools.setPx(9),color: Colors.white),),
+                                            margin: EdgeInsets.only(left: AdaptiveTools.setPx(17)),
+                                            decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.all(Radius.circular(50)),
+                                                border: Border.all(color: Colors.red),
+                                                color: Colors.red
+                                            ),
+                                            padding:EdgeInsets.only(left: AdaptiveTools.setPx(3)),
+                                            height: AdaptiveTools.setPx(13),
+                                            width: AdaptiveTools.setPx(13),
+                                          ):Container(height: 0,width: 0,)
+                                        ],
+                                      ),
+                                      onTap: (){
+                                        _loadAssets();
+                                      },
+                                    ),
+                                    Container(
+                                      child: Image.asset("images/icon_mention.png"),
+                                      height:AdaptiveTools.setPx(23),
+                                      margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
+                                    ),
+                                    Container(
+                                      child: Image.asset("images/icon_topic.png"),
+                                      height:AdaptiveTools.setPx(23),
+                                      margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
+                                    ),
+                                    Container(
+                                      child: Image.asset("images/icon_gif.png"),
+                                      height:AdaptiveTools.setPx(23),
+                                      margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
+                                    ),
+                                    Container(
+                                      child: Image.asset("images/icon_emotion.png"),
+                                      height:AdaptiveTools.setPx(23),
+                                      margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
+                                    ),
+                                    Container(
+                                      child: Image.asset("images/icon_add.png"),
+                                      height:AdaptiveTools.setPx(23),
+                                      margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
+                          height: AdaptiveTools.setPx(130),
+                        ),
+                        padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom),
+                      ),
+                    );
+                  });
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -206,6 +447,10 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
           child: InkWell(
             onTap: () {
               print("clicked...");
+              if (item.islike == false) {
+                PostDao.postILike(context, true, item.id);
+                setState(() {});
+              }
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -230,5 +475,24 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
         )
       ],
     );
+  }
+
+  // 打开系统相册
+  Future<void> _loadAssets() async {
+    List<Asset> resultList = fileList;
+    try {
+      resultList = await MultiImagePicker.pickImages(
+        selectedAssets: fileList,
+        maxImages: 2, //最多9张
+        enableCamera: true,
+      );
+    } catch (e) {
+      print(e.toString());
+    }
+    if(mounted) {
+      setState(() {
+        fileList = resultList;
+      });
+    }
   }
 }

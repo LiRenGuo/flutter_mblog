@@ -10,6 +10,13 @@ class Shared_pre {
     return Token;
   }
 
+  static Future<String> Shared_getId() async {
+    var id;
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    id = preferences.getString(Constants.Shared_Id);
+    return id;
+  }
+
   static Future<String> Shared_setToken(String token) async {
     var Token;
     SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -26,12 +33,14 @@ class Shared_pre {
 
   static Future<UserModel> Shared_getUser() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
+    String id = preferences.get(Constants.Shared_Id);
     String email = preferences.get(Constants.Shared_Email);
     String username = preferences.get(Constants.Shared_Username);
     String mobile = preferences.get(Constants.Shared_Mobile);
     String name = preferences.get(Constants.Shared_Name);
     String avatar = preferences.get(Constants.Shared_Avatar);
     return UserModel(
+        id:id,
         mobile: mobile,
         email: email,
         username: username,
@@ -47,6 +56,7 @@ class Shared_pre {
     preferences.setString(Constants.Shared_Name, model.name);
     preferences.setString(Constants.Shared_Username, model.username);
     preferences.setString(Constants.Shared_Avatar, model.avatar);
+    preferences.setString(Constants.Shared_Id, model.id);
   }
 
   static Future<String> Shared_deleteUser() async {

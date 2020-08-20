@@ -77,6 +77,24 @@ class _PostCardState extends State<PostCard> {
                         )
                       ],
                     ),
+                  ),
+                  Expanded(
+                    child: Align(
+                        alignment: Alignment.centerRight,
+                        child: GestureDetector(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(color: Colors.orange),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '+ 关注',
+                              style: TextStyle(color: Colors.orange, fontSize: 12),
+                            ),
+                          ),
+                        )),
                   )
                 ],
               ),
@@ -193,7 +211,9 @@ class _PostCardState extends State<PostCard> {
           flex: 1,
           child: InkWell(
             onTap: () {
-              print("clicked...");
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => HomeDetailPage(item)
+              ));
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,

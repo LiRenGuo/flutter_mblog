@@ -16,8 +16,9 @@ class PostCard extends StatefulWidget {
 
   final PostItem item;
   final int index;
+  final String userId;
 
-  const PostCard({Key key, this.item, this.index}) : super(key: key);
+  const PostCard({Key key, this.item, this.index, this.userId}) : super(key: key);
 
   @override
   _PostCardState createState() => _PostCardState();
@@ -78,24 +79,7 @@ class _PostCardState extends State<PostCard> {
                       ],
                     ),
                   ),
-                  Expanded(
-                    child: Align(
-                        alignment: Alignment.centerRight,
-                        child: GestureDetector(
-                          child: Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(color: Colors.orange),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '+ 关注',
-                              style: TextStyle(color: Colors.orange, fontSize: 12),
-                            ),
-                          ),
-                        )),
-                  )
+                  _buildAttention()
                 ],
               ),
             ),
@@ -120,6 +104,30 @@ class _PostCardState extends State<PostCard> {
             _bottomAction()
           ],
         ));
+  }
+
+  _buildAttention() {
+    print(widget.userId);
+    print(item.user.id);
+    print(widget.userId != item.user.id);
+    return widget.userId != item.user.id ? Expanded(
+      child: Align(
+          alignment: Alignment.centerRight,
+          child: GestureDetector(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.orange),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '+ 关注',
+                style: TextStyle(color: Colors.orange, fontSize: 12),
+              ),
+            ),
+          )),
+    ) : Container();
   }
 
   _photoItem(BuildContext context) {

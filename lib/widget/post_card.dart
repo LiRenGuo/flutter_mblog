@@ -264,10 +264,10 @@ class _PostCardState extends State<PostCard> {
     Timer(const Duration(milliseconds: 200), () {
       if(postItem.islike) {
         print("dislike...");
-        PostDao.dislike(item.id);
+        PostDao.dislike(postItem.id);
       } else {
         print("like...${item.id}");
-        PostDao.like(item.id);
+        PostDao.like(postItem.id);
       }
       postItem.likeCount = postItem.islike ? item.likeCount + 1 : item.likeCount - 1;
       postItem.islike = !postItem.islike;

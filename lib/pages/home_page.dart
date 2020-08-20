@@ -133,6 +133,7 @@ class _HomePageState extends State<HomePage> {
           _isRequesting = false;
           _hasMore = page < postModel.totalPages;
         });
+        print("item = ${items[0].content}");
       }
     } catch(e) {
       _loading = false;
@@ -141,8 +142,10 @@ class _HomePageState extends State<HomePage> {
 
   }
 
-  Future<Null> _handleRefresh() async {
-    _loadData();
+  Future<void> _handleRefresh() async {
+    setState(() {
+      _loadData();
+    });
   }
 
   Future _loadLoginUser() async {

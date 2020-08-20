@@ -1,19 +1,38 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/my_page.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/widget/image_all_screen_look.dart';
-
+import 'package:like_button/like_button.dart';
 import 'fade_route.dart';
 
-class PostCard extends StatelessWidget {
+class PostCard extends StatefulWidget {
+
   final PostItem item;
   final int index;
 
   const PostCard({Key key, this.item, this.index}) : super(key: key);
+
+  @override
+  _PostCardState createState() => _PostCardState();
+}
+
+class _PostCardState extends State<PostCard> {
+  PostItem item;
+  int index;
+
+  @override
+  void initState() {
+    this.item = widget.item;
+    this.index = widget.index;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +89,7 @@ class PostCard extends StatelessWidget {
                     child: _content(context),
                     onTap: () {
                       Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => HomeDetailPage(item)));
+                          builder: (context) => HomeDetailPage(item)));
                     },
                   ),
                 ),
@@ -100,15 +119,15 @@ class PostCard extends StatelessWidget {
       );
     } else {
       return Container(
-          margin: EdgeInsets.only(top: 10),
-          child: GridView.count(
-              shrinkWrap: true,
-              crossAxisCount: 3,
-              mainAxisSpacing: 5,
-              crossAxisSpacing: 5,
-              physics: NeverScrollableScrollPhysics(),
-              children: _buildList(context)),
-        );
+        margin: EdgeInsets.only(top: 10),
+        child: GridView.count(
+            shrinkWrap: true,
+            crossAxisCount: 3,
+            mainAxisSpacing: 5,
+            crossAxisSpacing: 5,
+            physics: NeverScrollableScrollPhysics(),
+            children: _buildList(context)),
+      );
     }
   }
 
@@ -199,33 +218,62 @@ class PostCard extends StatelessWidget {
         ),
         Flexible(
           flex: 1,
-          child: InkWell(
-            onTap: () {
-              print("clicked...");
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Image.asset(
-                  item.islike
-                      ? 'images/ic_home_liked.webp'
-                      : 'images/ic_home_like.webp',
-                  width: 22,
-                  height: 22,
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 4),
-                  child: Text(
-                      item.likeCount == 0 ? '赞' : item.likeCount.toString(),
-                      style: TextStyle(color: Colors.black, fontSize: 13)),
-                )
-              ],
-            ),
-          ),
+          child: _buildLikeButton(),
         )
       ],
     );
+  }
+
+  _buildLikeButton() {
+    return LikeButton(
+      size: 22,
+      onTap: (bool isLiked) {
+        return onLike(isLiked, item);
+      },
+      likeBuilder: (bool isLiked){
+        return Image.asset(item.islike ? 'images/ic_home_liked.webp' : 'images/ic_home_like.webp');
+      },
+      isLiked: item.islike,
+      likeCount: item.likeCount,
+      countBuilder: (int count, bool isLiked, String text) {
+        final ColorSwatch<int> color = isLiked ? Colors.pinkAccent : Colors.grey;
+        Widget result;
+        if (count == 0) {
+          result = Text(
+            '赞',
+            style: TextStyle(color: color),
+          );
+        } else
+          result = Text(
+            count >= 1000
+                ? (count / 1000.0).toStringAsFixed(1) + 'k'
+                : text,
+            style: TextStyle(color: color),
+          );
+
+        return result;
+      },
+      likeCountAnimationType: item.likeCount < 1000
+          ? LikeCountAnimationType.part
+          : LikeCountAnimationType.none,
+    );
+  }
+
+  Future<bool> onLike(bool isLiked, PostItem postItem) {
+    final Completer<bool> completer = new Completer<bool>();
+    Timer(const Duration(milliseconds: 200), () {
+      if(postItem.islike) {
+        print("dislike...");
+        PostDao.dislike(item.id);
+      } else {
+        print("like...${item.id}");
+        PostDao.like(item.id);
+      }
+      postItem.likeCount = postItem.islike ? item.likeCount + 1 : item.likeCount - 1;
+      postItem.islike = !postItem.islike;
+      completer.complete(postItem.islike);
+    });
+    return completer.future;
   }
 
   _content(BuildContext context) {
@@ -236,15 +284,15 @@ class PostCard extends StatelessWidget {
       content = content.substring(0, 148) + ' ... ';
       return RichText(
           text: TextSpan(
-        children: [
-          TextSpan(text: content, style: contentStyle),
-          TextSpan(
-              text: '全文',
-              style: TextStyle(color: Colors.blue, fontSize: 16),
-              recognizer: TapGestureRecognizer()
-                ..onTap = () => _tapRecognizer(context))
-        ],
-      ));
+            children: [
+              TextSpan(text: content, style: contentStyle),
+              TextSpan(
+                  text: '全文',
+                  style: TextStyle(color: Colors.blue, fontSize: 16),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () => _tapRecognizer(context))
+            ],
+          ));
     }
     return Text(content, style: contentStyle);
   }

@@ -14,6 +14,7 @@ const POST_LIST_URL = "http://mblog.yunep.com/api/post";
 const POST_COMMENT_URL = "http://mblog.yunep.com/api/comment/post/";
 const POST_PUBLISH_URL = "http://mblog.yunep.com/api/post";
 const MY_POST_LIST_URL = "http://mblog.yunep.com/api/post/my";
+const LIKE_URL = 'http://mblog.yunep.com/api/post/like'; //点赞接口
 
 class PostDao {
 
@@ -64,5 +65,13 @@ class PostDao {
       return result.data;
     });
     return response;
+  }
+
+  static Future like(String id) {
+    return NetUtils.get('$LIKE_URL/$id');
+  }
+
+  static Future dislike(String id) {
+    return NetUtils.delete('$LIKE_URL/$id');
   }
 }

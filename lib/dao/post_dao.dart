@@ -16,14 +16,13 @@ const POST_LIST_URL = "http://mblog.yunep.com/api/post";
 const POST_COMMENT_URL = "http://mblog.yunep.com/api/comment/post/";
 const POST_PUBLISH_URL = "http://mblog.yunep.com/api/post";
 const MY_POST_LIST_URL = "http://mblog.yunep.com/api/post/my";
+const LIKE_URL = 'http://mblog.yunep.com/api/post/like'; //点赞接口
 const SEND_COMMENT = "http://mblog.yunep.com/api/post/";
-const POST_IILKE = 'http://mblog.yunep.com/api/post/like'; //点赞接口
 
 class PostDao {
   static Future<PostModel> getList(int page, int pageSize) async {
-    final response = await dio
-        .get(POST_LIST_URL, queryParameters: {"page": page, "size": pageSize});
-    if (response.statusCode == 200) {
+    final response = await dio.get(POST_LIST_URL, queryParameters: { "page": page, "size": pageSize});
+    if(response.statusCode == 200) {
       final responseData = response.data;
       return PostModel.fromJson(responseData);
     } else {
@@ -93,30 +92,6 @@ class PostDao {
     }
   }
 
-  static Future<String> postILike(
-      BuildContext context, bool flag, String postId) async {
-    String token = await Shared_pre.Shared_getToken();
-    Options options = Options(headers: {"Authorization": "Bearer $token"});
-
-    var response;
-    if (flag == true) { // 喜欢
-      response = await dio.get(POST_IILKE + "/$postId", options: options);
-    } else if(flag == false){ // 取消喜欢
-      response = await dio.delete(POST_IILKE + "/$postId", options: options);
-    }else{
-      throw Exception("like error");
-    }
-    print(response.statusCode);
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      print("成功");
-      return "success";
-    } else if (response.statusCode == 401) {
-      Oauth_2.ResToken(context);
-    } else {
-      throw Exception("like error");
-    }
-  }
-
   static Future<MyPostModel> getMyPostList(
       BuildContext context, int page) async {
     try {
@@ -140,10 +115,17 @@ class PostDao {
   static Future publish(FormData formData) async {
     final response = Shared_pre.Shared_getToken().then((token) async {
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
-      var result =
-          await dio.post(POST_PUBLISH_URL, data: formData, options: options);
+      var result = await dio.post(POST_PUBLISH_URL, data: formData, options: options);
       return result.data;
     });
     return response;
+  }
+
+  static Future like(String id) {
+    return NetUtils.get('$LIKE_URL/$id');
+  }
+
+  static Future dislike(String id) {
+    return NetUtils.delete('$LIKE_URL/$id');
   }
 }

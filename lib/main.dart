@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/navigator/tab_navigator.dart';
+import 'package:flutter_mblog/pages/animation_hero.dart';
 import 'package:flutter_mblog/pages/edit_mine_page.dart';
 import 'package:flutter_mblog/pages/login_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
@@ -15,6 +16,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        primaryColor: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: SafeArea(

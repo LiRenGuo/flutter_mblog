@@ -3,10 +3,12 @@ import 'dart:typed_data';
 
 import 'package:device_info/device_info.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/pages/home_page.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
+import 'package:flutter_mblog/widget/loading_container.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 
 class PostPublishPage extends StatefulWidget {
@@ -24,6 +26,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
   TextEditingController _contentController = TextEditingController();
   List<Asset> fileList = List<Asset>();
   File selectedImageFile;
+  bool _loading = false;
 
   @override
   void initState() {
@@ -44,6 +47,14 @@ class _PostPublishPageState extends State<PostPublishPage> {
         elevation: 0,
         iconTheme: IconThemeData(color: Theme.of(context).primaryColor),
         backgroundColor: Colors.white,
+        leading: GestureDetector(
+          child: BackButton(
+            onPressed: (){
+              Navigator.of(context).pop();
+              FocusScope.of(context).requestFocus(FocusNode()); //收起键盘
+            },
+          ),
+        ),
         actions: <Widget>[
           Container(
             padding: EdgeInsets.all(10),
@@ -77,12 +88,16 @@ class _PostPublishPageState extends State<PostPublishPage> {
         children: <Widget>[
           Expanded(
             child: Stack(
+              alignment: Alignment.center,
               children: <Widget>[
                 ListView(
                   children: <Widget>[
                     _buildTextContent(),
-                    _buildGridImage()
+                    _buildGridImage(),
                   ],
+                ),
+                Positioned(
+                  child: LoadingContainer(isLoading: _loading, child: Container()),
                 ),
               ],
             ),
@@ -238,7 +253,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
               maxLines: 100,
               controller: _contentController,
             ),
-          )
+          ),
         ],
       ),
     );
@@ -264,29 +279,43 @@ class _PostPublishPageState extends State<PostPublishPage> {
       MyToast.show('请输入您的新鲜事~');
       return;
     }
-    FormData formData = FormData();
-    formData.fields.add(MapEntry("content", content));
-    print("设备型号：$devicemodel");
-    formData.fields.add(MapEntry("devicemodel", devicemodel));
+    try {
+      FormData formData = FormData();
+      setState(() {
+        _loading = true;
+      });
+      formData.fields.add(MapEntry("content", content));
+      print("设备型号：$devicemodel");
+      formData.fields.add(MapEntry("devicemodel", devicemodel));
 
-    fileList.forEach((image) async {
-      ByteData byteData = await image.getByteData(quality: 2);
-      List<int> imageData = byteData.buffer.asUint8List();
-      String name = image.name;
-      MultipartFile multipartFile = MultipartFile.fromBytes(
-        imageData,
-        filename: name,
-      );
-      MapEntry<String, MultipartFile> file = MapEntry("files", multipartFile);
-      formData.files.add(file);
-      if(formData.files.length == fileList.length) {
-        //发布帖子
-        await PostDao.publish(formData);
-        Navigator.push(context, MaterialPageRoute(
-          builder: (content) => HomePage()
-        ));
-      }
-    });
+      Iterable.generate(fileList.length).forEach((index) async {
+        Asset image = fileList[index];
+        ByteData byteData = await image.getByteData(quality: 2);
+        List<int> imageData = byteData.buffer.asUint8List();
+        String name = "$index.jpg";
+        MultipartFile multipartFile = MultipartFile.fromBytes(
+          imageData,
+          filename: name,
+        );
+        MapEntry<String, MultipartFile> file = MapEntry("files", multipartFile);
+        formData.files.add(file);
+        if(formData.files.length == fileList.length) {
+          print("images =${formData.files}");
+          //发布帖子
+          await PostDao.publish(formData);
+          setState(() {
+            _loading = false;
+          });
+          Navigator.push(context, MaterialPageRoute(
+              builder: (content) => HomePage()
+          ));
+        }
+      });
+    } catch(e) {
+      setState(() {
+        _loading = false;
+      });
+    }
   }
 
   Future getDeviceInfo() async {

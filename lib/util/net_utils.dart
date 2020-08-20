@@ -11,32 +11,32 @@ var dio = new Dio();
 class NetUtils {
 
   static Future get(String url, {Map<String, dynamic> params}) async {
-    var responseToken;
-    responseToken = await Shared_pre.Shared_getToken().then((aa) async {
-      Options options = Options(headers: {'Authorization': 'Bearer $aa'});
+    var response;
+    response = await Shared_pre.Shared_getToken().then((token) async {
+      Options options = Options(headers: {'Authorization': 'Bearer $token'});
       try {
-        var response = await dio.get(url, options: options);
-        return response.data;
+        var result = await dio.get(url, options: options);
+        return result.data;
       } on DioError catch (a) {
         return a.response.statusCode;
       }
     });
-    return responseToken;
+    return response;
   }
 
   static Future delete(String url) async {
-    var responseaa;
-    responseaa = await Shared_pre.Shared_getToken().then((aa) async {
-      Options options = Options(headers: {'Authorization': 'Bearer $aa'});
+    var response;
+    response = await Shared_pre.Shared_getToken().then((token) async {
+      Options options = Options(headers: {'Authorization': 'Bearer $token'});
       try {
-        var response = await dio.delete(url, options: options);
-        return response.data;
+        var result = await dio.delete(url, options: options);
+        return result.data;
       } on DioError catch (a) {
         return a.response.statusCode;
       }
     });
 
-    return responseaa;
+    return response;
   }
 
   static Future postcode(String url, {Map<String, dynamic> params, options}) async {

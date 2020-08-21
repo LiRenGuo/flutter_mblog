@@ -164,7 +164,7 @@ class _MinePageState extends State<MinePage>
                             Container(
                               height: AdaptiveTools.setPx(150),
                               width: MediaQuery.of(context).size.width,
-                              child: Image.network(
+                              child: _userModel.banner == null ?Container(color: Colors.black54,):Image.network(
                                 _userModel.banner,
                                 fit: BoxFit.cover,
                               ),

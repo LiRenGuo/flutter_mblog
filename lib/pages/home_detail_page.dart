@@ -370,7 +370,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
               showModalBottomSheet(
                   context: context,
                   builder: (context) {
-                    return Container(
+                    return SingleChildScrollView(
                       child: Padding(
                         child: Container(
                           child: Column(
@@ -491,10 +491,11 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                               )
                             ],
                           ),
-                          height: AdaptiveTools.setPx(130),
+                          height: AdaptiveTools.setPx(140),
                         ),
                         padding: EdgeInsets.only(
                             bottom: MediaQuery.of(context).viewInsets.bottom),
+
                       ),
                     );
                   });

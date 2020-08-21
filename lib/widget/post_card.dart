@@ -107,9 +107,6 @@ class _PostCardState extends State<PostCard> {
   }
 
   _buildAttention() {
-    print(widget.userId);
-    print(item.user.id);
-    print(widget.userId != item.user.id);
     return widget.userId != item.user.id ? Expanded(
       child: Align(
           alignment: Alignment.centerRight,

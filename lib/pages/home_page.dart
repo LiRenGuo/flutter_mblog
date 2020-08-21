@@ -133,7 +133,6 @@ class _HomePageState extends State<HomePage> {
           _isRequesting = false;
           _hasMore = page < postModel.totalPages;
         });
-        print("item = ${items[0].content}");
       }
     } catch(e) {
       _loading = false;

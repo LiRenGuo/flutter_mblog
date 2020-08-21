@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/login_page.dart';
@@ -20,9 +21,10 @@ class Oauth_2 {
       var client = await oauth2.resourceOwnerPasswordGrant(
           authorizationEndpoint, username, password,
           identifier: identifier, basicAuth: true, secret: secret);
-      String result = await client.read(Test.AuthServer);
-      Map parsed = json.decode(result);
-      print(result);
+      Uint8List result = await client.readBytes(Test.AuthServer);
+      Utf8Decoder utf8decoder = Utf8Decoder();
+      Map parsed = json.decode(utf8decoder.convert(result));
+//      print(parsed);
       print(">>>>>>刷新token"+client.credentials.refreshToken);
       Shared_pre.Shared_setUser(UserModel.fromJson(parsed));
       Shared_pre.Shared_setToken(client.credentials.accessToken);

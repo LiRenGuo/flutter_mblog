@@ -48,7 +48,7 @@ class MyDrawer extends StatelessWidget {
               ),
             ),
             Text(
-              userModel.name ??'未设置',
+              userModel.name,
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.black,

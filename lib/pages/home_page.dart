@@ -149,6 +149,7 @@ class _HomePageState extends State<HomePage> {
 
   Future _loadLoginUser() async {
     userModel = await Shared_pre.Shared_getUser();
+    print('aa = ${userModel.name}');
   }
 
   Widget _userAvatar(String avatar) {

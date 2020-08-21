@@ -16,6 +16,7 @@ const POST_LIST_URL = "http://mblog.yunep.com/api/post";
 const POST_COMMENT_URL = "http://mblog.yunep.com/api/comment/post/";
 const POST_PUBLISH_URL = "http://mblog.yunep.com/api/post";
 const MY_POST_LIST_URL = "http://mblog.yunep.com/api/post/my";
+const YOUR_POST_LIST_URL = "http://mblog.yunep.com/api/post/user/";
 const LIKE_URL = 'http://mblog.yunep.com/api/post/like'; //点赞接口
 const SEND_COMMENT = "http://mblog.yunep.com/api/post/";
 
@@ -99,6 +100,26 @@ class PostDao {
       String token = await Shared_pre.Shared_getToken();
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
       final response = await dio.get(MY_POST_LIST_URL,
+          options: options, queryParameters: {"page": page});
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+        return MyPostModel.fromJson(responseData);
+      } else if (response.statusCode == 401) {
+        Oauth_2.ResToken(context);
+      } else {
+        throw Exception("loading data error.....");
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  static Future<MyPostModel> getYourPostList(
+      BuildContext context,String userid, int page) async {
+    try {
+      String token = await Shared_pre.Shared_getToken();
+      Options options = Options(headers: {'Authorization': 'Bearer $token'});
+      final response = await dio.get(YOUR_POST_LIST_URL+"$userid",
           options: options, queryParameters: {"page": page});
       if (response.statusCode == 200) {
         final responseData = response.data;

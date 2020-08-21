@@ -83,6 +83,10 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                 ),
               ),
               Container(
+                height: 1,
+                color: Colors.black12,
+              ),
+              Container(
                 child: _bottomAction(widget.item),
                 height: 58,
               )

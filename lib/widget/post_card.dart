@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/pages/home_detail_page.dart';
+import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/my_page.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/widget/image_all_screen_look.dart';
@@ -45,41 +46,46 @@ class _PostCardState extends State<PostCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Container(
-              margin: EdgeInsets.only(bottom: 10),
-              child: Row(
-                children: <Widget>[
-                  CircleAvatar(
-                    backgroundImage: NetworkImage(item.user.avatar),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(left: 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(item.user.name,
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                        Padding(
-                          padding: EdgeInsets.only(top: 5),
-                          child: Row(
-                            children: <Widget>[
-                              Text(TimeUtil.parse(item.ctime.toString()),
-                                  style: TextStyle(
-                                      color: Colors.grey, fontSize: 12)),
-                              Padding(
-                                padding: EdgeInsets.only(left: 10),
-                                child: Text('来自 ${item.devicemodel}',
+            InkWell(
+              child: Container(
+                margin: EdgeInsets.only(bottom: 10),
+                child: Row(
+                  children: <Widget>[
+                    CircleAvatar(
+                      backgroundImage: NetworkImage(item.user.avatar),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(left: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(item.user.name,
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          Padding(
+                            padding: EdgeInsets.only(top: 5),
+                            child: Row(
+                              children: <Widget>[
+                                Text(TimeUtil.parse(item.ctime.toString()),
                                     style: TextStyle(
                                         color: Colors.grey, fontSize: 12)),
-                              )
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  )
-                ],
+                                Padding(
+                                  padding: EdgeInsets.only(left: 10),
+                                  child: Text('来自 ${item.devicemodel}',
+                                      style: TextStyle(
+                                          color: Colors.grey, fontSize: 12)),
+                                )
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
+              onTap: (){
+                Navigator.of(context).push(MaterialPageRoute(builder: (context) => MinePage(userid: item.user.id,)));
+              },
             ),
             Column(
               children: <Widget>[

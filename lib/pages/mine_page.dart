@@ -16,6 +16,11 @@ import 'package:like_button/like_button.dart';
 import '../dao/user_dao.dart';
 
 class MinePage extends StatefulWidget {
+  String userid;
+  String loginUserId;
+
+  MinePage({this.userid,this.loginUserId});
+
   @override
   _MinePageState createState() => _MinePageState();
 }
@@ -53,14 +58,24 @@ class _MinePageState extends State<MinePage>
   }
 
   _getMyPostListNo(int page) async {
-    MyPostModel myPostModel = await PostDao.getMyPostList(context, page);
+    MyPostModel myPostModel;
+    if (widget.userid != null) {
+      myPostModel = await PostDao.getYourPostList(context, widget.userid, page);
+    } else {
+      myPostModel = await PostDao.getMyPostList(context, page);
+    }
     setState(() {
       _myPostModel.addAll(myPostModel.itemList);
     });
   }
 
   _getUserInfo() async {
-    UserModel info = await UserDao.getUserInfo(context);
+    UserModel info;
+    if (widget.userid != null) {
+      info = await UserDao.getUserInfoByUserId(widget.userid, context);
+    } else {
+      info = await UserDao.getUserInfo(context);
+    }
     setState(() {
       _userModel = info;
       isok = true;
@@ -68,7 +83,13 @@ class _MinePageState extends State<MinePage>
   }
 
   _getMyPostList() async {
-    MyPostModel myPostModel = await PostDao.getMyPostList(context, page);
+    MyPostModel myPostModel;
+    if (widget.userid != null) {
+      myPostModel = await PostDao.getYourPostList(context, widget.userid, page);
+    } else {
+      myPostModel = await PostDao.getMyPostList(context, page);
+    }
+
     setState(() {
       _myPostModel = myPostModel.itemList;
       totalElements = myPostModel.totalElements;
@@ -87,6 +108,7 @@ class _MinePageState extends State<MinePage>
 
   @override
   Widget build(BuildContext context) {
+    print(_userModel.id);
     if (isok) {
       setState(() {
         int i = 0;
@@ -164,7 +186,7 @@ class _MinePageState extends State<MinePage>
                                         bottom: AdaptiveTools.setPx(10)),
                                   ),
                                   Container(
-                                    child: RaisedButton(
+                                    child: widget.userid == widget.loginUserId ?RaisedButton(
                                       color: Colors.white,
                                       textColor: Colors.blue,
                                       child: Text(
@@ -175,13 +197,29 @@ class _MinePageState extends State<MinePage>
                                       ),
                                       shape: RoundedRectangleBorder(
                                           borderRadius:
-                                              BorderRadius.circular(20),
+                                          BorderRadius.circular(20),
                                           side: BorderSide(color: Colors.blue)),
                                       onPressed: () {
                                         Navigator.of(context).push(
                                             MaterialPageRoute(
                                                 builder: (context) =>
                                                     EditMinePage()));
+                                      },
+                                    ) :RaisedButton(
+                                      color: Colors.white,
+                                      textColor: Colors.blue,
+                                      child: Text(
+                                        "关注",
+                                        style: TextStyle(
+                                            fontSize: AdaptiveTools.setPx(15),
+                                            fontWeight: FontWeight.w800),
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                          BorderRadius.circular(20),
+                                          side: BorderSide(color: Colors.blue)),
+                                      onPressed: () {
+                                        print("关注");
                                       },
                                     ),
                                     margin: EdgeInsets.only(
@@ -234,7 +272,7 @@ class _MinePageState extends State<MinePage>
                                       Container(
                                         child: Image.asset(
                                             "images/ic_vector_calendar.png"),
-                                        height: AdaptiveTools.setPx(20),
+                                        height: AdaptiveTools.setPx(17),
                                       ),
                                       SizedBox(
                                         width: 4,
@@ -355,41 +393,46 @@ class Tweets extends StatelessWidget {
   Widget build(BuildContext context) {
     int i = 0;
     return Column(
-      children: _item.map((e){
-        return body(e,context);
+      children: _item.map((e) {
+        return body(e, context);
       }).toList(),
     );
   }
+
   Future<bool> onLike(bool isLiked, MyPostItem postItem) {
     final Completer<bool> completer = new Completer<bool>();
     Timer(const Duration(milliseconds: 200), () {
-      if(postItem.islike) {
+      if (postItem.islike) {
         print("dislike...");
         PostDao.dislike(postItem.id);
       } else {
         print("like...${postItem.id}");
         PostDao.like(postItem.id);
       }
-      postItem.likeCount = postItem.islike ? postItem.likeCount + 1 : postItem.likeCount - 1;
+      postItem.likeCount =
+          postItem.islike ? postItem.likeCount + 1 : postItem.likeCount - 1;
       postItem.islike = !postItem.islike;
       completer.complete(postItem.islike);
     });
     return completer.future;
-   }
+  }
 
-  _buildLikeButton( MyPostItem postItem) {
+  _buildLikeButton(MyPostItem postItem) {
     return LikeButton(
       size: 22,
       onTap: (bool isLiked) {
         return onLike(isLiked, postItem);
       },
-      likeBuilder: (bool isLiked){
-        return Image.asset(postItem.islike ? 'images/ic_home_liked.webp' : 'images/ic_home_like.webp');
+      likeBuilder: (bool isLiked) {
+        return Image.asset(postItem.islike
+            ? 'images/ic_home_liked.webp'
+            : 'images/ic_home_like.webp');
       },
       isLiked: postItem.islike,
-      likeCount:postItem.likeCount,
+      likeCount: postItem.likeCount,
       countBuilder: (int count, bool isLiked, String text) {
-        final ColorSwatch<int> color = isLiked ? Colors.pinkAccent : Colors.grey;
+        final ColorSwatch<int> color =
+            isLiked ? Colors.pinkAccent : Colors.grey;
         Widget result;
         if (count == 0) {
           result = Text(
@@ -398,9 +441,7 @@ class Tweets extends StatelessWidget {
           );
         } else
           result = Text(
-            count >= 1000
-                ? (count / 1000.0).toStringAsFixed(1) + 'k'
-                : text,
+            count >= 1000 ? (count / 1000.0).toStringAsFixed(1) + 'k' : text,
             style: TextStyle(color: color),
           );
 
@@ -412,7 +453,7 @@ class Tweets extends StatelessWidget {
     );
   }
 
-  Widget body(MyPostItem _item,BuildContext context){
+  Widget body(MyPostItem _item, BuildContext context) {
     return Padding(
       child: Column(
         children: <Widget>[
@@ -483,7 +524,7 @@ class Tweets extends StatelessWidget {
                     ),
                     Container(
                       padding: EdgeInsets.all(15),
-                      child: image(_item.photos,context),
+                      child: image(_item.photos, context),
                     ),
                     Container(
                       child: Row(
@@ -536,16 +577,15 @@ class Tweets extends StatelessWidget {
     );
   }
 
-  _showImage(BuildContext context,List<String> images, int index) {
+  _showImage(BuildContext context, List<String> images, int index) {
     Navigator.of(context).push(FadeRoute(
         page: ImageAllScreenLook(
-          imgDataArr:images,
-          index: index,
-        )
-    ));
+      imgDataArr: images,
+      index: index,
+    )));
   }
 
-  Widget image(List<String> images,BuildContext context) {
+  Widget image(List<String> images, BuildContext context) {
     Widget imageWidget;
     switch (images.length) {
       case 1:
@@ -558,7 +598,7 @@ class Tweets extends StatelessWidget {
                 border: Border.all(color: Colors.black26),
                 borderRadius: BorderRadius.all(Radius.circular(18))),
           ),
-          onTap: (){
+          onTap: () {
             _showImage(context, images, 0);
           },
         );
@@ -581,7 +621,7 @@ class Tweets extends StatelessWidget {
                             topLeft: Radius.circular(18),
                             bottomLeft: Radius.circular(18))),
                   ),
-                  onTap: (){
+                  onTap: () {
                     _showImage(context, images, 0);
                   },
                 ),
@@ -599,7 +639,7 @@ class Tweets extends StatelessWidget {
                             topRight: Radius.circular(18),
                             bottomRight: Radius.circular(18))),
                   ),
-                  onTap: (){
+                  onTap: () {
                     _showImage(context, images, 1);
                   },
                 ),
@@ -626,7 +666,7 @@ class Tweets extends StatelessWidget {
                             topLeft: Radius.circular(18),
                             bottomLeft: Radius.circular(18))),
                   ),
-                  onTap: (){
+                  onTap: () {
                     _showImage(context, images, 0);
                   },
                 ),
@@ -647,7 +687,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   topRight: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 1);
                         },
                       ),
@@ -665,7 +705,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   bottomRight: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 2);
                         },
                       ),
@@ -699,7 +739,7 @@ class Tweets extends StatelessWidget {
                                 topLeft: Radius.circular(18),
                               )),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 0);
                         },
                       ),
@@ -717,7 +757,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   bottomLeft: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 1);
                         },
                       ),
@@ -741,7 +781,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   topRight: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 2);
                         },
                       ),
@@ -759,7 +799,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   bottomRight: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 3);
                         },
                       ),
@@ -793,7 +833,7 @@ class Tweets extends StatelessWidget {
                                 topLeft: Radius.circular(18),
                               )),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 0);
                         },
                       ),
@@ -811,7 +851,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   bottomLeft: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 3);
                         },
                       ),
@@ -834,7 +874,7 @@ class Tweets extends StatelessWidget {
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 2);
                         },
                       ),
@@ -858,7 +898,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   topRight: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 1);
                         },
                       ),
@@ -867,8 +907,8 @@ class Tweets extends StatelessWidget {
                       height: 3,
                     ),
                     Expanded(
-                      child:InkWell(
-                        child:  Container(
+                      child: InkWell(
+                        child: Container(
                           decoration: BoxDecoration(
                               image: DecorationImage(
                                   image: NetworkImage(images[4]),
@@ -876,7 +916,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   bottomRight: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 4);
                         },
                       ),
@@ -910,7 +950,7 @@ class Tweets extends StatelessWidget {
                                 topLeft: Radius.circular(18),
                               )),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 0);
                         },
                       ),
@@ -920,7 +960,7 @@ class Tweets extends StatelessWidget {
                     ),
                     Expanded(
                       child: InkWell(
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 1);
                         },
                         child: Container(
@@ -951,7 +991,7 @@ class Tweets extends StatelessWidget {
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 2);
                         },
                       ),
@@ -960,15 +1000,15 @@ class Tweets extends StatelessWidget {
                       height: 3,
                     ),
                     Expanded(
-                      child:InkWell(
-                        child:  Container(
+                      child: InkWell(
+                        child: Container(
                           decoration: BoxDecoration(
                             image: DecorationImage(
                                 image: NetworkImage(images[3]),
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 3);
                         },
                       ),
@@ -992,7 +1032,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   topRight: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 4);
                         },
                       ),
@@ -1010,7 +1050,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   bottomRight: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 5);
                         },
                       ),
@@ -1044,7 +1084,7 @@ class Tweets extends StatelessWidget {
                                 topLeft: Radius.circular(18),
                               )),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 0);
                         },
                       ),
@@ -1061,7 +1101,7 @@ class Tweets extends StatelessWidget {
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 1);
                         },
                       ),
@@ -1079,7 +1119,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   bottomLeft: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 2);
                         },
                       ),
@@ -1102,7 +1142,7 @@ class Tweets extends StatelessWidget {
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 3);
                         },
                       ),
@@ -1119,7 +1159,7 @@ class Tweets extends StatelessWidget {
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 4);
                         },
                       ),
@@ -1143,7 +1183,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   topRight: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 5);
                         },
                       ),
@@ -1160,7 +1200,7 @@ class Tweets extends StatelessWidget {
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 6);
                         },
                       ),
@@ -1194,7 +1234,7 @@ class Tweets extends StatelessWidget {
                                 topLeft: Radius.circular(18),
                               )),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 0);
                         },
                       ),
@@ -1211,7 +1251,7 @@ class Tweets extends StatelessWidget {
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 1);
                         },
                       ),
@@ -1229,7 +1269,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   bottomLeft: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 2);
                         },
                       ),
@@ -1252,7 +1292,7 @@ class Tweets extends StatelessWidget {
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 3);
                         },
                       ),
@@ -1269,7 +1309,7 @@ class Tweets extends StatelessWidget {
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 4);
                         },
                       ),
@@ -1286,7 +1326,7 @@ class Tweets extends StatelessWidget {
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 5);
                         },
                       ),
@@ -1310,7 +1350,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   topRight: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 6);
                         },
                       ),
@@ -1327,7 +1367,7 @@ class Tweets extends StatelessWidget {
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 7);
                         },
                       ),
@@ -1361,7 +1401,7 @@ class Tweets extends StatelessWidget {
                                 topLeft: Radius.circular(18),
                               )),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 0);
                         },
                       ),
@@ -1378,7 +1418,7 @@ class Tweets extends StatelessWidget {
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 1);
                         },
                       ),
@@ -1396,7 +1436,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   bottomLeft: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 2);
                         },
                       ),
@@ -1419,7 +1459,7 @@ class Tweets extends StatelessWidget {
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 3);
                         },
                       ),
@@ -1436,7 +1476,7 @@ class Tweets extends StatelessWidget {
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 4);
                         },
                       ),
@@ -1453,7 +1493,7 @@ class Tweets extends StatelessWidget {
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 5);
                         },
                       ),
@@ -1477,7 +1517,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   topRight: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 6);
                         },
                       ),
@@ -1494,7 +1534,7 @@ class Tweets extends StatelessWidget {
                                 fit: BoxFit.cover),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 7);
                         },
                       ),
@@ -1512,7 +1552,7 @@ class Tweets extends StatelessWidget {
                               borderRadius: BorderRadius.only(
                                   bottomRight: Radius.circular(18))),
                         ),
-                        onTap: (){
+                        onTap: () {
                           _showImage(context, images, 8);
                         },
                       ),

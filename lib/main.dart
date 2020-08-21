@@ -1,11 +1,12 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_mblog/navigator/tab_navigator.dart';
-import 'package:flutter_mblog/pages/animation_hero.dart';
-import 'package:flutter_mblog/pages/edit_mine_page.dart';
+import 'package:flutter_mblog/pages/demo.dart';
 import 'package:flutter_mblog/pages/login_page.dart';
-import 'package:flutter_mblog/pages/mine_page.dart';
 
-void main() {
+List<CameraDescription> cameras;
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  cameras = await availableCameras();
   runApp(MyApp());
 }
 

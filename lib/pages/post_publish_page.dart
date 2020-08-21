@@ -287,35 +287,41 @@ class _PostPublishPageState extends State<PostPublishPage> {
       formData.fields.add(MapEntry("content", content));
       print("设备型号：$devicemodel");
       formData.fields.add(MapEntry("devicemodel", devicemodel));
-
-      Iterable.generate(fileList.length).forEach((index) async {
-        Asset image = fileList[index];
-        ByteData byteData = await image.getByteData(quality: 2);
-        List<int> imageData = byteData.buffer.asUint8List();
-        String name = "$index.jpg";
-        MultipartFile multipartFile = MultipartFile.fromBytes(
-          imageData,
-          filename: name,
-        );
-        MapEntry<String, MultipartFile> file = MapEntry("files", multipartFile);
-        formData.files.add(file);
-        if(formData.files.length == fileList.length) {
-          print("images =${formData.files}");
-          //发布帖子
-          await PostDao.publish(formData);
-          setState(() {
-            _loading = false;
-          });
-          Navigator.push(context, MaterialPageRoute(
-              builder: (content) => HomePage()
-          ));
-        }
-      });
+      if(fileList.length > 0) {
+        Iterable.generate(fileList.length).forEach((index) async {
+          Asset image = fileList[index];
+          ByteData byteData = await image.getByteData(quality: 2);
+          List<int> imageData = byteData.buffer.asUint8List();
+          String name = "$index.jpg";
+          MultipartFile multipartFile = MultipartFile.fromBytes(
+            imageData,
+            filename: name,
+          );
+          MapEntry<String, MultipartFile> file = MapEntry("files", multipartFile);
+          formData.files.add(file);
+          if(formData.files.length == fileList.length) {
+            _publishApi(context, formData);
+          }
+        });
+      } else {
+        _publishApi(context, formData);
+      }
     } catch(e) {
       setState(() {
         _loading = false;
       });
     }
+  }
+
+  _publishApi(BuildContext context, FormData formData) async{
+    //发布帖子
+    await PostDao.publish(context, formData);
+    setState(() {
+      _loading = false;
+    });
+    Navigator.push(context, MaterialPageRoute(
+        builder: (content) => HomePage()
+    ));
   }
 
   Future getDeviceInfo() async {
@@ -328,7 +334,6 @@ class _PostPublishPageState extends State<PostPublishPage> {
       IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
       devicemodel = iosInfo.name;
     }
-    print("lrg = $devicemodel");
   }
 
 }

@@ -134,11 +134,16 @@ class PostDao {
     }
   }
 
-  static Future publish(FormData formData) async {
+  static Future publish(BuildContext context, FormData formData) async {
     final response = Shared_pre.Shared_getToken().then((token) async {
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
-      var result = await dio.post(POST_PUBLISH_URL, data: formData, options: options);
-      return result.data;
+      final response = await dio.post(POST_PUBLISH_URL, data: formData, options: options);
+      print("response = $response");
+
+      if(response.statusCode == 401){
+        Oauth_2.ResToken(context);
+      }
+      return response.data;
     });
     return response;
   }

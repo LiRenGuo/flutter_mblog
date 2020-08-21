@@ -17,8 +17,9 @@ class PostCard extends StatefulWidget {
 
   final PostItem item;
   final int index;
+  final String userId;
 
-  const PostCard({Key key, this.item, this.index}) : super(key: key);
+  const PostCard({Key key, this.item, this.index, this.userId}) : super(key: key);
 
   @override
   _PostCardState createState() => _PostCardState();
@@ -110,6 +111,27 @@ class _PostCardState extends State<PostCard> {
         ));
   }
 
+  _buildAttention() {
+    return widget.userId != item.user.id ? Expanded(
+      child: Align(
+          alignment: Alignment.centerRight,
+          child: GestureDetector(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.orange),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '+ 关注',
+                style: TextStyle(color: Colors.orange, fontSize: 12),
+              ),
+            ),
+          )),
+    ) : Container();
+  }
+
   _photoItem(BuildContext context) {
     if (item.photos.length == 1) {
       return GestureDetector(
@@ -199,7 +221,9 @@ class _PostCardState extends State<PostCard> {
           flex: 1,
           child: InkWell(
             onTap: () {
-              print("clicked...");
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => HomeDetailPage(item)
+              ));
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -270,10 +294,10 @@ class _PostCardState extends State<PostCard> {
     Timer(const Duration(milliseconds: 200), () {
       if(postItem.islike) {
         print("dislike...");
-        PostDao.dislike(item.id);
+        PostDao.dislike(postItem.id);
       } else {
         print("like...${item.id}");
-        PostDao.like(item.id);
+        PostDao.like(postItem.id);
       }
       postItem.likeCount = postItem.islike ? item.likeCount + 1 : item.likeCount - 1;
       postItem.islike = !postItem.islike;

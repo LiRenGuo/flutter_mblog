@@ -107,7 +107,7 @@ class _HomePageState extends State<HomePage> {
 
   _item(PostItem item, int index) {
     return Container(
-      child: PostCard(item: item, index: index),
+      child: PostCard(item: item, index: index, userId: userModel.id),
     );
   }
 
@@ -141,8 +141,10 @@ class _HomePageState extends State<HomePage> {
 
   }
 
-  Future<Null> _handleRefresh() async {
-    _loadData();
+  Future<void> _handleRefresh() async {
+    setState(() {
+      _loadData();
+    });
   }
 
   Future _loadLoginUser() async {

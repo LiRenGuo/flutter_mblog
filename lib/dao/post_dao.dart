@@ -48,7 +48,7 @@ class PostDao {
     if (fileList.isNotEmpty){
       int i = 0;
       for(Asset image in fileList){
-        ByteData byteData =  await image.getByteData(quality: 2);
+        ByteData byteData =  await image.getByteData();
         List<int> imageData = byteData.buffer.asUint8List();
         String name = "$i.jpg";
         i++;

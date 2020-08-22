@@ -290,7 +290,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
       if(fileList.length > 0) {
         Iterable.generate(fileList.length).forEach((index) async {
           Asset image = fileList[index];
-          ByteData byteData = await image.getByteData(quality: 2);
+          ByteData byteData = await image.getByteData();
           List<int> imageData = byteData.buffer.asUint8List();
           String name = "$index.jpg";
           MultipartFile multipartFile = MultipartFile.fromBytes(

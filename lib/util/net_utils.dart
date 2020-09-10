@@ -2,9 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 
 import 'dart:async';
-import 'dart:io';
-
-import 'package:shared_preferences/shared_preferences.dart';
 
 var dio = new Dio();
 
@@ -47,11 +44,12 @@ class NetUtils {
         var respose = await dio.post(url, data: params, options: options);
         if (respose.statusCode == 200) {
           return 200;
+        }else{
+          return 500;
         }
       } on DioError catch (a) {
         print(a.response.data);
         return a.response.statusCode;
-
         //  Register.fromJson(a.response);
       }
     });

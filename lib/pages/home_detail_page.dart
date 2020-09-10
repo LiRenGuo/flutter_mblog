@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:date_format/date_format.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
@@ -11,7 +9,6 @@ import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/widget/fade_route.dart';
 import 'package:flutter_mblog/widget/image_all_screen_look.dart';
-import 'package:flutter_mblog/widget/post_card.dart';
 import 'package:flutter_mblog/widget/post_detail_card.dart';
 import 'package:like_button/like_button.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
@@ -50,7 +47,6 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Container(
       child: Scaffold(
         appBar: AppBar(
@@ -103,7 +99,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
         print(e.photos.toString());
         return Container(
           child: Padding(
-            padding: EdgeInsets.all(10),
+            padding: EdgeInsets.fromLTRB(10,10,10,0),
             child: Column(
               children: <Widget>[
                 Container(
@@ -145,7 +141,12 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                           Container(
                             child: Text(e.content),
                           ),
-                          e.photos!=null && e.photos.isNotEmpty?image(e.photos):Container(width: 0,height: 0,),
+                          e.photos != null && e.photos.isNotEmpty
+                              ? image(e.photos)
+                              : Container(
+                                  width: 0,
+                                  height: 0,
+                                ),
                         ],
                       )
                     ],
@@ -166,11 +167,11 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
       commentWidget.insert(
           0,
           Container(
-            margin: EdgeInsets.fromLTRB(5, 2, 0, 3),
+            margin: EdgeInsets.fromLTRB(10, 5, 0, 5),
             alignment: Alignment.centerLeft,
             child: Text(
               "评论",
-              style: TextStyle(fontSize: AdaptiveTools.setPx(18)),
+              style: TextStyle(fontSize: AdaptiveTools.setPx(16),color: Colors.black54),
             ),
           ));
       commentWidget.insert(
@@ -183,23 +184,45 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
         children: commentWidget,
       );
     } else {
-      return Container(
-        margin: EdgeInsets.all(AdaptiveTools.setPx(10)),
-        child: Text(
-          "还没有评论",
-          style: TextStyle(fontSize: AdaptiveTools.setPx(16)),
-        ),
+      return Column(
+        children: <Widget>[
+          Container(
+            color: Colors.white,
+            child: Column(
+              children: <Widget>[
+                Container(
+                  margin: EdgeInsets.fromLTRB(10, 5, 0, 5),
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "评论",
+                    style: TextStyle(fontSize: AdaptiveTools.setPx(16),color: Colors.black54),
+                  ),
+                ),
+                Container(
+                  height: 1,
+                  color: Colors.black12,
+                )
+              ],
+            ),
+          ),
+          Container(
+            height: 200,
+            alignment: Alignment.center,
+            width: double.infinity,
+            color: Colors.white70,
+            child: Text("快来发表你的评论",style: TextStyle(color: Colors.black54,fontSize: 14),),
+          )
+        ],
       );
     }
   }
 
-  _showImage(BuildContext context,List<String> images, int index) {
+  _showImage(BuildContext context, List<String> images, int index) {
     Navigator.of(context).push(FadeRoute(
         page: ImageAllScreenLook(
-          imgDataArr:images,
-          index: index,
-        )
-    ));
+      imgDataArr: images,
+      index: index,
+    )));
   }
 
   Widget image(List<String> images) {
@@ -207,7 +230,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
     switch (images.length) {
       case 1:
         imageWidget = InkWell(
-          onTap: (){
+          onTap: () {
             _showImage(context, images, 0);
           },
           child: Container(
@@ -227,7 +250,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
           children: <Widget>[
             InkWell(
               child: Container(
-                margin: EdgeInsets.only(top: 10,bottom: 5),
+                margin: EdgeInsets.only(top: 10, bottom: 5),
                 height: AdaptiveTools.setPx(165),
                 width: AdaptiveTools.setPx(150),
                 decoration: BoxDecoration(
@@ -236,14 +259,16 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                   border: Border.all(color: Colors.black26),
                 ),
               ),
-              onTap: (){
+              onTap: () {
                 _showImage(context, images, 0);
               },
             ),
-            SizedBox(width: AdaptiveTools.setPx(10),),
+            SizedBox(
+              width: AdaptiveTools.setPx(10),
+            ),
             InkWell(
               child: Container(
-                margin: EdgeInsets.only(top: 10,bottom: 5),
+                margin: EdgeInsets.only(top: 10, bottom: 5),
                 height: AdaptiveTools.setPx(165),
                 width: AdaptiveTools.setPx(150),
                 decoration: BoxDecoration(
@@ -252,7 +277,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                   border: Border.all(color: Colors.black26),
                 ),
               ),
-              onTap: (){
+              onTap: () {
                 _showImage(context, images, 1);
               },
             )
@@ -271,7 +296,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
 
   Future<void> sendComeent(PostItem item) async {
     PostCommentItem commentItem = await PostDao.sendComment(
-        context, item.id, _commentEditingController.text,fileList);
+        context, item.id, _commentEditingController.text, fileList);
     setState(() {
       _postCommentModel.content.insert(0, commentItem);
       _commentEditingController.text = "";
@@ -285,13 +310,16 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
       onTap: (bool isLiked) {
         return onLike(isLiked, widget.item);
       },
-      likeBuilder: (bool isLiked){
-        return Image.asset(widget.item.islike ? 'images/ic_home_liked.webp' : 'images/ic_home_like.webp');
+      likeBuilder: (bool isLiked) {
+        return Image.asset(widget.item.islike
+            ? 'images/ic_home_liked.webp'
+            : 'images/ic_home_like.webp');
       },
       isLiked: widget.item.islike,
       likeCount: widget.item.likeCount,
       countBuilder: (int count, bool isLiked, String text) {
-        final ColorSwatch<int> color = isLiked ? Colors.pinkAccent : Colors.grey;
+        final ColorSwatch<int> color =
+            isLiked ? Colors.pinkAccent : Colors.grey;
         Widget result;
         if (count == 0) {
           result = Text(
@@ -300,9 +328,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
           );
         } else
           result = Text(
-            count >= 1000
-                ? (count / 1000.0).toStringAsFixed(1) + 'k'
-                : text,
+            count >= 1000 ? (count / 1000.0).toStringAsFixed(1) + 'k' : text,
             style: TextStyle(color: color),
           );
 
@@ -317,14 +343,16 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
   Future<bool> onLike(bool isLiked, PostItem postItem) {
     final Completer<bool> completer = new Completer<bool>();
     Timer(const Duration(milliseconds: 200), () {
-      if(postItem.islike) {
+      if (postItem.islike) {
         print("dislike...");
         PostDao.dislike(widget.item.id);
       } else {
         print("like...${widget.item.id}");
         PostDao.like(widget.item.id);
       }
-      postItem.likeCount = postItem.islike ? widget.item.likeCount + 1 : widget.item.likeCount - 1;
+      postItem.likeCount = postItem.islike
+          ? widget.item.likeCount + 1
+          : widget.item.likeCount - 1;
       postItem.islike = !postItem.islike;
       completer.complete(postItem.islike);
     });
@@ -370,132 +398,173 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
               showModalBottomSheet(
                   context: context,
                   builder: (context) {
-                    return SingleChildScrollView(
-                      child: Padding(
-                        child: Container(
-                          child: Column(
-                            children: <Widget>[
-                              Row(
+                    return Padding(
+                      padding: EdgeInsets.only(bottom:MediaQuery.of(context).viewInsets.bottom),
+                      child: Container(
+                        child: Column(
+                          children: <Widget>[
+                            // 输入框
+                            Row(
+                              children: <Widget>[
+                                Expanded(
+                                    child: Container(
+                                      child: TextField(
+                                        autofocus: true,
+                                        decoration: InputDecoration(
+                                            enabledBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color: Colors.black38)),
+                                            focusedBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color: Colors.blueAccent)),
+
+                                            contentPadding: EdgeInsets.all(10),
+                                            hintText: "请输入你的评论"),
+                                        controller: _commentEditingController,
+                                      ),
+                                      padding: EdgeInsets.all(5),
+                                      height: 50,
+                                    ),
+                                  flex: 10,
+                                ),
+                                Container(
+                                  padding: EdgeInsets.only(left: 5,right: 10),
+                                  height: 45,
+                                  width: 80,
+                                  alignment: Alignment.bottomCenter,
+                                  child: RaisedButton(
+                                    child: Text("发送"),
+                                    onPressed: (){
+                                      if (_commentEditingController
+                                          .text.length !=
+                                          0) {
+                                        sendComeent(item);
+                                        Navigator.pop(context);
+                                      }
+                                    },
+                                    color: Colors.blue,
+                                    textColor: Colors.white,
+                                  )/*InkWell(
+                                    child: Container(
+                                      child: Text(
+                                        "发送",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      decoration: BoxDecoration(
+                                          border: Border.all(
+                                              color: Colors.black54),
+                                          color: Colors.black54),
+                                      padding: EdgeInsets.all(5),
+                                      margin: EdgeInsets.only(bottom: 5),
+                                    ),
+                                    onTap: () {
+                                      print("send");
+                                      if (_commentEditingController
+                                          .text.length !=
+                                          0) {
+                                        sendComeent(item);
+                                        Navigator.pop(context);
+                                      }
+                                    },
+                                  ),*/
+                                )
+                              ],
+                            ),
+                            Container(
+                              child: Row(
+                                mainAxisAlignment:
+                                MainAxisAlignment.spaceAround,
                                 children: <Widget>[
-                                  Expanded(
-                                      child: Container(
-                                        child: TextField(
-                                          autofocus: true,
-                                          decoration: InputDecoration(
-                                              enabledBorder: OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                      color: Colors.black38)),
-                                              focusedBorder: OutlineInputBorder(
-                                                  borderSide: BorderSide(
-                                                      color: Colors.black38)),
-                                              contentPadding: EdgeInsets.all(10),
-                                              hintText: "请输入你的评论"),
-                                          maxLines: 4,
-                                          controller: _commentEditingController,
-                                        ),
-                                        padding: EdgeInsets.all(3),
-                                      )),
-                                  Container(
-                                    child: Column(
+                                  InkWell(
+                                    child: Stack(
                                       children: <Widget>[
-                                        InkWell(
-                                          child: Container(
-                                            child: Image.asset("images/Unfold.png"),
-                                          ),
-                                          onTap: () {
-                                            print("Unfold");
-                                          },
+                                        Container(
+                                          child: Image.asset(
+                                              "images/icon_image.webp"),
+                                          height: AdaptiveTools.setPx(23),
+                                          margin: EdgeInsets.only(
+                                              top: AdaptiveTools.setPx(3)),
                                         ),
-                                        SizedBox(height: AdaptiveTools.setPx(27),),
-                                        InkWell(
-                                          child: Container(
-                                            child: Text("发送",style: TextStyle(color: Colors.white),),
-                                            decoration: BoxDecoration(
-                                                border: Border.all(color: Colors.black54),
-                                              color: Colors.black54
-                                            ),
-                                            padding: EdgeInsets.all(5),
+                                        fileList.length != 0
+                                            ? Container(
+                                          child: Text(
+                                            fileList.length.toString(),
+                                            style: TextStyle(
+                                                fontSize:
+                                                AdaptiveTools.setPx(
+                                                    9),
+                                                color: Colors.white),
                                           ),
-                                          onTap: () {
-                                            print("send");
-                                            if (_commentEditingController.text.length !=
-                                                0) {
-                                              sendComeent(item);
-                                              Navigator.pop(context);
-                                            }
-                                          },
+                                          margin: EdgeInsets.only(
+                                              left: AdaptiveTools.setPx(
+                                                  17)),
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                              BorderRadius.all(
+                                                  Radius.circular(
+                                                      50)),
+                                              border: Border.all(
+                                                  color: Colors.red),
+                                              color: Colors.red),
+                                          padding: EdgeInsets.only(
+                                              left: AdaptiveTools.setPx(
+                                                  3)),
+                                          height:
+                                          AdaptiveTools.setPx(13),
+                                          width:
+                                          AdaptiveTools.setPx(13),
+                                        )
+                                            : Container(
+                                          height: 0,
+                                          width: 0,
                                         )
                                       ],
                                     ),
-                                    margin: EdgeInsets.all(3),
-                                  )
+                                    onTap: () {
+                                      _loadAssets();
+                                    },
+                                  ),
+                                  Container(
+                                    child: Image.asset(
+                                        "images/icon_mention.png"),
+                                    height: AdaptiveTools.setPx(23),
+                                    margin: EdgeInsets.only(
+                                        top: AdaptiveTools.setPx(3)),
+                                  ),
+                                  Container(
+                                    child:
+                                    Image.asset("images/icon_topic.png"),
+                                    height: AdaptiveTools.setPx(23),
+                                    margin: EdgeInsets.only(
+                                        top: AdaptiveTools.setPx(3)),
+                                  ),
+                                  Container(
+                                    child: Image.asset("images/icon_gif.png"),
+                                    height: AdaptiveTools.setPx(23),
+                                    margin: EdgeInsets.only(
+                                        top: AdaptiveTools.setPx(3)),
+                                  ),
+                                  Container(
+                                    child: Image.asset(
+                                        "images/icon_emotion.png"),
+                                    height: AdaptiveTools.setPx(23),
+                                    margin: EdgeInsets.only(
+                                        top: AdaptiveTools.setPx(3)),
+                                  ),
+                                  Container(
+                                    child: Image.asset("images/icon_add.png"),
+                                    height: AdaptiveTools.setPx(23),
+                                    margin: EdgeInsets.only(
+                                        top: AdaptiveTools.setPx(3)),
+                                  ),
                                 ],
                               ),
-                              Container(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                  children: <Widget>[
-                                    InkWell(
-                                      child: Stack(
-                                        children: <Widget>[
-                                          Container(
-                                            child: Image.asset("images/icon_image.webp"),
-                                            height:AdaptiveTools.setPx(23),
-                                            margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
-                                          ),
-                                          fileList.length != 0 ? Container(
-                                            child: Text(fileList.length.toString(),style: TextStyle(fontSize: AdaptiveTools.setPx(9),color: Colors.white),),
-                                            margin: EdgeInsets.only(left: AdaptiveTools.setPx(17)),
-                                            decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.all(Radius.circular(50)),
-                                                border: Border.all(color: Colors.red),
-                                                color: Colors.red
-                                            ),
-                                            padding:EdgeInsets.only(left: AdaptiveTools.setPx(3)),
-                                            height: AdaptiveTools.setPx(13),
-                                            width: AdaptiveTools.setPx(13),
-                                          ):Container(height: 0,width: 0,)
-                                        ],
-                                      ),
-                                      onTap: (){
-                                        _loadAssets();
-                                      },
-                                    ),
-                                    Container(
-                                      child: Image.asset("images/icon_mention.png"),
-                                      height:AdaptiveTools.setPx(23),
-                                      margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
-                                    ),
-                                    Container(
-                                      child: Image.asset("images/icon_topic.png"),
-                                      height:AdaptiveTools.setPx(23),
-                                      margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
-                                    ),
-                                    Container(
-                                      child: Image.asset("images/icon_gif.png"),
-                                      height:AdaptiveTools.setPx(23),
-                                      margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
-                                    ),
-                                    Container(
-                                      child: Image.asset("images/icon_emotion.png"),
-                                      height:AdaptiveTools.setPx(23),
-                                      margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
-                                    ),
-                                    Container(
-                                      child: Image.asset("images/icon_add.png"),
-                                      height:AdaptiveTools.setPx(23),
-                                      margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            ],
-                          ),
-                          height: AdaptiveTools.setPx(140),
+                              margin: EdgeInsets.only(bottom: 10),
+                            ),
+                            // 底部导航栏
+                          ],
                         ),
-                        padding: EdgeInsets.only(
-                            bottom: MediaQuery.of(context).viewInsets.bottom),
-
+                        height: AdaptiveTools.setPx(90),
                       ),
                     );
                   });
@@ -541,7 +610,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
     } catch (e) {
       print(e.toString());
     }
-    if(mounted) {
+    if (mounted) {
       setState(() {
         fileList = resultList;
       });

@@ -144,7 +144,7 @@ class _MinePageState extends State<MinePage>
             Container(
               child: Text(
                 "${totalElements ?? 0} 推文",
-                style: TextStyle(fontSize: 13, color: Colors.black54),
+                style: TextStyle(fontSize: AdaptiveTools.setPx(13), color: Colors.black54),
               ),
             )
           ],
@@ -272,7 +272,7 @@ class _MinePageState extends State<MinePage>
                                       Container(
                                         child: Image.asset(
                                             "images/ic_vector_calendar.png"),
-                                        height: AdaptiveTools.setPx(17),
+                                        height: 19,
                                       ),
                                       SizedBox(
                                         width: 4,
@@ -358,18 +358,10 @@ class _MinePageState extends State<MinePage>
                         ],
                       ),
                     ),
-                    pageWidget[_currentPage]
-                    /*Flexible(
-                             child: TabBarView(
-                               controller: tabController,
-                               children: [
-                                 Tweets(_myPostModel),
-                                 TweetsOrReply(),
-                                 Media(),
-                                 Like()
-                               ],
-                             ),
-                           ),*/
+                    Container(
+                      margin: EdgeInsets.only(top: 5),
+                      child: pageWidget[_currentPage],
+                    )
                   ],
                 ),
                 onRefresh: _onRefresh,
@@ -523,7 +515,7 @@ class Tweets extends StatelessWidget {
                       child: Text(_item.content),
                     ),
                     Container(
-                      padding: EdgeInsets.all(15),
+                      margin: EdgeInsets.only(top: 8,bottom: 8),
                       child: image(_item.photos, context),
                     ),
                     Container(

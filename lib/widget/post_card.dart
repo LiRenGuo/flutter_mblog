@@ -88,20 +88,20 @@ class _PostCardState extends State<PostCard> {
                 Navigator.of(context).push(MaterialPageRoute(builder: (context) => MinePage(userid: item.user.id,)));
               },
             ),
-            Column(
-              children: <Widget>[
-                Container(
-                  alignment: Alignment.topLeft,
-                  child: InkWell(
+            InkWell(
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    alignment: Alignment.topLeft,
                     child: _content(context),
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => HomeDetailPage(item)));
-                    },
                   ),
-                ),
-                if (item.photos.length != 0) _photoItem(context),
-              ],
+                  if (item.photos.length != 0) _photoItem(context),
+                ],
+              ),
+              onTap: (){
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => HomeDetailPage(item)));
+              },
             ),
             Divider(
               height: 20.0,

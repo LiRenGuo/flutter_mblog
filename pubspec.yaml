@@ -41,6 +41,7 @@ dependencies:
   photo_view: ^0.7.0
   like_button: ^0.1.9
   camera: ^0.5.8+5
+  emoji_picker: ^0.1.0
 
 dev_dependencies:
   flutter_test:
@@ -81,6 +82,9 @@ flutter:
     - images/Unfold.png
     - images/test1.png
     - images/sparkles.png
+    - images/attention.png
+    - images/unattention.png
+    - images/deletePost.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

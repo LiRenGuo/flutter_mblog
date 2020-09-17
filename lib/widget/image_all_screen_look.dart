@@ -5,6 +5,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 const Color selColor =Colors.white;
 const Color otherColor = Colors.grey;
 
+
 class ImageAllScreenLook extends StatefulWidget {
 
   List imgDataArr=[];

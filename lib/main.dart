@@ -1,11 +1,8 @@
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/pages/login_page.dart';
+import 'package:flutter/rendering.dart' show debugPaintSizeEnabled;
 
-List<CameraDescription> cameras;
 void main() async{
-  WidgetsFlutterBinding.ensureInitialized();
-  cameras = await availableCameras();
   runApp(MyApp());
 }
 
@@ -19,9 +16,7 @@ class MyApp extends StatelessWidget {
         primaryColor: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: SafeArea(
-        child: LoginPage(),
-      ),
+      home: LoginPage(),
       debugShowCheckedModeBanner: false,
     );
   }

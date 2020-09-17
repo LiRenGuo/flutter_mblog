@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/model/user_model.dart';
+import 'package:flutter_mblog/pages/following_page.dart';
+import 'package:flutter_mblog/pages/followme_page.dart';
 import 'package:flutter_mblog/pages/login_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
@@ -25,15 +27,14 @@ class MyDrawer extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         print("login...${userModel.name}");
-        Navigator.push(context, MaterialPageRoute(builder: (context) => MinePage()));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => MinePage(userid: userModel.id,wLoginUserId: userModel.id,)));
       },
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.fromLTRB(20,20,20,20),
         decoration: BoxDecoration(
             color: Colors.white,
-            border:
-                Border(bottom: BorderSide(width: 1, color: Color(0xfff2f2f2)))),
+            border: Border(bottom: BorderSide(width: 1, color: Color(0xfff2f2f2)))),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,15 +66,25 @@ class MyDrawer extends StatelessWidget {
               Text('1',
                   style: TextStyle(
                       color: Colors.black, fontWeight: FontWeight.bold)),
-              Padding(
-                  padding: EdgeInsets.only(left: 2, right: 15),
-                  child: Text('正在关注', style: TextStyle(color: Colors.grey))),
+              InkWell(
+                child: Padding(
+                    padding: EdgeInsets.only(left: 2, right: 15),
+                    child: Text('正在关注', style: TextStyle(color: Colors.grey))),
+                    onTap: (){
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => FollowingPage()));
+                    },
+              ),
               Text('0',
                   style: TextStyle(
                       color: Colors.black, fontWeight: FontWeight.bold)),
-              Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 2),
-                  child: Text('个关注者', style: TextStyle(color: Colors.grey))),
+              InkWell(
+                child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 2),
+                    child: Text('个关注者', style: TextStyle(color: Colors.grey))),
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => FollowMePage()));
+                    },
+              ),
             ]),
           ],
         ),
@@ -85,12 +96,15 @@ class MyDrawer extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(color: Colors.white),
       child: ListView(
+        padding: EdgeInsets.all(0),
+          shrinkWrap:true,
+
         children: <Widget>[
           ListTile(
               leading: Icon(Icons.account_circle),
               title: Text('个人资料'),
               onTap: () => Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (context) => MinePage()))),
+                  .push(MaterialPageRoute(builder: (context) => MinePage(userid: userModel.id,wLoginUserId: userModel.id,)))),
           ListTile(
               leading: Icon(Icons.message),
               title: Text('关注请求'),

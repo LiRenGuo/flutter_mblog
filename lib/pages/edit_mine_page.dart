@@ -40,6 +40,31 @@ class _EditMinePageState extends State<EditMinePage> {
 
   UserModel _userModel;
 
+  bool onUpdate = true;
+
+
+  @override
+  void dispose() {
+    if (onUpdate) {
+      showDialog(context: context,builder: (context){
+        return AlertDialog(
+          title: Text("编辑个人资料"),
+          content: Text('放弃修改？'),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('取消'),
+              onPressed: () => Navigator.pop(context),
+            ),
+            FlatButton(
+              child: Text('放弃'),
+            )
+          ],
+        );
+      });
+    }
+    super.dispose();
+  }
+
   getUserInfo() {
     return UserDao.getUserInfo(context);
   }
@@ -86,343 +111,380 @@ class _EditMinePageState extends State<EditMinePage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Scaffold(
-        appBar: AppBar(
-          iconTheme: IconThemeData(color: Colors.blue),
-          backgroundColor: Colors.white,
-          title: Text(
-            "编辑个人资料",
-            style: TextStyle(fontWeight: FontWeight.w600,color: Colors.black),
-          ),
-          actions: <Widget>[
-            Padding(
-              padding: EdgeInsets.all(10),
-              child: RaisedButton(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                color: Colors.blue,
-                textColor: Colors.white,
-                onPressed: () {
-                  print("----"+_introductionEtController.text);
-                  FormData formDate = FormData.fromMap({
-                    "id":_userModel.id,
-                    "name":_nameEtController.text,
-                    "banner": banner,
-                    "avatar": avatar,
-                    "intro": _introductionEtController.text,
-                    "homepage": _urlEtController.text,
-                  });
-                  UserDao.saveUserInfo(formDate);
-                  Navigator.pop(context);
-                },
-                child: Text(
-                  "保存",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+      child: WillPopScope(
+        child: Scaffold(
+          appBar: AppBar(
+            iconTheme: IconThemeData(color: Colors.blue),
+            backgroundColor: Colors.white,
+            title: Text(
+              "编辑个人资料",
+              style: TextStyle(fontWeight: FontWeight.w600,color: Colors.black),
+            ),
+            actions: <Widget>[
+              Padding(
+                padding: EdgeInsets.all(10),
+                child: RaisedButton(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  color: Colors.blue,
+                  textColor: Colors.white,
+                  onPressed: () {
+                    FormData formDate = FormData.fromMap({
+                      "id":_userModel.id,
+                      "name":_nameEtController.text,
+                      "banner": banner,
+                      "avatar": avatar,
+                      "intro": _introductionEtController.text,
+                      "homepage": _urlEtController.text,
+                    });
+                    UserDao.saveUserInfo(formDate);
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    "保存",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        body: FutureBuilder(
-          future: getUserInfo(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              print(avatar);
-              _userModel = snapshot.data;
-              _nameEtController.text = _userModel.name;
-              _introductionEtController.text = _userModel.intro;
-              _urlEtController.text = _userModel.homepage;
-              _positionEtController.text = "GuangDong";
-              return Container(
-                child: ListView(
-                  children: <Widget>[
-                    Stack(
-                      children: <Widget>[
-                        Stack(
-                          children: <Widget>[
-                            Container(
-                              height: AdaptiveTools.setPx(140),
-                              width: MediaQuery
-                                  .of(context)
-                                  .size
-                                  .width,
-                              child: banner != null ? Image.network(banner,fit: BoxFit.cover,):Image.network(
-                                _userModel.banner,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            Container(
-                              height: AdaptiveTools.setPx(140),
-                              padding:
-                              EdgeInsets.only(top: AdaptiveTools.setPx(60)),
-                              alignment: Alignment.topCenter,
-                              color: Colors.black38,
-                              child: InkWell(
-                                child: Container(
-                                  height: AdaptiveTools.setPx(25),
-                                  child: Image.asset(
-                                    "images/ic_vector_camera_stroke.png",
-                                    color: Colors.white,
-                                  ),
+            ],
+          ),
+          body: FutureBuilder(
+            future: getUserInfo(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                print(avatar);
+                _userModel = snapshot.data;
+                if (_nameEtController.text.isEmpty) {
+                  _nameEtController.text = _userModel.name;
+                }
+                if (_introductionEtController.text.isEmpty) {
+                  _introductionEtController.text = _userModel.intro;
+                }
+                if (_urlEtController.text.isEmpty) {
+                  _urlEtController.text = _userModel.homepage;
+                }
+                _positionEtController.text = "GuangDong";
+                return Container(
+                  child: ListView(
+                    children: <Widget>[
+                      Stack(
+                        children: <Widget>[
+                          Stack(
+                            children: <Widget>[
+                              Container(
+                                height: AdaptiveTools.setPx(140),
+                                width: MediaQuery
+                                    .of(context)
+                                    .size
+                                    .width,
+                                child: banner != null ? Image.network(banner,fit: BoxFit.cover,):Image.network(
+                                  _userModel.banner,
+                                  fit: BoxFit.cover,
                                 ),
-                                onTap: () {
-                                  print("选择图片");
-                                  showModalBottomSheet(
-                                      context: context, builder: (context) {
-                                    return Container(
-                                      height: AdaptiveTools.setPx(140),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment
-                                            .center,
-                                        children: <Widget>[
-                                          InkWell(
-                                            child: Container(
-                                              child: Text("拍照", style: TextStyle(
-                                                  fontSize: AdaptiveTools.setPx(
-                                                      17)),),
-                                              margin: EdgeInsets.all(10),
-                                            ),
-                                            onTap: (){
-                                              _takePhoto("banner");
-                                              Navigator.pop(context);
-                                            },
-                                          ),
-                                          Container(
-                                            height: 1,
-                                            color: Colors.black12,
-                                          ),
-                                          InkWell(
-                                            child: Container(
-                                              margin: EdgeInsets.all(10),
-                                              child: Text("相册",
-                                                  style: TextStyle(
-                                                      fontSize: AdaptiveTools
-                                                          .setPx(17))),
-                                            ),
-                                            onTap: () {
-                                              _openGallery("banner");
-                                              Navigator.pop(context);
-                                            },
-                                          ),
-                                          Container(
-                                            height: 4,
-                                            color: Colors.black12,
-                                          ),
-                                          InkWell(
-                                            child: Container(
-                                              margin: EdgeInsets.all(10),
-                                              child: Text("取消",
-                                                  style: TextStyle(
-                                                      fontSize: AdaptiveTools
-                                                          .setPx(17))),
-                                            ),
-                                            onTap: () {
-                                              Navigator.pop(context);
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  });
-                                },
                               ),
-                            )
-                          ],
-                        ),
-                        Stack(
-                          children: <Widget>[
-                            Container(
-                                margin: EdgeInsets.only(
-                                    top: AdaptiveTools.setPx(110)),
-                                child: Container(
-                                  child: CircleAvatar(
-                                      maxRadius: AdaptiveTools.setPx(40),
-                                      backgroundImage: avatar != null ?NetworkImage(avatar): NetworkImage(_userModel.avatar)),
+                              Container(
+                                height: AdaptiveTools.setPx(140),
+                                padding:
+                                EdgeInsets.only(top: AdaptiveTools.setPx(60)),
+                                alignment: Alignment.topCenter,
+                                color: Colors.black38,
+                                child: InkWell(
+                                  child: Container(
+                                    height: AdaptiveTools.setPx(25),
+                                    child: Image.asset(
+                                      "images/ic_vector_camera_stroke.png",
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    print("选择图片");
+                                    showModalBottomSheet(
+                                        context: context, builder: (context) {
+                                      return Container(
+                                        height: AdaptiveTools.setPx(140),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment
+                                              .center,
+                                          children: <Widget>[
+                                            InkWell(
+                                              child: Container(
+                                                child: Text("拍照", style: TextStyle(
+                                                    fontSize: AdaptiveTools.setPx(
+                                                        17)),),
+                                                margin: EdgeInsets.all(10),
+                                              ),
+                                              onTap: (){
+                                                _takePhoto("banner");
+                                                Navigator.pop(context);
+                                              },
+                                            ),
+                                            Container(
+                                              height: 1,
+                                              color: Colors.black12,
+                                            ),
+                                            InkWell(
+                                              child: Container(
+                                                margin: EdgeInsets.all(10),
+                                                child: Text("相册",
+                                                    style: TextStyle(
+                                                        fontSize: AdaptiveTools
+                                                            .setPx(17))),
+                                              ),
+                                              onTap: () {
+                                                _openGallery("banner");
+                                                Navigator.pop(context);
+                                              },
+                                            ),
+                                            Container(
+                                              height: 4,
+                                              color: Colors.black12,
+                                            ),
+                                            InkWell(
+                                              child: Container(
+                                                margin: EdgeInsets.all(10),
+                                                child: Text("取消",
+                                                    style: TextStyle(
+                                                        fontSize: AdaptiveTools
+                                                            .setPx(17))),
+                                              ),
+                                              onTap: () {
+                                                Navigator.pop(context);
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    });
+                                  },
+                                ),
+                              )
+                            ],
+                          ),
+                          Stack(
+                            children: <Widget>[
+                              Container(
                                   margin: EdgeInsets.only(
-                                      left: AdaptiveTools.setPx(18),
-                                      bottom: AdaptiveTools.setPx(10)),
-                                )),
-                            Container(
-                              height: AdaptiveTools.setPx(80),
-                              padding: EdgeInsets.all(AdaptiveTools.setPx(30)),
-                              decoration: BoxDecoration(
-                                  color: Colors.black38,
-                                  borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
-                              margin: EdgeInsets.only(
-                                  top: AdaptiveTools.setPx(110),
-                                  left: AdaptiveTools.setPx(18)),
-                              child: InkWell(
-                                child: Container(
-                                  height: AdaptiveTools.setPx(25),
-                                  child: Image.asset(
-                                    "images/ic_vector_camera_stroke.png",
-                                    color: Colors.white,
+                                      top: AdaptiveTools.setPx(110)),
+                                  child: Container(
+                                    child: CircleAvatar(
+                                        maxRadius: AdaptiveTools.setPx(40),
+                                        backgroundImage: avatar != null ?NetworkImage(avatar): NetworkImage(_userModel.avatar)),
+                                    margin: EdgeInsets.only(
+                                        left: AdaptiveTools.setPx(18),
+                                        bottom: AdaptiveTools.setPx(10)),
+                                  )),
+                              Container(
+                                height: AdaptiveTools.setPx(80),
+                                padding: EdgeInsets.all(AdaptiveTools.setPx(30)),
+                                decoration: BoxDecoration(
+                                    color: Colors.black38,
+                                    borderRadius:
+                                    BorderRadius.all(Radius.circular(40))),
+                                margin: EdgeInsets.only(
+                                    top: AdaptiveTools.setPx(110),
+                                    left: AdaptiveTools.setPx(18)),
+                                child: InkWell(
+                                  child: Container(
+                                    height: AdaptiveTools.setPx(25),
+                                    child: Image.asset(
+                                      "images/ic_vector_camera_stroke.png",
+                                      color: Colors.white,
+                                    ),
                                   ),
+                                  onTap: () {
+                                    print("修改头像");
+                                    showModalBottomSheet(
+                                        context: context, builder: (context) {
+                                      return Container(
+                                        height: AdaptiveTools.setPx(140),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment
+                                              .center,
+                                          children: <Widget>[
+                                            InkWell(
+                                              child: Container(
+                                                child: Text("拍照", style: TextStyle(
+                                                    fontSize: AdaptiveTools.setPx(
+                                                        17)),),
+                                                margin: EdgeInsets.all(10),
+                                              ),
+                                              onTap: (){
+                                                _takePhoto("avatar");
+                                                Navigator.pop(context);
+                                              },
+                                            ),
+                                            Container(
+                                              height: 1,
+                                              color: Colors.black12,
+                                            ),
+                                            InkWell(
+                                              child: Container(
+                                                margin: EdgeInsets.all(10),
+                                                child: Text("相册",
+                                                    style: TextStyle(
+                                                        fontSize: AdaptiveTools
+                                                            .setPx(17))),
+                                              ),
+                                              onTap: () {
+                                                _openGallery("avatar");
+                                                Navigator.pop(context);
+                                              },
+                                            ),
+                                            Container(
+                                              height: 4,
+                                              color: Colors.black12,
+                                            ),
+                                            InkWell(
+                                              child: Container(
+                                                margin: EdgeInsets.all(10),
+                                                child: Text("取消",
+                                                    style: TextStyle(
+                                                        fontSize: AdaptiveTools
+                                                            .setPx(17))),
+                                              ),
+                                              onTap: () {
+                                                Navigator.pop(context);
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    });
+                                  },
                                 ),
-                                onTap: () {
-                                  print("修改头像");
-                                  showModalBottomSheet(
-                                      context: context, builder: (context) {
-                                    return Container(
-                                      height: AdaptiveTools.setPx(140),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment
-                                            .center,
-                                        children: <Widget>[
-                                          InkWell(
-                                            child: Container(
-                                              child: Text("拍照", style: TextStyle(
-                                                  fontSize: AdaptiveTools.setPx(
-                                                      17)),),
-                                              margin: EdgeInsets.all(10),
-                                            ),
-                                            onTap: (){
-                                              _takePhoto("avatar");
-                                              Navigator.pop(context);
-                                            },
-                                          ),
-                                          Container(
-                                            height: 1,
-                                            color: Colors.black12,
-                                          ),
-                                          InkWell(
-                                            child: Container(
-                                              margin: EdgeInsets.all(10),
-                                              child: Text("相册",
-                                                  style: TextStyle(
-                                                      fontSize: AdaptiveTools
-                                                          .setPx(17))),
-                                            ),
-                                            onTap: () {
-                                              _openGallery("avatar");
-                                              Navigator.pop(context);
-                                            },
-                                          ),
-                                          Container(
-                                            height: 4,
-                                            color: Colors.black12,
-                                          ),
-                                          InkWell(
-                                            child: Container(
-                                              margin: EdgeInsets.all(10),
-                                              child: Text("取消",
-                                                  style: TextStyle(
-                                                      fontSize: AdaptiveTools
-                                                          .setPx(17))),
-                                            ),
-                                            onTap: () {
-                                              Navigator.pop(context);
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  });
-                                },
+                              )
+                            ],
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: <Widget>[
+                          Stack(
+                            children: <Widget>[
+                              Container(
+                                padding: EdgeInsets.fromLTRB(9, 5, 10, 0),
+                                child: Text("用户名",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w100,color: Colors.black87),),
                               ),
-                            )
-                          ],
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.fromLTRB(20, 0, 10, 20),
-                          child: TextField(
-                            controller: _nameEtController,
-                            focusNode: focusNameNode,
-                            style:
-                            TextStyle(fontSize: 20.0, color: Colors.black),
-                            decoration: InputDecoration(
-                                labelText: "用户名",
-                                labelStyle: TextStyle(
-                                    color: nameColor, fontSize: nameSize),
-                                focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                        color: Colors.blue, width: 4)),
-                                enabledBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                        color: Colors.black54, width: 4))),
+                              Container(
+                                margin: EdgeInsets.only(top: 15),
+                                padding: EdgeInsets.fromLTRB(10, 0, 10, 5),
+                                child: TextField(
+                                  controller: _nameEtController,
+                                  focusNode: focusNameNode,
+                                  style: TextStyle(fontSize: 16.0, color: Colors.black),
+                                  decoration: InputDecoration(
+                                      hintText: "请输入用户名",
+                                      hintStyle: TextStyle(fontSize: 16),
+                                      focusedBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: Colors.blue)),
+                                      enabledBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: Colors.black26))),
+                                ),
+                              )
+                            ],
                           ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.fromLTRB(20, 0, 10, 20),
-                          child: TextField(
-                            maxLines: 3,
-                            controller: _introductionEtController,
-                            focusNode: focusIntroductionNode,
-                            style:
-                            TextStyle(fontSize: 20.0, color: Colors.black),
-                            decoration: InputDecoration(
-                                labelText: "简介",
-                                labelStyle: TextStyle(
-                                    color: introductionColor,
-                                    fontSize: introductionSize),
-                                focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                        color: Colors.blue, width: 4)),
-                                enabledBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                        color: Colors.black54, width: 4))),
+                          Stack(
+                            children: <Widget>[
+                              Container(
+                                padding: EdgeInsets.fromLTRB(9, 5, 10, 0),
+                                child: Text("简介",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w100,color: Colors.black87),),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(top: 15),
+                                padding: EdgeInsets.fromLTRB(10, 0, 10, 5),
+                                child: TextField(
+                                  maxLines: 3,
+                                  controller: _introductionEtController,
+                                  focusNode: focusIntroductionNode,
+                                  style:
+                                  TextStyle(fontSize: 16.0, color: Colors.black),
+                                  decoration: InputDecoration(
+                                      hintText: "请输入简介",
+                                      focusedBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: Colors.blue)),
+                                      enabledBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: Colors.black26))),
+                                ),
+                              )
+                            ],
                           ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.fromLTRB(20, 0, 10, 20),
-                          child: TextField(
-                            enabled: false,
-                            controller: _positionEtController,
-                            focusNode: focusPositionNode,
-                            style:
-                            TextStyle(fontSize: 20.0, color: Colors.black),
-                            decoration: InputDecoration(
-                                labelText: "位置",
-                                labelStyle: TextStyle(
-                                    color: positionColor,
-                                    fontSize: positionSize),
-                                focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                        color: Colors.blue, width: 4)),
-                                enabledBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                        color: Colors.black54, width: 4))),
+                          Stack(
+                            children: <Widget>[
+                              Container(
+                                padding: EdgeInsets.fromLTRB(9, 5, 10, 0),
+                                child: Text("位置",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w100,color: Colors.black87),),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(top: 15),
+                                padding: EdgeInsets.fromLTRB(10, 0, 10, 5),
+                                child: TextField(
+                                    enabled: false,
+                                    controller: _positionEtController,
+                                    focusNode: focusPositionNode,
+                                    style:
+                                    TextStyle(fontSize: 16.0, color: Colors.black),
+                                    decoration: InputDecoration(
+                                        hintText: "请输入位置",
+                                        focusedBorder: UnderlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.blue)),
+                                        enabledBorder: UnderlineInputBorder(
+                                            borderSide: BorderSide(
+                                                color: Colors.black26)))
+                                ),
+                              )
+                            ],
                           ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.fromLTRB(20, 0, 10, 20),
-                          child: TextField(
-                            controller: _urlEtController,
-                            focusNode: focusUrlNode,
-                            style:
-                            TextStyle(fontSize: 20.0, color: Colors.black),
-                            decoration: InputDecoration(
-                                labelText: "网站",
-                                labelStyle: TextStyle(
-                                    color: urlColor, fontSize: urlSize),
-                                focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                        color: Colors.blue, width: 4)),
-                                enabledBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                        color: Colors.black54, width: 4))),
+                          Stack(
+                            children: <Widget>[
+                              Container(
+                                padding: EdgeInsets.fromLTRB(9, 5, 10, 0),
+                                child: Text("网址",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w100,color: Colors.black87),),
+                              ),
+                              Container(
+                                margin: EdgeInsets.only(top: 15),
+                                padding: EdgeInsets.fromLTRB(10, 0, 10, 5),
+                                child: TextField(
+                                  controller: _urlEtController,
+                                  focusNode: focusUrlNode,
+                                  style:
+                                  TextStyle(fontSize: 16.0, color: Colors.black),
+                                  decoration: InputDecoration(
+                                      hintText: "请输入你的网址",
+                                      focusedBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: Colors.blue)),
+                                      enabledBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: Colors.black26))),
+                                ),
+                              )
+                            ],
                           ),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              );
-            } else {
-              return Container(
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            }
-          },
+                        ],
+                      )
+                    ],
+                  ),
+                );
+              } else {
+                return Container(
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+            },
+          ),
         ),
+        onWillPop: (){
+          print("返回键点击了");
+          Navigator.pop(context);
+        },
       ),
     );
   }

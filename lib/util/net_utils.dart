@@ -60,7 +60,6 @@ class NetUtils {
     try {
       var respose =
           await dio.post(url, queryParameters: params, options: options);
-      print(respose.data);
       return respose.data;
     } on DioError catch (a) {
       print(a.response.statusCode);

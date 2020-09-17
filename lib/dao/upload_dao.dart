@@ -7,7 +7,6 @@ class UploadDao{
   static final String UPDATE_BANNER = "http://mblog.yunep.com/api/profile/update/banner";//更换背景地址
   static final String UPDATE_AVATAR = "http://mblog.yunep.com/api/profile/update/avatar";//更换头像地址
 
-
   static Future<String> uploadImage(String url,File file)async{
     Uint8List uint8list =  await file.readAsBytes();
     List<int> uint8 =  uint8list.toList();
@@ -20,5 +19,4 @@ class UploadDao{
       throw Exception("image_upload_error ...");
     }
   }
-
 }

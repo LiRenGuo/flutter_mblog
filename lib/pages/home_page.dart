@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
+import 'package:flutter_mblog/dao/user_dao.dart';
+import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
@@ -79,14 +81,19 @@ class _HomePageState extends State<HomePage> {
                 }
               } else {
                 // 请求未结束，显示loading
-                return CircularProgressIndicator();
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
               }
             }
           ),
         ),
-        title: Text(
-          '主页',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),
+        title: Container(
+          child: Text(
+            '主页',
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),
+          ),
+          margin: EdgeInsets.only(bottom: 1),
         ),
       ),
       body: LoadingContainer(
@@ -107,9 +114,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   _item(PostItem item, int index) {
-    return Container(
-      child: PostCard(item: item, index: index, userId: userModel.id),
-    );
+      return Container(
+        child: PostCard(item: item, index: index, userId: userModel.id,),
+      );
   }
 
   _loadData({loadMore = false}) async {
@@ -139,7 +146,6 @@ class _HomePageState extends State<HomePage> {
       _loading = false;
       print(e);
     }
-
   }
 
   Future<void> _handleRefresh() async {
@@ -157,16 +163,18 @@ class _HomePageState extends State<HomePage> {
       builder: (context) {
         return InkWell(
           onTap: () => Scaffold.of(context).openDrawer(),
-          child: DecoratedBox(
+          child: Container(
+            padding: EdgeInsets.all(5),
             decoration: BoxDecoration(
                 color: Colors.white
             ),
-            child: ClipOval(
-                child: Image.network(avatar)
+            child: CircleAvatar(
+              backgroundImage: NetworkImage(avatar),
             ),
           ),
         );
       },
     );
   }
+
 }

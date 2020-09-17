@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:device_info/device_info.dart';
 import 'package:dio/dio.dart';
+import 'package:emoji_picker/emoji_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
@@ -49,7 +50,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
         backgroundColor: Colors.white,
         leading: GestureDetector(
           child: BackButton(
-            onPressed: (){
+            onPressed: () {
               Navigator.of(context).pop();
               FocusScope.of(context).requestFocus(FocusNode()); //收起键盘
             },
@@ -65,11 +66,12 @@ class _PostPublishPageState extends State<PostPublishPage> {
               child: Container(
                 width: 50,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                  borderRadius: BorderRadius.circular(10)
-                ),
+                    color: Theme.of(context).primaryColor,
+                    borderRadius: BorderRadius.circular(10)),
                 child: Center(
-                  child: Text('发送', style: TextStyle(color: Colors.white),textAlign: TextAlign.center),
+                  child: Text('发送',
+                      style: TextStyle(color: Colors.white),
+                      textAlign: TextAlign.center),
                 ),
               ),
             ),
@@ -97,7 +99,8 @@ class _PostPublishPageState extends State<PostPublishPage> {
                   ],
                 ),
                 Positioned(
-                  child: LoadingContainer(isLoading: _loading, child: Container()),
+                  child:
+                      LoadingContainer(isLoading: _loading, child: Container()),
                 ),
               ],
             ),
@@ -111,22 +114,34 @@ class _PostPublishPageState extends State<PostPublishPage> {
   //底部操作栏布局
   _buildBottom() {
     return Align(
-        alignment: Alignment.bottomCenter,
-        child: Container(
-          color: Color(0xffF9F9F9),
-          padding: EdgeInsets.only(left: 15, right: 5, top: 10, bottom: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              _buildBottomIcon("images/icon_image.webp", () => _loadAssets()),
-              _buildBottomIcon("images/icon_mention.png", () => print('@联系人')),
-              _buildBottomIcon("images/icon_topic.png", () => print("topic..")),
-              _buildBottomIcon("images/icon_gif.png", () => print("")),
-              _buildBottomIcon("images/icon_emotion.png", () => print("微表情")),
-              _buildBottomIcon("images/icon_add.png", () => print("")),
-            ],
-          ),
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        color: Color(0xffF9F9F9),
+        padding: EdgeInsets.only(left: 15, right: 5, top: 10, bottom: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            _buildBottomIcon("images/icon_image.webp", () => _loadAssets()),
+            _buildBottomIcon("images/icon_mention.png", () => print('@联系人')),
+            _buildBottomIcon("images/icon_topic.png", () => print("topic..")),
+            _buildBottomIcon("images/icon_gif.png", () => print("")),
+            _buildBottomIcon("images/icon_emotion.png", () => _loadEmojiPicker()),
+            _buildBottomIcon("images/icon_add.png", () => print("")),
+          ],
         ),
+      ),
+    );
+  }
+
+  _loadEmojiPicker() async {
+    EmojiPicker(
+      rows: 3,
+      columns: 7,
+      recommendKeywords: ["racing", "horse"],
+      numRecommended: 10,
+      onEmojiSelected: (emoji, category) {
+        print(emoji);
+      },
     );
   }
 
@@ -138,13 +153,13 @@ class _PostPublishPageState extends State<PostPublishPage> {
     try {
       resultList = await MultiImagePicker.pickImages(
         selectedAssets: fileList,
-        maxImages: 9, //最多9张
+        maxImages: 4, //最多9张
         enableCamera: true,
       );
     } catch (e) {
       print(e.toString());
     }
-    if(mounted) {
+    if (mounted) {
       setState(() {
         fileList = resultList;
       });
@@ -169,7 +184,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
       children: List.generate(gridCount, (index) {
         // 这个方法用于生成GridView中的一个item
         var content;
-        if(index == fileList.length) {
+        if (index == fileList.length) {
           // 添加图片按钮
           var addCell = Center(
             child: Image.asset(
@@ -180,13 +195,11 @@ class _PostPublishPageState extends State<PostPublishPage> {
           );
           content = GestureDetector(
             onTap: () {
-              // 如果已添加了9张图片，则提示不允许添加更多
-              if(fileList.length > 9) {
-                Scaffold.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('最多只能添加9张图片'),
-                    )
-                );
+              // 如果已添加了4张图片，则提示不允许添加更多
+              if (fileList.length > 9) {
+                Scaffold.of(context).showSnackBar(SnackBar(
+                  content: Text('最多只能添加4张图片'),
+                ));
                 return;
               }
               _loadAssets();
@@ -198,11 +211,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
             children: <Widget>[
               Center(
                   child: AssetThumb(
-                      width: 300,
-                      height: 300,
-                      asset: fileList[index]
-                  )
-              ),
+                      width: 300, height: 300, asset: fileList[index])),
               Align(
                 alignment: Alignment.topRight,
                 child: InkWell(
@@ -245,9 +254,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
               autofocus: true,
               maxLength: 200,
               decoration: InputDecoration(
-                  hintText: '分享新鲜事...',
-                  border: InputBorder.none
-              ),
+                  hintText: '分享新鲜事...', border: InputBorder.none),
               style: TextStyle(fontSize: 16),
               minLines: 1,
               maxLines: 100,
@@ -275,7 +282,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
 
   _onPublish(BuildContext context) {
     final content = _contentController.text;
-    if(content.length <= 0) {
+    if (content.length <= 0) {
       MyToast.show('请输入您的新鲜事~');
       return;
     }
@@ -287,7 +294,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
       formData.fields.add(MapEntry("content", content));
       print("设备型号：$devicemodel");
       formData.fields.add(MapEntry("devicemodel", devicemodel));
-      if(fileList.length > 0) {
+      if (fileList.length > 0) {
         Iterable.generate(fileList.length).forEach((index) async {
           Asset image = fileList[index];
           ByteData byteData = await image.getByteData();
@@ -297,43 +304,43 @@ class _PostPublishPageState extends State<PostPublishPage> {
             imageData,
             filename: name,
           );
-          MapEntry<String, MultipartFile> file = MapEntry("files", multipartFile);
+          MapEntry<String, MultipartFile> file =
+              MapEntry("files", multipartFile);
           formData.files.add(file);
-          if(formData.files.length == fileList.length) {
+          if (formData.files.length == fileList.length) {
             _publishApi(context, formData);
           }
         });
       } else {
         _publishApi(context, formData);
       }
-    } catch(e) {
+    } catch (e) {
       setState(() {
         _loading = false;
       });
     }
   }
 
-  _publishApi(BuildContext context, FormData formData) async{
+  _publishApi(BuildContext context, FormData formData) async {
     //发布帖子
+    print("发布帖子");
     await PostDao.publish(context, formData);
     setState(() {
       _loading = false;
     });
-    Navigator.push(context, MaterialPageRoute(
-        builder: (content) => HomePage()
-    ));
+    Navigator.push(
+        context, MaterialPageRoute(builder: (content) => HomePage()));
   }
 
   Future getDeviceInfo() async {
     DeviceInfoPlugin deviceInfo = new DeviceInfoPlugin();
-    if(Platform.isAndroid) {
+    if (Platform.isAndroid) {
       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      devicemodel = "Android" ;
+      devicemodel = "Android";
       print(androidInfo.toString());
     } else if (Platform.isIOS) {
       IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
       devicemodel = iosInfo.name;
     }
   }
-
 }

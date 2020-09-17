@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mblog/util/shared_pre.dart';
 
 class MyPage extends StatefulWidget {
   @override
@@ -13,7 +14,12 @@ class _MyPageState extends State<MyPage> {
         title: Text('我的'),
       ),
       body: Center(
-        child: Text('my page'),
+        child: RaisedButton(
+          child: Text("设置过期Token"),
+          onPressed: (){
+            Shared_pre.Shared_setToken("11111");
+          },
+        ),
       ),
     );
   }

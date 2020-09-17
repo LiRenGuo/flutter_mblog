@@ -1,3 +1,6 @@
+import 'package:date_format/date_format.dart';
+import 'package:flutter_mblog/model/mypost_model.dart' as model;
+
 class PostModel {
   int totalPages;
   List<PostItem> resultList;
@@ -35,6 +38,12 @@ class PostItem {
   bool islike;
   int pubtime;
   int ctime;
+
+
+  @override
+  String toString() {
+    return 'PostItem{id: $id, pid: $pid, content: $content, devicemodel: $devicemodel, photos: $photos, user: $user, commentCount: $commentCount, forwardCount: $forwardCount, likeCount: $likeCount, islike: $islike, pubtime: $pubtime, ctime: $ctime}';
+  }
 
   PostItem(
       {this.id,

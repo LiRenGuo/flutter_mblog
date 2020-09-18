@@ -55,7 +55,7 @@ class UserDao{
     }
   }
 
-  static Future<FollowModel> getFollowingList(String userId) async{
+  static Future<FollowModel> getFollowingList(String userId,BuildContext context) async{
     try {
       final response =  await dio.get("http://mblog.yunep.com/api/user/following/$userId");
       if (response.statusCode == 200) {
@@ -64,13 +64,30 @@ class UserDao{
       }else{
         throw Exception("loading data error");
       }
-      /*Shared_pre.Shared_getUser().then((value) async{
-        print(value);
-
-      });*/
     }on DioError catch(e) {
       print(e.toString());
       print(e.response.statusCode);
+      if (e.response.statusCode == 401) {
+        Oauth_2.ResToken(context);
+      }
+    }
+  }
+
+  static Future<FollowModel> getFollowersList(String userId,BuildContext context)async{
+    try {
+      final response =  await dio.get("http://mblog.yunep.com/api/user/followers/$userId");
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+        return FollowModel.fromJson(responseData);
+      }else{
+        throw Exception("loading data error");
+      }
+    }on DioError catch(e) {
+      print(e.toString());
+      print(e.response.statusCode);
+      if (e.response.statusCode == 401) {
+        Oauth_2.ResToken(context);
+      }
     }
   }
 }

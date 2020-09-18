@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/following_page.dart';
 import 'package:flutter_mblog/pages/followme_page.dart';
 import 'package:flutter_mblog/pages/login_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
+import 'package:flutter_mblog/pages/welcome_page.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 
 class MyDrawer extends StatelessWidget {
   final UserModel userModel;
+  final FollowModel followModel;
+  final FollowModel followersModel;
 
-  const MyDrawer({Key key, this.userModel}) : super(key: key);
+  const MyDrawer({Key key, this.userModel,this.followModel,this.followersModel}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +35,7 @@ class MyDrawer extends StatelessWidget {
       },
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.fromLTRB(20,20,20,20),
+        padding: EdgeInsets.fromLTRB(20,40,20,20),
         decoration: BoxDecoration(
             color: Colors.white,
             border: Border(bottom: BorderSide(width: 1, color: Color(0xfff2f2f2)))),
@@ -41,11 +45,10 @@ class MyDrawer extends StatelessWidget {
           children: <Widget>[
             Padding(
               padding: EdgeInsets.only(bottom: 5),
-              child: ClipOval(
-                child: Image.network(
-                  userModel.avatar,
-                  width: 70,
-                ),
+              child: CircleAvatar(
+                radius: 40,
+
+                backgroundImage: NetworkImage(userModel.avatar),
               ),
             ),
             Text(
@@ -63,7 +66,8 @@ class MyDrawer extends StatelessWidget {
               ),
             ),
             Row(children: <Widget>[
-              Text('1',
+              Text(
+                  followModel != null ?followModel.followList.length.toString(): "0",
                   style: TextStyle(
                       color: Colors.black, fontWeight: FontWeight.bold)),
               InkWell(
@@ -71,10 +75,10 @@ class MyDrawer extends StatelessWidget {
                     padding: EdgeInsets.only(left: 2, right: 15),
                     child: Text('正在关注', style: TextStyle(color: Colors.grey))),
                     onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => FollowingPage()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => FollowingPage(userId: userModel.id,followModel: followModel,)));
                     },
               ),
-              Text('0',
+              Text(followersModel != null ?followersModel.followList.length.toString(): "0",
                   style: TextStyle(
                       color: Colors.black, fontWeight: FontWeight.bold)),
               InkWell(
@@ -82,7 +86,7 @@ class MyDrawer extends StatelessWidget {
                     padding: EdgeInsets.symmetric(horizontal: 2),
                     child: Text('个关注者', style: TextStyle(color: Colors.grey))),
                     onTap: (){
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => FollowMePage()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => FollowMePage(userId: userModel.id,followMeModel: followersModel,)));
                     },
               ),
             ]),
@@ -98,17 +102,16 @@ class MyDrawer extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.all(0),
           shrinkWrap:true,
-
         children: <Widget>[
           ListTile(
               leading: Icon(Icons.account_circle),
               title: Text('个人资料'),
               onTap: () => Navigator.of(context)
                   .push(MaterialPageRoute(builder: (context) => MinePage(userid: userModel.id,wLoginUserId: userModel.id,)))),
-          ListTile(
+          /*ListTile(
               leading: Icon(Icons.message),
               title: Text('关注请求'),
-              onTap: () => print('关注请求')),
+              onTap: () => print('关注请求')),*/
           ListTile(
               leading: Icon(Icons.settings),
               title: Text('隐私设置'),
@@ -121,10 +124,10 @@ class MyDrawer extends StatelessWidget {
               leading: Icon(Icons.color_lens),
               title: Text('换肤'),
               onTap: () => print('换肤')),
-          ListTile(
+          /*ListTile(
               leading: Icon(Icons.language),
               title: Text('语言'),
-              onTap: () => print('语言')),
+              onTap: () => print('语言')),*/
           ListTile(
               leading: Icon(Icons.power_settings_new),
               title: Text('登出'),
@@ -160,7 +163,7 @@ class MyDrawer extends StatelessWidget {
     Shared_pre.Shared_deleteToken();
     Shared_pre.Shared_deleteResToken();
     Shared_pre.Shared_deleteUser();
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => LoginPage()));
+    Navigator.pushAndRemoveUntil(
+        context, MaterialPageRoute(builder: (context) => WelcomePage()), (route) => route == null);
   }
 }

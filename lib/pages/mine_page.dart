@@ -10,11 +10,15 @@ import 'package:flutter_mblog/model/mypost_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/edit_mine_page.dart';
+import 'package:flutter_mblog/pages/following_page.dart';
+import 'package:flutter_mblog/pages/followme_page.dart';
 import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/TimeMachineUtil.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
+import 'package:flutter_mblog/util/time_to_simple.dart';
 import 'package:flutter_mblog/widget/fade_route.dart';
 import 'package:flutter_mblog/widget/image_all_screen_look.dart';
 import 'package:flutter_mblog/widget/tweets_page.dart';
@@ -43,6 +47,8 @@ class _MinePageState extends State<MinePage>
   bool isok = false;
   bool isLoadingMyPost = false;
   bool isLoadingMyLikePost = false;
+  FollowModel followModel; // 正在关注的人
+  FollowModel followersModel; // 关注者
 
   double tabHeight = 310;
   int page = 0;
@@ -59,8 +65,7 @@ class _MinePageState extends State<MinePage>
   void initState() {
     print(widget.wLoginUserId);
     super.initState();
-    initAttention(widget.wLoginUserId);
-    _getUserInfo();
+    initAttention();
     _getMyPostList();
     _getLikePostList();
     tabController = TabController(vsync: this, length: 4, initialIndex: 0);
@@ -73,10 +78,18 @@ class _MinePageState extends State<MinePage>
         _getMyPostListNo(page);
       }
     });
+    _getUserInfo();
   }
 
-  initAttention(String userId) async {
-    FollowModel followModel =  await UserDao.getFollowingList(userId);
+  initAttention() async {
+    if (widget.userid.isNotEmpty) {
+      followersModel = await UserDao.getFollowersList(widget.userid, context);
+      followModel =  await UserDao.getFollowingList(widget.userid,context);
+    }else{
+      UserModel userModel = await Shared_pre.Shared_getUser();
+      followersModel = await UserDao.getFollowersList(userModel.id, context);
+      followModel =  await UserDao.getFollowingList(userModel.id,context);
+    }
     if (followModel != null && followModel.followList.length != 0) {
       bool isAtt = false;
       followModel.followList.forEach((element) {
@@ -159,6 +172,7 @@ class _MinePageState extends State<MinePage>
     setState(() {
       _getUserInfo();
       _getMyPostList();
+      initAttention();
     });
     return null;
   }
@@ -314,8 +328,7 @@ class _MinePageState extends State<MinePage>
                                 child: Text(
                                   _userModel.name,
                                   style: TextStyle(
-                                      letterSpacing: 2,
-                                      fontSize: AdaptiveTools.setPx(22),
+                                      fontSize: AdaptiveTools.setPx(20),
                                       fontWeight: FontWeight.w800),
                                 ),
                               ),
@@ -323,7 +336,7 @@ class _MinePageState extends State<MinePage>
                                 child: Text(
                                   "@${_userModel.username}",
                                   style: TextStyle(
-                                      fontSize: AdaptiveTools.setPx(15),
+                                      fontSize: AdaptiveTools.setPx(14),
                                       color: Colors.black54),
                                 ),
                               ),
@@ -335,7 +348,7 @@ class _MinePageState extends State<MinePage>
                                       ? "这个人很懒，什么都没有写下！！！"
                                       : _userModel.intro,
                                   style: TextStyle(
-                                      fontSize: AdaptiveTools.setPx(16)),
+                                      fontSize: AdaptiveTools.setPx(15)),
                                 ),
                               ),
                               Container(
@@ -343,49 +356,92 @@ class _MinePageState extends State<MinePage>
                                       top: AdaptiveTools.setPx(5)),
                                   child: Row(
                                     children: <Widget>[
-                                      Container(
-                                        child: Image.asset(
-                                            "images/ic_vector_calendar.png"),
-                                        height: 19,
+                                      Row(
+                                        children: <Widget>[
+                                          Container(
+                                            height: 19,
+                                            child: Image.asset("images/lng.png"),
+                                          ),
+                                          SizedBox(
+                                            width: 4,
+                                          ),
+                                          Container(
+                                            margin: EdgeInsets.only(bottom: 2),
+                                            child: Text(_userModel.address ?? "外星球",style: TextStyle(fontSize: 17,color: Colors.black54),),
+                                          )
+                                        ],
                                       ),
                                       SizedBox(
-                                        width: 4,
+                                        width: 20,
                                       ),
-                                      /*Text(
-                                        "${TimeUtil.parse(_userModel.ctime.toString())} 加入",
-                                        style: TextStyle(
-                                            fontSize: 17,
-                                            color: Colors.black54),
-                                      )*/
+                                      Row(
+                                        children: <Widget>[
+                                          Container(
+                                            child: Image.asset(
+                                                "images/ic_vector_calendar.png"),
+                                            height: 19,
+                                          ),
+                                          SizedBox(
+                                            width: 4,
+                                          ),
+                                          Container(
+                                            child: Text(
+                                              "${TimeUtil.parse(_userModel.ctime.toString())}加入",
+                                              style: TextStyle(
+                                                  fontSize: 17,
+                                                  color: Colors.black54),
+                                            ),
+                                            margin: EdgeInsets.only(bottom: 2),
+                                          )
+                                        ],
+                                      )
                                     ],
                                   )),
                               Container(
                                   margin: EdgeInsets.only(top: 6),
                                   child: Row(
                                     children: <Widget>[
-                                      Text(
-                                        _userModel.following.toString(),
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 18),
+                                      InkWell(
+                                        child: Row(
+                                          children: <Widget>[
+                                            Text(
+                                              isOkAttention?followModel.followList.length.toString():"0",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w800,
+                                                  fontSize: 18),
+                                            ),
+                                            SizedBox(
+                                              width: 3,
+                                            ),
+                                            Text("正在关注"),
+                                          ],
+                                        ),
+                                        onTap: (){
+                                          Navigator.push(context, MaterialPageRoute(builder: (context) => FollowingPage(userId: _userModel.id,followModel: followModel,)));
+                                        },
                                       ),
-                                      SizedBox(
-                                        width: 3,
-                                      ),
-                                      Text("正在关注"),
                                       SizedBox(
                                         width: 16,
                                       ),
-                                      Text(
-                                        _userModel.followers.toString(),
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 18),
-                                      ),
-                                      SizedBox(
-                                        width: 3,
-                                      ),
-                                      Text("个关注者")
+                                      InkWell(
+                                        child: Row(
+                                          children: <Widget>[
+                                            Text(
+                                              isOkAttention?followersModel.followList.length.toString():"0",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w800,
+                                                  fontSize: 18),
+                                            ),
+                                            SizedBox(
+                                              width: 3,
+                                            ),
+                                            Text("个关注者")
+                                          ],
+                                        ),
+                                        onTap: (){
+                                          Navigator.push(context, MaterialPageRoute(builder: (context) => FollowMePage(userId: _userModel.id,followMeModel: followersModel,)));
+                                        },
+                                      )
                                     ],
                                   ))
                             ],
@@ -399,9 +455,9 @@ class _MinePageState extends State<MinePage>
                         unselectedLabelColor: Colors.black54,
                         unselectedLabelStyle: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: AdaptiveTools.setPx(12)),
+                            fontSize: AdaptiveTools.setRpx(32)),
                         labelStyle: TextStyle(
-                            fontSize: AdaptiveTools.setPx(12),
+                            fontSize: AdaptiveTools.setRpx(32),
                             fontWeight: FontWeight.w900),
                         labelColor: Colors.blue,
                         controller: tabController,
@@ -416,7 +472,7 @@ class _MinePageState extends State<MinePage>
                             text: "推文",
                           ),
                           Tab(
-                            text: "推文合回复",
+                            text: "推文和回复",
                           ),
                           Tab(
                             text: "媒体",
@@ -527,7 +583,7 @@ class _LikeState extends State<Like> {
         if (count == 0) {
           result = Text(
             '赞',
-            style: TextStyle(color: color),
+            style: TextStyle(color: color,fontSize: AdaptiveTools.setRpx(10)),
           );
         } else
           result = Text(

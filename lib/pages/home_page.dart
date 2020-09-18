@@ -32,16 +32,32 @@ class _HomePageState extends State<HomePage> {
   bool _isRequesting = false;
 
   ScrollController  _scrollController = ScrollController();
+  FollowModel followModel;
+  FollowModel followersModel;
+  bool isOkAttention = false;
 
   @override
   void initState() {
     _loadData();
+    initAttention();
     _scrollController.addListener(() {
       if(_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
         _loadData(loadMore: true);
       }
     });
     super.initState();
+  }
+
+  initAttention() async {
+    print("请求数据1");
+    userModel = await Shared_pre.Shared_getUser();
+    followersModel = await UserDao.getFollowersList(userModel.id, context);
+    followModel =  await UserDao.getFollowingList(userModel.id,context);
+    if (followModel != null && followersModel != null) {
+      setState(() {
+        isOkAttention = true;
+      });
+    }
   }
 
   @override
@@ -62,7 +78,7 @@ class _HomePageState extends State<HomePage> {
         child: Image.asset('images/ic_home_compose.png', fit: BoxFit.cover, scale: 3.0),
         backgroundColor: Colors.blue
       ),
-      drawer: MyDrawer(userModel: userModel),
+      drawer: isOkAttention ? MyDrawer(userModel: userModel,followModel: followModel,followersModel: followersModel,) :MyDrawer(userModel: userModel),
       appBar: AppBar(
         backgroundColor: Colors.white,
         leading: Container(
@@ -151,6 +167,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _handleRefresh() async {
     setState(() {
       _loadData();
+      initAttention();
     });
   }
 

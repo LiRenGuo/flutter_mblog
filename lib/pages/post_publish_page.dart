@@ -286,6 +286,10 @@ class _PostPublishPageState extends State<PostPublishPage> {
       MyToast.show('请输入您的新鲜事~');
       return;
     }
+    if (content.length <= 2) {
+      MyToast.show('新鲜事不能少于2个字');
+      return;
+    }
     try {
       FormData formData = FormData();
       setState(() {
@@ -293,6 +297,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
       });
       formData.fields.add(MapEntry("content", content));
       print("设备型号：$devicemodel");
+      print("设备内容：$content");
       formData.fields.add(MapEntry("devicemodel", devicemodel));
       if (fileList.length > 0) {
         Iterable.generate(fileList.length).forEach((index) async {

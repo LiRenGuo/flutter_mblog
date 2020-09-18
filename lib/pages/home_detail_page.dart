@@ -3,12 +3,17 @@ import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mblog/dao/follow_dao.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
+import 'package:flutter_mblog/dao/user_dao.dart';
+import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/mypost_model.dart';
 import 'package:flutter_mblog/model/post_comment_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
+import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
+import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:flutter_mblog/widget/fade_route.dart';
 import 'package:flutter_mblog/widget/image_all_screen_look.dart';
 import 'package:flutter_mblog/widget/post_detail_card.dart';
@@ -32,6 +37,8 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
   PostCommentModel _postCommentModel;
   TextEditingController _commentEditingController = new TextEditingController();
   List<Asset> fileList = List<Asset>();
+  bool isOkAttention;
+  List<String> isAttention;
 
   initPostItem()async{
     PostItem _itemWidget;
@@ -59,7 +66,6 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
     }else{
       postCommentModel = await PostDao.getCommentList(widget.item.id);
     }
-
     setState(() {
       _postCommentModel = postCommentModel;
       isok = true;
@@ -72,6 +78,15 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
     super.initState();
     initPostItem();
     getPostDetail();
+    initAttention();
+  }
+
+  Future<Null> _onRefresh() async {
+    setState(() {
+      initPostItem();
+      getPostDetail();
+      initAttention();
+    });
   }
 
   @override
@@ -92,20 +107,23 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               Expanded(
-                child: ListView(
-                  children: <Widget>[
-                    PostDetailCard(item: _item),
-                    Container(
-                      height: 5,
-                      color: Colors.black12,
-                    ),
-                    isok
-                        ? commentist()
-                        : Container(
-                            height: 0,
-                            width: 0,
-                          )
-                  ],
+                child: RefreshIndicator(
+                  child: ListView(
+                    children: <Widget>[
+                      PostDetailCard(item: _item),
+                      Container(
+                        height: 4,
+                        color: Colors.black12,
+                      ),
+                      isok
+                          ? commentist()
+                          : Container(
+                        height: 0,
+                        width: 0,
+                      )
+                    ],
+                  ),
+                  onRefresh: _onRefresh,
                 ),
               ),
               Container(
@@ -125,6 +143,44 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
         ),
       ),
     );
+  }
+
+  initAttention() async {
+    UserModel userModel = await Shared_pre.Shared_getUser();
+    FollowModel followModel =  await UserDao.getFollowingList(userModel.id,context);
+    List<String> isAtt = [];
+    if (followModel != null && followModel.followList.length != 0) {
+      var isAttList =  followModel.followList.map((e)=>e.id);
+      isAtt.addAll(isAttList);
+    }
+    if (mounted) {
+      setState(() {
+        isOkAttention = true;
+        isAttention = isAtt;
+      });
+    }
+  }
+
+  _followYou(String userId){
+    print(userId);
+    FollowDao.follow(userId, context);
+    Navigator.pop(context);
+    if (mounted) {
+      setState(() {
+        initAttention();
+      });
+    }
+  }
+
+  _unfollowYou(String userId){
+    print(userId);
+    FollowDao.unfollow(userId, context);
+    Navigator.pop(context);
+    if (mounted) {
+      setState(() {
+        initAttention();
+      });
+    }
   }
 
   Widget commentist() {
@@ -157,22 +213,75 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                           children: <Widget>[
                             Container(
                               child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: <Widget>[
-                                  Container(
-                                    child: Text("${e.user.name}"),
+                                  Row(
+                                    children: <Widget>[
+                                      Container(
+                                        child: Text("${e.user.name}"),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.only(left: 5,bottom: 1),
+                                        child: Text("@${e.user.username}"),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.only(bottom: 4),
+                                        child: Text(
+                                            " · ${TimeUtil.parse(e.ctime.toString())}"),
+                                      )
+                                    ],
                                   ),
-                                  Container(
-                                    child: Text("@${e.user.username}"),
-                                  ),
-                                  Container(
-                                    child: Text(
-                                        " · ${TimeUtil.parse(e.ctime.toString())}"),
+                                  InkWell(
+                                    child: Container(child: Icon(Icons.keyboard_arrow_down),),
+                                    onTap: (){
+                                      print("关注");
+                                      showModalBottomSheet(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return Stack(
+                                            children: <Widget>[
+                                              Container(
+                                                height: 25,
+                                                width: double.infinity,
+                                                color: Colors.black54,
+                                              ),
+                                              Container(
+                                                height: 60,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius: BorderRadius.only(
+                                                    topLeft: Radius.circular(25),
+                                                    topRight: Radius.circular(25),
+                                                  ),
+                                                ),
+                                                child: ListView(
+                                                  children: <Widget>[
+                                                    isOkAttention ?
+                                                    ListTile(
+                                                      leading: Container(
+                                                        child: isAttention.contains(e.user.id)?Image.asset("images/unattention.png"):Image.asset("images/attention.png"),
+                                                        padding: EdgeInsets.all(14),
+                                                      ),
+                                                      title: isAttention.contains(e.user.id) ?Text("取消关注 @${e.user.name}",style: TextStyle(fontSize: 15),):Text("关注 @${e.user.name}",style: TextStyle(fontSize: 15),),
+                                                      onTap: (){
+                                                        isAttention.contains(e.id)?_unfollowYou(e.user.id):_followYou(e.user.id);
+                                                      },
+                                                    ):Container()
+                                                  ],
+                                                ),
+                                              )
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
                                   )
                                 ],
                               ),
+                              width:AdaptiveTools.setRpx(575),
                             ),
                             SizedBox(
-                              height: 10,
+                              height: 5,
                             ),
                             Container(
                               child: Text(e.content),
@@ -185,7 +294,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                             ),
                           ],
                         ),
-                        margin: EdgeInsets.only(top: 5),
+                        margin: EdgeInsets.only(top: 1),
                       )
                     ],
                   ),
@@ -244,10 +353,9 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
             ),
           ),
           Container(
-            height: 200,
+            height: 280,
             alignment: Alignment.center,
             width: double.infinity,
-            color: Colors.white70,
             child: Text("快来发表你的评论",style: TextStyle(color: Colors.black54,fontSize: 14),),
           )
         ],
@@ -285,7 +393,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
         imageWidget = GestureDetector(
           child: Container(
             height: AdaptiveTools.setPx(165),
-            width: AdaptiveTools.setPx(285),
+            width: AdaptiveTools.setRpx(575),
             margin: EdgeInsets.only(top: 10),
             child: ClipRRect(
               child: _cachedImage(images[0]),
@@ -298,7 +406,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
       case 2:
         imageWidget = Container(
           height: AdaptiveTools.setPx(165),
-          width: AdaptiveTools.setPx(285),
+          width: AdaptiveTools.setRpx(575),
           margin: EdgeInsets.only(top: 10),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -525,7 +633,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                                 Container(
                                   padding: EdgeInsets.only(left: 5,right: 10),
                                   height: 45,
-                                  width: 80,
+                                  width: AdaptiveTools.setRpx(200),
                                   alignment: Alignment.bottomCenter,
                                   child: RaisedButton(
                                     child: Text("发送"),
@@ -637,7 +745,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                             // 底部导航栏
                           ],
                         ),
-                        height: AdaptiveTools.setPx(85),
+                        height: AdaptiveTools.setRpx(180),
                       ),
                     );
                   });

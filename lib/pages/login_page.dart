@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/navigator/tab_navigator.dart';
+import 'package:flutter_mblog/pages/register/reset_password_page.dart';
+import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'file:///E:/android/flutter_mblog/lib/pages/register/register_page.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/oauth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -36,14 +39,11 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    //TODO
-    _unameController.text = "13590298696";
-    _pwdController.text = "aa123456";
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('登录', style: TextStyle(color: Colors.white)),
-        iconTheme: IconThemeData(color: Colors.white),
+        backgroundColor: Colors.white,
+        title: Text('登录', style: TextStyle(color: Colors.blue)),
+        iconTheme: IconThemeData(color: Colors.blue),
       ),
       body: SingleChildScrollView(
         child: Form(
@@ -99,7 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               Container(
-                width: 360,
+                width: 385,
                 margin: EdgeInsets.only(top: 20),
                 padding: EdgeInsets.symmetric(vertical: 4),
                 child: Card(
@@ -118,6 +118,35 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
+              ),
+              Container(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        InkWell(
+                          child: Text("忘记密码",style: TextStyle(fontSize: AdaptiveTools.setPx(14),color: Colors.blue),),
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => ResetPasswordPage()));
+                          },
+                        )
+                      ],
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Text("没有账号？",style: TextStyle(fontSize: AdaptiveTools.setPx(14)),),
+                        InkWell(
+                          child: Text("点击注册",style: TextStyle(fontSize: AdaptiveTools.setPx(14),color: Colors.blue),),
+                          onTap: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterPage()));
+                          },
+                        )
+                      ],
+                    )
+                  ],
+                ),
+                margin: EdgeInsets.only(left: 28,right: 28),
               )
             ],
           ),
@@ -133,9 +162,9 @@ class _LoginPageState extends State<LoginPage> {
       Oauth_2.Login_oauth2(_unameController.text, _pwdController.text, context).then((boola) {
         if (boola == 'success') {
           print("success");
-          Navigator.push(context, MaterialPageRoute(
-            builder: (context) => TabNavigator()
-          ));
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+            builder: (context) => TabNavigator(),
+          ),(Route<dynamic> route) => false);
         } else {
           MyToast.show("用户名或密码错误");
           print("error");

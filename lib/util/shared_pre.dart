@@ -39,17 +39,20 @@ class Shared_pre {
     String mobile = preferences.get(Constants.Shared_Mobile);
     String name = preferences.get(Constants.Shared_Name);
     String avatar = preferences.get(Constants.Shared_Avatar);
+    String followers = preferences.get(Constants.Shared_Followers);
+    String following = preferences.get(Constants.Shared_Following);
     return UserModel(
-        id:id,
+        id: id,
         mobile: mobile,
         email: email,
         username: username,
         avatar: avatar,
         name: name,
-        );
+        followers: int.parse(followers),
+        following: int.parse(following));
   }
 
-  static Future<String>  Shared_setUser(UserModel model) async {
+  static Future<String> Shared_setUser(UserModel model) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     preferences.setString(Constants.Shared_Email, model.email);
     preferences.setString(Constants.Shared_Mobile, model.mobile);
@@ -57,6 +60,10 @@ class Shared_pre {
     preferences.setString(Constants.Shared_Username, model.username);
     preferences.setString(Constants.Shared_Avatar, model.avatar);
     preferences.setString(Constants.Shared_Id, model.id);
+    preferences.setString(
+        Constants.Shared_Following, model.following.toString());
+    preferences.setString(
+        Constants.Shared_Followers, model.followers.toString());
   }
 
   static Future<String> Shared_deleteUser() async {
@@ -78,7 +85,6 @@ class Shared_pre {
   static Future<String> Shared_setResToken(String token) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     preferences.setString(Constants.Shared_ResToken, token);
-
   }
 
   static Future<String> Shared_deleteResToken() async {
@@ -91,14 +97,12 @@ class Shared_pre {
   static Future<String> Shared_setArticle(String data) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     preferences.setString(Constants.Shared_Article, data);
-
   }
+
   static Future<String> Shared_getArticle() async {
     var article;
     SharedPreferences preferences = await SharedPreferences.getInstance();
     article = await preferences.getString(Constants.Shared_Article);
     return article;
-
   }
-
 }

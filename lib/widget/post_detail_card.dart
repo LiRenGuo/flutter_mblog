@@ -33,20 +33,20 @@ class _PostDetailCardState extends State<PostDetailCard> {
 
   initAttention() async {
     UserModel userModel = await Shared_pre.Shared_getUser();
-    FollowModel followModel =  await UserDao.getFollowingList(userModel.id);
+    FollowModel followModel =  await UserDao.getFollowingList(userModel.id,context);
+    bool isAtt = false;
     if (followModel != null && followModel.followList.length != 0) {
-      bool isAtt = false;
       followModel.followList.forEach((element) {
         if (element.id == widget.item.user.id) {
           isAtt = true;
         }
       });
-      if (mounted) {
-        setState(() {
-          isOkAttention = true;
-          isAttention = isAtt;
-        });
-      }
+    }
+    if (mounted) {
+      setState(() {
+        isOkAttention = true;
+        isAttention = isAtt;
+      });
     }
   }
 
@@ -159,7 +159,7 @@ class _PostDetailCardState extends State<PostDetailCard> {
                                     ListTile(
                                       leading: Container(
                                         child: isAttention?Image.asset("images/unattention.png"):Image.asset("images/attention.png"),
-                                        padding: EdgeInsets.all(10),
+                                        padding: EdgeInsets.all(14),
                                       ),
                                       title: isAttention ?Text("取消关注 @${widget.item.user.name}",style: TextStyle(fontSize: 15),):Text("关注 @${widget.item.user.name}",style: TextStyle(fontSize: 15),),
                                       onTap: (){

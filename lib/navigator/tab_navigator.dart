@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/pages/home_page.dart';
+import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/my_page.dart';
 
 
@@ -22,7 +23,7 @@ class _TabNavigatorState extends State<TabNavigator> {
         physics: NeverScrollableScrollPhysics(),
         children: <Widget>[
           HomePage(),
-          MyPage(),
+          MinePage(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(

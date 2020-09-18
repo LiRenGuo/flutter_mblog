@@ -9,11 +9,13 @@ import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/dao/user_dao.dart';
 import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
+import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/my_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
+import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:flutter_mblog/widget/image_all_screen_look.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:like_button/like_button.dart';
@@ -47,20 +49,21 @@ class _PostCardState extends State<PostCard> {
   }
 
   initAttention() async {
-    FollowModel followModel =  await UserDao.getFollowingList(widget.userId);
+    UserModel userModel = await Shared_pre.Shared_getUser();
+    FollowModel followModel =  await UserDao.getFollowingList(userModel.id,context);
+    bool isAtt = false;
     if (followModel != null && followModel.followList.length != 0) {
-      bool isAtt = false;
       followModel.followList.forEach((element) {
         if (element.id == item.user.id) {
           isAtt = true;
         }
       });
-      if (mounted) {
-        setState(() {
-          isOkAttention = true;
-          isAttention = isAtt;
-        });
-      }
+    }
+    if (mounted) {
+      setState(() {
+        isOkAttention = true;
+        isAttention = isAtt;
+      });
     }
   }
 
@@ -121,7 +124,7 @@ class _PostCardState extends State<PostCard> {
                                     child: Text(" · "+TimeUtil.parse(item.ctime.toString()),
                                         style: TextStyle(
                                             color: Colors.grey, fontSize: 12)),
-                                    margin: EdgeInsets.only(left: 3, bottom: 4),
+                                    margin: EdgeInsets.only(left: 3, bottom: 1),
                                   )
                                 ],
                               ),
@@ -155,7 +158,7 @@ class _PostCardState extends State<PostCard> {
                                                     ListTile(
                                                       leading: Container(
                                                         child: isAttention?Image.asset("images/unattention.png"):Image.asset("images/attention.png"),
-                                                        padding: EdgeInsets.all(10),
+                                                        padding: EdgeInsets.all(14),
                                                       ),
                                                       title: isAttention ?Text("取消关注 @${item.user.name}",style: TextStyle(fontSize: 15),):Text("关注 @${item.user.name}",style: TextStyle(fontSize: 15),),
                                                       onTap: (){
@@ -173,7 +176,7 @@ class _PostCardState extends State<PostCard> {
                                   ))
                             ],
                           ),
-                          width:AdaptiveTools.setPx(290)
+                          width:AdaptiveTools.setRpx(575)
                       ),
                       onTap: (){
                         Navigator.of(context).push(MaterialPageRoute(builder: (context) => MinePage(userid: item.user.id,)));
@@ -182,13 +185,13 @@ class _PostCardState extends State<PostCard> {
                     Container(
                       margin: EdgeInsets.only(top: 1, bottom: 4),
                       child: _content(context),
-                      width: AdaptiveTools.setPx(290),
+                      width: AdaptiveTools.setRpx(575),
                     ),
                     item.photos != null && item.photos.length != 0
                         ? _buildImage(item.photos)
                         : Container(),
                     Container(
-                      width: AdaptiveTools.setPx(290),
+                      width: AdaptiveTools.setRpx(575),
                       margin: EdgeInsets.only(top: 10),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -353,7 +356,7 @@ class _PostCardState extends State<PostCard> {
         imageWidget = GestureDetector(
           child: Container(
             height: 200,
-            width: AdaptiveTools.setPx(290),
+            width: AdaptiveTools.setRpx(575),
             margin: EdgeInsets.only(top: 3),
             child: ClipRRect(
               child: _cachedImage(photos[0]),
@@ -366,7 +369,7 @@ class _PostCardState extends State<PostCard> {
       case 2:
         imageWidget = Container(
           height: 200,
-          width: AdaptiveTools.setPx(290),
+          width: AdaptiveTools.setRpx(575),
           margin: EdgeInsets.only(top: 3),
           child: Row(
             children: <Widget>[
@@ -408,7 +411,7 @@ class _PostCardState extends State<PostCard> {
       case 3:
         imageWidget = Container(
           height: 200,
-          width: AdaptiveTools.setPx(290),
+          width: AdaptiveTools.setRpx(575),
           margin: EdgeInsets.only(top: 3),
           child: Column(
             children: <Widget>[
@@ -480,7 +483,7 @@ class _PostCardState extends State<PostCard> {
       case 4:
         imageWidget = Container(
           height: 200,
-          width: AdaptiveTools.setPx(290),
+          width: AdaptiveTools.setRpx(575),
           margin: EdgeInsets.only(top: 3),
           child: Column(
             children: <Widget>[

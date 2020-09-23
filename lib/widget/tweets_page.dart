@@ -1,12 +1,14 @@
 
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/model/mypost_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
+import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/widget/fade_route.dart';
@@ -17,8 +19,9 @@ class Tweets extends StatefulWidget {
   List<MyPostItem> _item;
   String userId;
   String loginUserId;
+  String avatar;
 
-  Tweets(this._item,this.userId,this.loginUserId);
+  Tweets(this._item,this.userId,this.loginUserId,this.avatar);
   @override
   _TweetsState createState() => _TweetsState();
 }
@@ -42,6 +45,7 @@ class _TweetsState extends State<Tweets> {
       }).toList(),
     );
   }
+
   Future<bool> onLike(bool isLiked, MyPostItem postItem) {
     final Completer<bool> completer = new Completer<bool>();
     Timer(const Duration(milliseconds: 200), () {
@@ -175,8 +179,8 @@ class _TweetsState extends State<Tweets> {
                                       decoration: BoxDecoration(
                                         color: Colors.white,
                                         borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(25),
-                                          topRight: Radius.circular(25),
+                                          topLeft: Radius.circular(20),
+                                          topRight: Radius.circular(20),
                                         ),
                                       ),
                                       child: ListView(
@@ -225,29 +229,34 @@ class _TweetsState extends State<Tweets> {
                         child: Text(_item.content),
                       ),
                       onTap: (){
-                        print("跳转到某某地址");
                         Navigator.push(context, MaterialPageRoute(builder: (context) => HomeDetailPage(new PostItem(),postId: _item.id,)));
                       },
                     ),
                     Container(
-                      margin: EdgeInsets.only(top: 8,bottom: 8),
+                      margin: EdgeInsets.only(top: 8,bottom: 5),
                       child: image(_item.photos, context),
                     ),
+                    if(_item.postId != null) _buildRetweet(_item.rPostItem),
                     Container(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
-                          Container(
-                            child: Row(
-                              children: <Widget>[
-                                Image.asset("images/ic_home_comment.webp"),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Text("${_item.commentCount.toString()}")
-                              ],
+                          InkWell(
+                            child: Container(
+                              child: Row(
+                                children: <Widget>[
+                                  Image.asset("images/ic_home_comment.webp"),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text("${_item.commentCount.toString()}")
+                                ],
+                              ),
+                              height: AdaptiveTools.setPx(20),
                             ),
-                            height: AdaptiveTools.setPx(20),
+                            onTap: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => HomeDetailPage(null,postId: _item.id,)));
+                            },
                           ),
                           Container(
                             child: _buildLikeButton(_item),
@@ -260,9 +269,14 @@ class _TweetsState extends State<Tweets> {
                             ),
                             height: AdaptiveTools.setPx(17),
                           ),
-                          Container(
-                            child: Image.asset("images/ic_home_forward.png"),
-                            height: AdaptiveTools.setPx(20),
+                          InkWell(
+                            child: Container(
+                              child: Image.asset("images/ic_home_forward.png"),
+                              height: AdaptiveTools.setPx(20),
+                            ),
+                            onTap: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => PostPublishPage(avatar:widget.avatar,postId: _item.id,)));
+                            },
                           )
                         ],
                       ),
@@ -284,6 +298,253 @@ class _TweetsState extends State<Tweets> {
     );
   }
 
+  Widget _buildRetweet(MyPostItem postItem) {
+    Widget retweetWidget;
+    postItem != null && postItem.id != null
+        ? retweetWidget = InkWell(
+      child: Container(
+        margin: EdgeInsets.only(bottom: 10),
+        width: double.infinity,
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.black12),
+            borderRadius: BorderRadius.all(Radius.circular(10))),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              padding: EdgeInsets.fromLTRB(10, 3, 3, 0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  CircleAvatar(
+                    radius: 15,
+                    backgroundImage: NetworkImage(postItem.user.avatar),
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Container(
+                        padding: EdgeInsets.fromLTRB(10, 8, 0, 10),
+                        child: Text("${postItem.user.name}"),
+                      ),
+                      Container(
+                        padding: EdgeInsets.fromLTRB(5, 7, 10, 10),
+                        child: Text("@${postItem.user.username}",style: TextStyle(color: Colors.black38),),
+                      )
+                    ],
+                  ),
+                  Spacer(),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(10, 6, 10, 10),
+                    child: Text(
+                      "${TimeUtil.parse(postItem.ctime.toString())}",
+                      style:
+                      TextStyle(fontSize: 13, color: Colors.black38),
+                    ),
+                  )
+                ],
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.fromLTRB(10, 0, 3, 3),
+              child: Text("${postItem.content}"),
+            ),
+            postItem.photos != null && postItem.photos.length != 0
+                ? _buildRetweetImage(postItem.photos)
+                : Container()
+          ],
+        ),
+      ),
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => HomeDetailPage(new PostItem(),postId: postItem.id,)));
+      },
+    )
+        : retweetWidget = Container(
+      width: 0,
+      height: 0,
+    );
+    return retweetWidget;
+  }
+
+  _buildRetweetImage(List<String> photosList) {
+    Widget widgets;
+    switch (photosList.length) {
+      case 1:
+        widgets = Container(
+          height: 150,
+          margin: EdgeInsets.only(top: 5),
+          width: double.infinity,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(10),
+                  bottomRight: Radius.circular(10)),
+              image: DecorationImage(
+                  image: NetworkImage(photosList[0]), fit: BoxFit.cover)),
+        );
+        break;
+      case 2:
+        widgets = Container(
+          height: 150,
+          margin: EdgeInsets.only(top: 5),
+          width: double.infinity,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                      borderRadius:
+                      BorderRadius.only(bottomLeft: Radius.circular(10)),
+                      image: DecorationImage(
+                          image: NetworkImage(photosList[0]),
+                          fit: BoxFit.cover)),
+                ),
+              ),
+              SizedBox(
+                width: 5,
+              ),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                      borderRadius:
+                      BorderRadius.only(bottomRight: Radius.circular(10)),
+                      image: DecorationImage(
+                          image: NetworkImage(photosList[1]),
+                          fit: BoxFit.cover)),
+                ),
+              ),
+            ],
+          ),
+        );
+        break;
+      case 3:
+        widgets = Container(
+          height: 150,
+          margin: EdgeInsets.only(top: 5),
+          width: double.infinity,
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(10)),
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[0]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Expanded(
+                      child: Column(
+                        children: <Widget>[
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      image: NetworkImage(photosList[1]),
+                                      fit: BoxFit.cover)),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                      bottomRight: Radius.circular(10)),
+                                  image: DecorationImage(
+                                      image: NetworkImage(photosList[2]),
+                                      fit: BoxFit.cover)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+        break;
+      case 4:
+        widgets = Container(
+          height: 150,
+          margin: EdgeInsets.only(top: 5),
+          width: double.infinity,
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[0]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[1]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 5,
+              ),
+              Expanded(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(10)),
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[2]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                                bottomRight: Radius.circular(10)),
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[3]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        );
+        break;
+    }
+    return widgets;
+  }
+
   _showImage(BuildContext context, List<String> images, int index) {
     Navigator.of(context).push(FadeRoute(
         page: ImageAllScreenLook(
@@ -292,11 +553,41 @@ class _TweetsState extends State<Tweets> {
         )));
   }
 
+  _cachedImage(String img) {
+    return CachedNetworkImage(
+      imageUrl: img,
+      fit: BoxFit.cover,
+      placeholder: (context, url) {
+        return Container(
+          height: 20,
+          child: Center(
+              child: Center(
+                child: CircularProgressIndicator(),
+              )),
+        );
+      },
+    );
+  }
+
   Widget image(List<String> images, BuildContext context) {
     Widget imageWidget;
     switch (images.length) {
       case 1:
-        imageWidget = InkWell(
+        imageWidget = GestureDetector(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            height: AdaptiveTools.setPx(165),
+            width: double.infinity,
+            margin: EdgeInsets.only(top: 3),
+            child: ClipRRect(
+              child: _cachedImage(images[0]),
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          onTap: () => _showImage(context,images, 0),
+        )/*InkWell(
           child: Container(
             height: AdaptiveTools.setPx(165),
             decoration: BoxDecoration(
@@ -308,47 +599,46 @@ class _TweetsState extends State<Tweets> {
           onTap: () {
             _showImage(context, images, 0);
           },
-        );
+        )*/;
         break;
       case 2:
         imageWidget = Container(
+          decoration:
+          BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(8))),
           height: AdaptiveTools.setPx(165),
-          decoration: BoxDecoration(
-              border: Border.all(color: Colors.black26),
-              borderRadius: BorderRadius.all(Radius.circular(18))),
+          width: double.infinity,
+          margin: EdgeInsets.only(top: 3),
           child: Row(
             children: <Widget>[
               Expanded(
-                child: InkWell(
+                child: GestureDetector(
                   child: Container(
-                    decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: NetworkImage(images[0]), fit: BoxFit.cover),
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(18),
-                            bottomLeft: Radius.circular(18))),
+                    height: double.infinity,
+                    child: ClipRRect(
+                      child: _cachedImage(images[0]),
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(8),
+                          bottomLeft: Radius.circular(8)),
+                    ),
                   ),
-                  onTap: () {
-                    _showImage(context, images, 0);
-                  },
+                  onTap: () => _showImage(context,images, 0),
                 ),
               ),
               SizedBox(
                 width: 3,
               ),
               Expanded(
-                child: InkWell(
+                child: GestureDetector(
                   child: Container(
-                    decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: NetworkImage(images[1]), fit: BoxFit.cover),
-                        borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(18),
-                            bottomRight: Radius.circular(18))),
+                    height: double.infinity,
+                    child: ClipRRect(
+                      child: _cachedImage(images[1]),
+                      borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(8),
+                          bottomRight: Radius.circular(8)),
+                    ),
                   ),
-                  onTap: () {
-                    _showImage(context, images, 1);
-                  },
+                  onTap: () => _showImage(context,images, 1),
                 ),
               )
             ],
@@ -358,274 +648,66 @@ class _TweetsState extends State<Tweets> {
       case 3:
         imageWidget = Container(
           height: AdaptiveTools.setPx(165),
-          decoration: BoxDecoration(
-              border: Border.all(color: Colors.black26),
-              borderRadius: BorderRadius.all(Radius.circular(18))),
-          child: Row(
+          width: double.infinity,
+          margin: EdgeInsets.only(top: 3),
+          child: Column(
             children: <Widget>[
               Expanded(
-                child: InkWell(
-                  child: Container(
-                    decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: NetworkImage(images[0]), fit: BoxFit.cover),
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(18),
-                            bottomLeft: Radius.circular(18))),
-                  ),
-                  onTap: () {
-                    _showImage(context, images, 0);
-                  },
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: Column(
+                child: Row(
                   children: <Widget>[
                     Expanded(
-                      child: InkWell(
+                      child: GestureDetector(
                         child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[1]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  topRight: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 1);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[2]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  bottomRight: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 2);
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              )
-            ],
-          ),
-        );
-        break;
-      case 4:
-        imageWidget = Container(
-          height: AdaptiveTools.setPx(165),
-          decoration: BoxDecoration(
-              border: Border.all(color: Colors.black26),
-              borderRadius: BorderRadius.all(Radius.circular(18))),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[0]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(18),
-                              )),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 0);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[1]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 1);
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[2]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  topRight: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 2);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[3]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  bottomRight: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 3);
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              )
-            ],
-          ),
-        );
-        break;
-      case 5:
-        imageWidget = Container(
-          height: AdaptiveTools.setPx(165),
-          decoration: BoxDecoration(
-              border: Border.all(color: Colors.black26),
-              borderRadius: BorderRadius.all(Radius.circular(18))),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[0]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(18),
-                              )),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 0);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[3]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 3);
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[2]),
-                                fit: BoxFit.cover),
+                          child: ClipRRect(
+                            child: _cachedImage(images[0]),
+                            borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                bottomLeft: Radius.circular(8)),
                           ),
+                          width: double.infinity,
+                          height: double.infinity,
                         ),
-                        onTap: () {
-                          _showImage(context, images, 2);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[1]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  topRight: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 1);
-                        },
+                        onTap: () => _showImage(context,images, 0),
                       ),
                     ),
                     SizedBox(
-                      height: 3,
+                      width: 3,
                     ),
                     Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[4]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  bottomRight: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 4);
-                        },
+                      child: Column(
+                        children: <Widget>[
+                          Expanded(
+                            child: GestureDetector(
+                              child: Container(
+                                child: ClipRRect(
+                                  child: _cachedImage(images[1]),
+                                  borderRadius: BorderRadius.only(
+                                      topRight: Radius.circular(8)),
+                                ),
+                                width: double.infinity,
+                                height: double.infinity,
+                              ),
+                              onTap: () => _showImage(context,images, 1),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 3,
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              child: Container(
+                                child: ClipRRect(
+                                  child: _cachedImage(images[2]),
+                                  borderRadius: BorderRadius.only(
+                                      bottomRight: Radius.circular(8)),
+                                ),
+                                width: double.infinity,
+                                height: double.infinity,
+                              ),
+                              onTap: () => _showImage(context,images, 2),
+                            ),
+                          )
+                        ],
                       ),
                     )
                   ],
@@ -635,633 +717,91 @@ class _TweetsState extends State<Tweets> {
           ),
         );
         break;
-      case 6:
+      case 4:
         imageWidget = Container(
           height: AdaptiveTools.setPx(165),
-          decoration: BoxDecoration(
-              border: Border.all(color: Colors.black26),
-              borderRadius: BorderRadius.all(Radius.circular(18))),
-          child: Row(
+          width: double.infinity,
+          margin: EdgeInsets.only(top: 3),
+          child: Column(
             children: <Widget>[
               Expanded(
-                child: Column(
+                child: Row(
                   children: <Widget>[
                     Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[0]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(18),
-                              )),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 0);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () {
-                          _showImage(context, images, 1);
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[1]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(18))),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[2]),
-                                fit: BoxFit.cover),
+                      child: Column(
+                        children: <Widget>[
+                          Expanded(
+                            child: GestureDetector(
+                              child: Container(
+                                child: ClipRRect(
+                                  child: _cachedImage(images[0]),
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(8)),
+                                ),
+                                width: double.infinity,
+                                height: double.infinity,
+                              ),
+                              onTap: () => _showImage(context,images, 0),
+                            ),
                           ),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 2);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[3]),
-                                fit: BoxFit.cover),
+                          SizedBox(
+                            height: 3,
                           ),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 3);
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[4]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  topRight: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 4);
-                        },
+                          Expanded(
+                            child: GestureDetector(
+                              child: Container(
+                                child: ClipRRect(
+                                  child: _cachedImage(images[1]),
+                                  borderRadius: BorderRadius.only(
+                                      bottomLeft: Radius.circular(8)),
+                                ),
+                                width: double.infinity,
+                                height: double.infinity,
+                              ),
+                              onTap: () => _showImage(context,images, 1),
+                            ),
+                          )
+                        ],
                       ),
                     ),
                     SizedBox(
-                      height: 3,
+                      width: 3,
                     ),
                     Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[5]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  bottomRight: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 5);
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              )
-            ],
-          ),
-        );
-        break;
-      case 7:
-        imageWidget = Container(
-          height: AdaptiveTools.setPx(165),
-          decoration: BoxDecoration(
-              border: Border.all(color: Colors.black26),
-              borderRadius: BorderRadius.all(Radius.circular(18))),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[0]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(18),
-                              )),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 0);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[1]),
-                                fit: BoxFit.cover),
+                      child: Column(
+                        children: <Widget>[
+                          Expanded(
+                            child: GestureDetector(
+                              child: Container(
+                                child: ClipRRect(
+                                  child: _cachedImage(images[2]),
+                                  borderRadius: BorderRadius.only(
+                                      topRight: Radius.circular(8)),
+                                ),
+                                width: double.infinity,
+                                height: double.infinity,
+                              ),
+                              onTap: () => _showImage(context,images, 2),
+                            ),
                           ),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 1);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[2]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 2);
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[3]),
-                                fit: BoxFit.cover),
+                          SizedBox(
+                            height: 3,
                           ),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 3);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[4]),
-                                fit: BoxFit.cover),
-                          ),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 4);
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[5]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  topRight: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 5);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[6]),
-                                fit: BoxFit.cover),
-                          ),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 6);
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-      case 8:
-        imageWidget = Container(
-          height: AdaptiveTools.setPx(165),
-          decoration: BoxDecoration(
-              border: Border.all(color: Colors.black26),
-              borderRadius: BorderRadius.all(Radius.circular(18))),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[0]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(18),
-                              )),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 0);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[1]),
-                                fit: BoxFit.cover),
-                          ),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 1);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[2]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 2);
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[3]),
-                                fit: BoxFit.cover),
-                          ),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 3);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[4]),
-                                fit: BoxFit.cover),
-                          ),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 4);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[5]),
-                                fit: BoxFit.cover),
-                          ),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 5);
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[6]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  topRight: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 6);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[7]),
-                                fit: BoxFit.cover),
-                          ),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 7);
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-      case 9:
-        imageWidget = Container(
-          height: AdaptiveTools.setPx(165),
-          decoration: BoxDecoration(
-              border: Border.all(color: Colors.black26),
-              borderRadius: BorderRadius.all(Radius.circular(18))),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[0]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(18),
-                              )),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 0);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[1]),
-                                fit: BoxFit.cover),
-                          ),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 1);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[2]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 2);
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[3]),
-                                fit: BoxFit.cover),
-                          ),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 3);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[4]),
-                                fit: BoxFit.cover),
-                          ),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 4);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[5]),
-                                fit: BoxFit.cover),
-                          ),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 5);
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: Column(
-                  children: <Widget>[
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[6]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  topRight: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 6);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(images[7]),
-                                fit: BoxFit.cover),
-                          ),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 7);
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: 3,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: NetworkImage(images[8]),
-                                  fit: BoxFit.cover),
-                              borderRadius: BorderRadius.only(
-                                  bottomRight: Radius.circular(18))),
-                        ),
-                        onTap: () {
-                          _showImage(context, images, 8);
-                        },
+                          Expanded(
+                            child: GestureDetector(
+                              child: Container(
+                                child: ClipRRect(
+                                  child: _cachedImage(images[3]),
+                                  borderRadius: BorderRadius.only(
+                                      bottomRight: Radius.circular(8)),
+                                ),
+                                width: double.infinity,
+                                height: double.infinity,
+                              ),
+                              onTap: () => _showImage(context,images, 3),
+                            ),
+                          )
+                        ],
                       ),
                     )
                   ],

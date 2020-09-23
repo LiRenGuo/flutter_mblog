@@ -34,6 +34,7 @@ class Oauth_2 {
       Shared_pre.Shared_setResToken(client.credentials.refreshToken);
       return 'success';
     } catch (e) {
+      print(e.toString());
       return e.toString();
     }
   }

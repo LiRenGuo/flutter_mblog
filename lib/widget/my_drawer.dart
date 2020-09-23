@@ -47,7 +47,6 @@ class MyDrawer extends StatelessWidget {
               padding: EdgeInsets.only(bottom: 5),
               child: CircleAvatar(
                 radius: 40,
-
                 backgroundImage: NetworkImage(userModel.avatar),
               ),
             ),

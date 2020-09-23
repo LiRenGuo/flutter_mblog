@@ -38,11 +38,13 @@ class PostItem {
   bool islike;
   int pubtime;
   int ctime;
+  String postId;
+  PostItem forwardPost;
 
 
   @override
   String toString() {
-    return 'PostItem{id: $id, pid: $pid, content: $content, devicemodel: $devicemodel, photos: $photos, user: $user, commentCount: $commentCount, forwardCount: $forwardCount, likeCount: $likeCount, islike: $islike, pubtime: $pubtime, ctime: $ctime}';
+    return 'PostItem{id: $id, pid: $pid, content: $content, devicemodel: $devicemodel, photos: $photos, user: $user, commentCount: $commentCount, forwardCount: $forwardCount, likeCount: $likeCount, islike: $islike, pubtime: $pubtime, ctime: $ctime, postId: $postId, forwardPost: $forwardPost}';
   }
 
   PostItem(
@@ -57,7 +59,8 @@ class PostItem {
         this.likeCount,
         this.islike,
         this.pubtime,
-        this.ctime});
+        this.postId,
+        this.ctime,this.forwardPost});
 
 PostItem.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -72,6 +75,10 @@ PostItem.fromJson(Map<String, dynamic> json) {
     islike = json['islike'];
     pubtime = json['pubtime'];
     ctime = json['ctime'];
+    postId = json['postId'];
+    forwardPost = json['forwardPost'] != null
+        ? new PostItem.fromJson(json['forwardPost'])
+        : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -90,6 +97,10 @@ PostItem.fromJson(Map<String, dynamic> json) {
     data['islike'] = this.islike;
     data['pubtime'] = this.pubtime;
     data['ctime'] = this.ctime;
+    data['postId'] = this.postId;
+    if (this.forwardPost != null) {
+      data['forwardPost'] = this.forwardPost.toJson();
+    }
     return data;
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/home_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/my_page.dart';
+import 'package:flutter_mblog/util/shared_pre.dart';
 
 
 class TabNavigator extends StatefulWidget {
@@ -14,17 +16,39 @@ class _TabNavigatorState extends State<TabNavigator> {
   final _activeColor = Colors.blue;
   int _currentIndex = 0;
   final PageController _controller = PageController(initialPage: 0);
+  UserModel userModel;
+  bool isLoadUserOk = false;
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _loadUser();
+  }
+  _loadUser()async{
+    userModel = await Shared_pre.Shared_getUser();
+   if (mounted ) {
+     setState(() {
+       isLoadUserOk = true;
+     });
+   }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
+      body: isLoadUserOk ? PageView(
         controller: _controller,
         physics: NeverScrollableScrollPhysics(),
         children: <Widget>[
           HomePage(),
-          MinePage(),
+          MinePage(userid: userModel.id,wLoginUserId: userModel.id,),
         ],
+      ):Container(
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,

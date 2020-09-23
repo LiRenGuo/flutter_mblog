@@ -5,6 +5,8 @@ import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/register_user.dart';
 import 'package:flutter_mblog/pages/register/check_code_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/common_util.dart';
+import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -111,10 +113,15 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _sendMobileCode() async {
+    CommonUtil.showLoadingDialog(context);
     registerUser = new RegisterUser(name: _nameController.text,phone: _phoneController.text);
     _sendCode().then((isSuccess){
       if (isSuccess) {
+        Navigator.pop(context);
         Navigator.push(context,MaterialPageRoute(builder: (context) => CheckCodePage(registerUser)));
+      }else{
+        Navigator.pop(context);
+        MyToast.show("获取验证码错误");
       }
     }); // TODO 发送验证码
   }

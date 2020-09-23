@@ -7,10 +7,10 @@ import 'package:flutter_mblog/dao/follow_dao.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/dao/user_dao.dart';
 import 'package:flutter_mblog/model/follow_model.dart';
-import 'package:flutter_mblog/model/mypost_model.dart';
 import 'package:flutter_mblog/model/post_comment_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
+import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
@@ -39,6 +39,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
   List<Asset> fileList = List<Asset>();
   bool isOkAttention;
   List<String> isAttention;
+  UserModel _userModel;
 
   initPostItem()async{
     PostItem _itemWidget;
@@ -62,6 +63,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
   getPostDetail() async {
     PostCommentModel postCommentModel;
     if (widget.postId != null) {
+      print("postId : ${widget.postId}");
       postCommentModel = await PostDao.getCommentList(widget.postId);
     }else{
       postCommentModel = await PostDao.getCommentList(widget.item.id);
@@ -74,7 +76,6 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     initPostItem();
     getPostDetail();
@@ -146,8 +147,8 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
   }
 
   initAttention() async {
-    UserModel userModel = await Shared_pre.Shared_getUser();
-    FollowModel followModel =  await UserDao.getFollowingList(userModel.id,context);
+    _userModel = await Shared_pre.Shared_getUser();
+    FollowModel followModel =  await UserDao.getFollowingList(_userModel.id,context);
     List<String> isAtt = [];
     if (followModel != null && followModel.followList.length != 0) {
       var isAttList =  followModel.followList.map((e)=>e.id);
@@ -250,8 +251,8 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                                                 decoration: BoxDecoration(
                                                   color: Colors.white,
                                                   borderRadius: BorderRadius.only(
-                                                    topLeft: Radius.circular(25),
-                                                    topRight: Radius.circular(25),
+                                                    topLeft: Radius.circular(20),
+                                                    topRight: Radius.circular(20),
                                                   ),
                                                 ),
                                                 child: ListView(
@@ -447,46 +448,6 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
             ],
           ),
         );
-
-        /*imageWidget = Container(
-          width: AdaptiveTools.setPx(100),
-          child: Row(
-            children: <Widget>[
-              InkWell(
-                child: Container(
-                  margin: EdgeInsets.only(top: 10, bottom: 5),
-                  height: AdaptiveTools.setPx(165),
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                        image: NetworkImage(images[0]), fit: BoxFit.cover),
-                    border: Border.all(color: Colors.black26),
-                  ),
-                ),
-                onTap: () {
-                  _showImage(context, images, 0);
-                },
-              ),
-              SizedBox(
-                width: AdaptiveTools.setPx(10),
-              ),
-              InkWell(
-                child: Container(
-                  margin: EdgeInsets.only(top: 10, bottom: 5),
-                  height: AdaptiveTools.setPx(165),
-                  width: AdaptiveTools.setPx(100),
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                        image: NetworkImage(images[1]), fit: BoxFit.cover),
-                    border: Border.all(color: Colors.black26),
-                  ),
-                ),
-                onTap: () {
-                  _showImage(context, images, 1);
-                },
-              )
-            ],
-          ),
-        );*/
         break;
       default:
         imageWidget = Container(
@@ -572,7 +533,11 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
           flex: 1,
           child: InkWell(
             onTap: () {
-              print("clicked...");
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => PostPublishPage(
+                    avatar: _userModel.avatar,
+                    postItem: item,
+                  )));
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,

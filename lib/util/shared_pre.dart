@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Configs.dart';
@@ -34,13 +37,13 @@ class Shared_pre {
   static Future<UserModel> Shared_getUser() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String id = preferences.get(Constants.Shared_Id);
-    String email = preferences.get(Constants.Shared_Email);
+    String email = preferences.get(Constants.Shared_Email) ?? "";
     String username = preferences.get(Constants.Shared_Username);
     String mobile = preferences.get(Constants.Shared_Mobile);
-    String name = preferences.get(Constants.Shared_Name);
-    String avatar = preferences.get(Constants.Shared_Avatar);
-    String followers = preferences.get(Constants.Shared_Followers);
-    String following = preferences.get(Constants.Shared_Following);
+    String name = preferences.get(Constants.Shared_Name) ?? "登陆";
+    String avatar = preferences.get(Constants.Shared_Avatar) ?? "https://zzm888.oss-cn-shenzhen.aliyuncs.com/avatar-default.png";
+    String followers = preferences.get(Constants.Shared_Followers) ?? "0";
+    String following = preferences.get(Constants.Shared_Following) ?? "0";
     return UserModel(
         id: id,
         mobile: mobile,
@@ -60,10 +63,8 @@ class Shared_pre {
     preferences.setString(Constants.Shared_Username, model.username);
     preferences.setString(Constants.Shared_Avatar, model.avatar);
     preferences.setString(Constants.Shared_Id, model.id);
-    preferences.setString(
-        Constants.Shared_Following, model.following.toString());
-    preferences.setString(
-        Constants.Shared_Followers, model.followers.toString());
+    preferences.setString(Constants.Shared_Following, model.following.toString());
+    preferences.setString(Constants.Shared_Followers, model.followers.toString());
   }
 
   static Future<String> Shared_deleteUser() async {
@@ -94,15 +95,28 @@ class Shared_pre {
     return Token;
   }
 
-  static Future<String> Shared_setArticle(String data) async {
+  static Future<String> Shared_setTwitter(PostModel postModel) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    preferences.setString(Constants.Shared_Article, data);
+    preferences.setString(Constants.Shared_Twitter,json.encode(postModel));
   }
 
-  static Future<String> Shared_getArticle() async {
-    var article;
+  static Future<String> SharedSetMoreTwitterData(PostModel postModel) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    article = await preferences.getString(Constants.Shared_Article);
-    return article;
+    String twitterData = await preferences.getString(Constants.Shared_Twitter);
+    if (twitterData != null) {
+      PostModel oldPostModel =  PostModel.fromJson(json.decode(twitterData));
+      if (oldPostModel.resultList != null && oldPostModel.resultList.length <= 200) {
+
+      }
+    }else{
+      await Shared_setTwitter(postModel);
+    }
   }
+
+  static Future<String> SharedDeleteTwitter() async{
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    preferences.setString(Constants.Shared_Twitter,null);
+  }
+
+
 }

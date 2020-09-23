@@ -83,5 +83,4 @@ class NetUtils {
     respose = await dio.post(url,data: formData); 
     return respose.toString();
   }
-
 }

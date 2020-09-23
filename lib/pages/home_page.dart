@@ -25,16 +25,16 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   UserModel userModel;
   int page = 0;
-  List<PostItem> items = [];
-
   bool _loading = true;
   bool _hasMore = true;
   bool _isRequesting = false;
-
   ScrollController  _scrollController = ScrollController();
   FollowModel followModel;
   FollowModel followersModel;
   bool isOkAttention = false;
+
+  // 数据队列
+  List<PostItem> items = [];
 
   @override
   void initState() {
@@ -49,14 +49,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   initAttention() async {
-    print("请求数据1");
     userModel = await Shared_pre.Shared_getUser();
     followersModel = await UserDao.getFollowersList(userModel.id, context);
     followModel =  await UserDao.getFollowingList(userModel.id,context);
     if (followModel != null && followersModel != null) {
-      setState(() {
-        isOkAttention = true;
-      });
+      if (mounted) {
+        setState(() {
+          isOkAttention = true;
+        });
+      }
     }
   }
 
@@ -78,7 +79,7 @@ class _HomePageState extends State<HomePage> {
         child: Image.asset('images/ic_home_compose.png', fit: BoxFit.cover, scale: 3.0),
         backgroundColor: Colors.blue
       ),
-      drawer: isOkAttention ? MyDrawer(userModel: userModel,followModel: followModel,followersModel: followersModel,) :MyDrawer(userModel: userModel),
+      drawer: isOkAttention ? MyDrawer(userModel: userModel,followModel: followModel,followersModel: followersModel,) : MyDrawer(userModel: userModel),
       appBar: AppBar(
         backgroundColor: Colors.white,
         leading: Container(
@@ -90,6 +91,7 @@ class _HomePageState extends State<HomePage> {
               if (snapshot.connectionState == ConnectionState.done) {
                 if (snapshot.hasError) {
                   // 请求失败，显示错误
+                  print("错误控制");
                   return _userAvatar(DEFAULT_AVATAR);
                 } else {
                   // 请求成功，显示数据
@@ -117,6 +119,7 @@ class _HomePageState extends State<HomePage> {
         child: RefreshIndicator(
           onRefresh: _handleRefresh,
           child: Container(
+            // 渲染数据队列
             child: ListView.builder(
               controller: _scrollController,
               itemCount: items.length,
@@ -129,23 +132,24 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // 构建单个对象
   _item(PostItem item, int index) {
       return Container(
-        child: PostCard(item: item, index: index, userId: userModel.id,),
+        child: PostCard(item: item, index: index, userId: userModel.id,avatar:userModel.avatar),
       );
   }
 
+  // 加载更多数据
   _loadData({loadMore = false}) async {
     try{
       if(_isRequesting || !_hasMore) return;
-
       if(loadMore) page++;
       else page = 0;
-
       _isRequesting = true; // 正在请求中
       _loading = true;
-      PostModel postModel = await PostDao.getList(page, PAGE_SIZE);
+      PostModel postModel = await PostDao.getList(page, PAGE_SIZE,context);
       _loading = false; //
+      print("首页：mounted = $mounted");
       if(mounted) {
         List<PostItem> resultList = [];
         if(loadMore) {
@@ -164,6 +168,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // 上拉刷新
   Future<void> _handleRefresh() async {
     setState(() {
       _loadData();
@@ -171,10 +176,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // 加载用户信息
   Future _loadLoginUser() async {
     userModel = await Shared_pre.Shared_getUser();
   }
 
+  // 用户头像
   Widget _userAvatar(String avatar) {
     return Builder(
       builder: (context) {

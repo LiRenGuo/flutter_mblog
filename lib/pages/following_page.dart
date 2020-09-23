@@ -3,6 +3,7 @@ import 'package:flutter_mblog/dao/follow_dao.dart';
 import 'package:flutter_mblog/dao/user_dao.dart';
 import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
+import 'package:flutter_mblog/util/AdaptiveTools.dart';
 
 class FollowingPage extends StatefulWidget {
   String userId;
@@ -161,6 +162,7 @@ class _FollowingPageState extends State<FollowingPage> {
                           ],
                         ),
                         Container(
+                          height: 30,
                           child: FlatButton(
                             shape: RoundedRectangleBorder(
                                 borderRadius:
@@ -178,11 +180,11 @@ class _FollowingPageState extends State<FollowingPage> {
                               ),
                             ),
                           ),
-                          margin: EdgeInsets.only(right: 5),
+                          margin: EdgeInsets.only(right: 5,top: 3),
                         )
                       ],
                     ),
-                    height: 40,
+                    height: AdaptiveTools.setRpx(80),
                   ),
                   Container(
                     child: Text(

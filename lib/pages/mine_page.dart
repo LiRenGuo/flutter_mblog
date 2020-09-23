@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:date_format/date_format.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/follow_dao.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/mypost_model.dart';
+import 'package:flutter_mblog/model/post_like_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/edit_mine_page.dart';
@@ -15,10 +15,8 @@ import 'package:flutter_mblog/pages/followme_page.dart';
 import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
-import 'package:flutter_mblog/util/TimeMachineUtil.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
-import 'package:flutter_mblog/util/time_to_simple.dart';
 import 'package:flutter_mblog/widget/fade_route.dart';
 import 'package:flutter_mblog/widget/image_all_screen_look.dart';
 import 'package:flutter_mblog/widget/tweets_page.dart';
@@ -30,7 +28,7 @@ class MinePage extends StatefulWidget {
   String userid;
   String wLoginUserId;
 
-  MinePage({this.userid,this.wLoginUserId});
+  MinePage({this.userid, this.wLoginUserId});
 
   @override
   _MinePageState createState() => _MinePageState();
@@ -41,7 +39,7 @@ class _MinePageState extends State<MinePage>
   UserModel _userModel = new UserModel();
   int totalElements;
   List<MyPostItem> _myPostModel = [];
-  List<MyPostItem> _myLikePostModel = [];
+  List<PostLikeItem> _myLikePostModel = [];
   int totalLikeElements;
   TabController tabController;
   bool isok = false;
@@ -67,36 +65,43 @@ class _MinePageState extends State<MinePage>
     super.initState();
     initAttention();
     _getMyPostList();
-    _getLikePostList();
-    tabController = TabController(vsync: this, length: 4, initialIndex: 0);
+    _getLikePostList(1);
+    tabController = TabController(vsync: this, length: 3, initialIndex: 0);
     loginUserId = widget.wLoginUserId;
     _controller.addListener(() {
       var maxScroll = _controller.position.maxScrollExtent;
       var pixels = _controller.position.pixels;
       if (maxScroll == pixels) {
         page++;
+        likePage++;
         _getMyPostListNo(page);
+        _getLikePostListNo(likePage);
       }
     });
     _getUserInfo();
   }
 
   initAttention() async {
+    print("wuser  > ${widget.userid}  wLouserid > ${widget.wLoginUserId}");
     if (widget.userid.isNotEmpty) {
       followersModel = await UserDao.getFollowersList(widget.userid, context);
-      followModel =  await UserDao.getFollowingList(widget.userid,context);
-    }else{
+      followModel = await UserDao.getFollowingList(widget.userid, context);
+    } else {
       UserModel userModel = await Shared_pre.Shared_getUser();
       followersModel = await UserDao.getFollowersList(userModel.id, context);
-      followModel =  await UserDao.getFollowingList(userModel.id,context);
+      followModel = await UserDao.getFollowingList(userModel.id, context);
     }
-    if (followModel != null && followModel.followList.length != 0) {
-      bool isAtt = false;
-      followModel.followList.forEach((element) {
+    UserModel userModel = await Shared_pre.Shared_getUser();
+    FollowModel myFollowModel = await UserDao.getFollowingList(userModel.id, context);
+    bool isAtt = false;
+    if (myFollowModel != null && myFollowModel.followList.length != 0) {
+      myFollowModel.followList.forEach((element) {
         if (element.id == widget.userid) {
           isAtt = true;
         }
       });
+    }
+    if (mounted) {
       setState(() {
         isOkAttention = true;
         isAttention = isAtt;
@@ -115,6 +120,11 @@ class _MinePageState extends State<MinePage>
     setState(() {
       _myPostModel.addAll(myPostModel.itemList);
     });
+    if (myPostModel.itemList.length == 0) {
+      setState(() {
+        this.page = this.page - 1;
+      });
+    }
   }
 
   _getUserInfo() async {
@@ -139,6 +149,7 @@ class _MinePageState extends State<MinePage>
     } else {
       myPostModel = await PostDao.getMyPostList(context, page);
     }
+    print("请求到的数据：" + myPostModel.itemList.toString());
     if (myPostModel != null) {
       setState(() {
         _myPostModel = myPostModel.itemList;
@@ -148,20 +159,30 @@ class _MinePageState extends State<MinePage>
     }
   }
 
-  _getLikePostList()async{
-    MyPostModel myLikePostModel;
-    if (widget.userid != null) {
-      print(widget.userid);
-
-      myLikePostModel = await PostDao.getYourLikePostList(context, widget.userid, likePage);
-    } else {
-      myLikePostModel = await PostDao.getMyLikePost(widget.wLoginUserId,likePage,context);
-    }
-    if (myLikePostModel != null) {
-      print("myLikePostModel == "+myLikePostModel.toString());
+  _getLikePostListNo(int likePostPage) async {
+    PostLikeModel myPostLikeModel =
+        await PostDao.getMyLikePost(widget.userid, likePostPage, context);
+    if (myPostLikeModel != null) {
       setState(() {
-        _myLikePostModel = myLikePostModel.itemList;
-        totalLikeElements = myLikePostModel.totalElements;
+        _myLikePostModel.addAll(myPostLikeModel.postLikeItemList);
+        isLoadingMyLikePost = true;
+      });
+    }
+    if (myPostLikeModel.postLikeItemList.length == 0) {
+      setState(() {
+        this.likePage = this.likePage - 1;
+      });
+    }
+  }
+
+  _getLikePostList(int likePostPage) async {
+    PostLikeModel myPostLikeModel =
+        await PostDao.getMyLikePost(widget.userid, likePostPage, context);
+    print("myLikePostModel == " + myPostLikeModel.toString());
+    if (myPostLikeModel != null) {
+      print("myLikePostModel == " + myPostLikeModel.toString());
+      setState(() {
+        _myLikePostModel = myPostLikeModel.postLikeItemList;
         isLoadingMyLikePost = true;
       });
     }
@@ -170,14 +191,17 @@ class _MinePageState extends State<MinePage>
   Future<Null> _onRefresh() async {
     print("下拉刷新");
     setState(() {
+      page = 0;
+      likePage = 0;
       _getUserInfo();
       _getMyPostList();
+      _getLikePostList(1);
       initAttention();
     });
     return null;
   }
 
-  _followYou(String userId){
+  _followYou(String userId) {
     print(userId);
     FollowDao.follow(userId, context);
     setState(() {
@@ -185,7 +209,7 @@ class _MinePageState extends State<MinePage>
     });
   }
 
-  _unfollowYou(String userId){
+  _unfollowYou(String userId) {
     print(userId);
     FollowDao.unfollow(userId, context);
     setState(() {
@@ -196,21 +220,22 @@ class _MinePageState extends State<MinePage>
   @override
   Widget build(BuildContext context) {
     List<Widget> pageWidget = [
-      Tweets(_myPostModel,widget.userid,loginUserId),
+      Tweets(_myPostModel, widget.userid, loginUserId, _userModel.avatar),
       TweetsOrReply(),
-      Media(),
-      Like(_myLikePostModel,widget.userid,loginUserId)
+      Like(_myLikePostModel, widget.userid, loginUserId, _userModel.avatar)
     ];
     return Scaffold(
       floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(
-                builder: (context) => PostPublishPage(avatar: _userModel.avatar)
-            ));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        PostPublishPage(avatar: _userModel.avatar)));
           },
-          child: Image.asset('images/ic_home_compose.png', fit: BoxFit.cover, scale: 3.0),
-          backgroundColor: Colors.blue
-      ),
+          child: Image.asset('images/ic_home_compose.png',
+              fit: BoxFit.cover, scale: 3.0),
+          backgroundColor: Colors.blue),
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.blue),
         backgroundColor: Colors.white,
@@ -225,12 +250,12 @@ class _MinePageState extends State<MinePage>
             Container(
               child: Text(
                 "${totalElements ?? 0} 推文",
-                style: TextStyle(fontSize: AdaptiveTools.setPx(13), color: Colors.black54),
+                style: TextStyle(
+                    fontSize: AdaptiveTools.setPx(13), color: Colors.black54),
               ),
             )
           ],
         ),
-
       ),
       body: isok && isLoadingMyPost
           ? Container(
@@ -246,10 +271,14 @@ class _MinePageState extends State<MinePage>
                             Container(
                               height: AdaptiveTools.setPx(150),
                               width: MediaQuery.of(context).size.width,
-                              child: _userModel.banner == null ?Container(color: Colors.black54,):Image.network(
-                                _userModel.banner,
-                                fit: BoxFit.cover,
-                              ),
+                              child: _userModel.banner == null
+                                  ? Container(
+                                      color: Colors.black54,
+                                    )
+                                  : Image.network(
+                                      _userModel.banner,
+                                      fit: BoxFit.cover,
+                                    ),
                             ),
                             Container(
                               margin: EdgeInsets.only(
@@ -268,50 +297,64 @@ class _MinePageState extends State<MinePage>
                                         bottom: AdaptiveTools.setPx(10)),
                                   ),
                                   Container(
-                                    child: widget.userid == loginUserId ? RaisedButton(
-                                      color: Colors.white,
-                                      textColor: Colors.blue,
-                                      child: Text(
-                                        "编辑个人资料",
-                                        style: TextStyle(
-                                            fontSize: AdaptiveTools.setPx(13),
-                                            fontWeight: FontWeight.w700),
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                          BorderRadius.circular(20),
-                                          side: BorderSide(color: Colors.blue)),
-                                      onPressed: () {
-                                        Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    EditMinePage()));
-                                      },
-                                    ):
-                                    RaisedButton(
-                                      color: Colors.white,
-                                      textColor: Colors.blue,
-                                      child: isAttention?Text(
-                                        "取消关注",
-                                        style: TextStyle(
-                                            fontSize: AdaptiveTools.setPx(15),
-                                            fontWeight: FontWeight.w800),
-                                      ):Text(
-                                        "关注",
-                                        style: TextStyle(
-                                            fontSize: AdaptiveTools.setPx(15),
-                                            fontWeight: FontWeight.w800),
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                          BorderRadius.circular(20),
-                                          side: BorderSide(color: Colors.blue)),
-                                      onPressed: () {
-                                        isAttention?_unfollowYou(widget.userid):_followYou(widget.userid);
-                                      },
-                                    ),
+                                    child: widget.userid == loginUserId
+                                        ? RaisedButton(
+                                            color: Colors.white,
+                                            textColor: Colors.blue,
+                                            child: Text(
+                                              "编辑个人资料",
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      AdaptiveTools.setPx(13),
+                                                  fontWeight: FontWeight.w700),
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                side: BorderSide(
+                                                    color: Colors.blue)),
+                                            onPressed: () {
+                                              Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          EditMinePage()));
+                                            },
+                                          )
+                                        : RaisedButton(
+                                            color: Colors.white,
+                                            textColor: Colors.blue,
+                                            child: isAttention
+                                                ? Text(
+                                                    "取消关注",
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            AdaptiveTools.setPx(
+                                                                15),
+                                                        fontWeight:
+                                                            FontWeight.w800),
+                                                  )
+                                                : Text(
+                                                    "关注",
+                                                    style: TextStyle(
+                                                        fontSize:
+                                                            AdaptiveTools.setPx(
+                                                                15),
+                                                        fontWeight:
+                                                            FontWeight.w800),
+                                                  ),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                side: BorderSide(
+                                                    color: Colors.blue)),
+                                            onPressed: () {
+                                              isAttention
+                                                  ? _unfollowYou(widget.userid)
+                                                  : _followYou(widget.userid);
+                                            },
+                                          ),
                                     margin: EdgeInsets.only(
-                                      top: AdaptiveTools.setPx(10),
+                                        top: AdaptiveTools.setPx(10),
                                         right: AdaptiveTools.setPx(15)),
                                   )
                                 ],
@@ -360,14 +403,20 @@ class _MinePageState extends State<MinePage>
                                         children: <Widget>[
                                           Container(
                                             height: 19,
-                                            child: Image.asset("images/lng.png"),
+                                            child:
+                                                Image.asset("images/lng.png"),
                                           ),
                                           SizedBox(
                                             width: 4,
                                           ),
                                           Container(
                                             margin: EdgeInsets.only(bottom: 2),
-                                            child: Text(_userModel.address ?? "外星球",style: TextStyle(fontSize: 17,color: Colors.black54),),
+                                            child: Text(
+                                              _userModel.address ?? "外星球",
+                                              style: TextStyle(
+                                                  fontSize: 17,
+                                                  color: Colors.black54),
+                                            ),
                                           )
                                         ],
                                       ),
@@ -405,7 +454,11 @@ class _MinePageState extends State<MinePage>
                                         child: Row(
                                           children: <Widget>[
                                             Text(
-                                              isOkAttention?followModel.followList.length.toString():"0",
+                                              isOkAttention
+                                                  ? followModel
+                                                      .followList.length
+                                                      .toString()
+                                                  : "0",
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w800,
                                                   fontSize: 18),
@@ -416,8 +469,16 @@ class _MinePageState extends State<MinePage>
                                             Text("正在关注"),
                                           ],
                                         ),
-                                        onTap: (){
-                                          Navigator.push(context, MaterialPageRoute(builder: (context) => FollowingPage(userId: _userModel.id,followModel: followModel,)));
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      FollowingPage(
+                                                        userId: _userModel.id,
+                                                        followModel:
+                                                            followModel,
+                                                      )));
                                         },
                                       ),
                                       SizedBox(
@@ -427,7 +488,11 @@ class _MinePageState extends State<MinePage>
                                         child: Row(
                                           children: <Widget>[
                                             Text(
-                                              isOkAttention?followersModel.followList.length.toString():"0",
+                                              isOkAttention
+                                                  ? followersModel
+                                                      .followList.length
+                                                      .toString()
+                                                  : "0",
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w800,
                                                   fontSize: 18),
@@ -438,8 +503,16 @@ class _MinePageState extends State<MinePage>
                                             Text("个关注者")
                                           ],
                                         ),
-                                        onTap: (){
-                                          Navigator.push(context, MaterialPageRoute(builder: (context) => FollowMePage(userId: _userModel.id,followMeModel: followersModel,)));
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      FollowMePage(
+                                                        userId: _userModel.id,
+                                                        followMeModel:
+                                                            followersModel,
+                                                      )));
                                         },
                                       )
                                     ],
@@ -455,9 +528,9 @@ class _MinePageState extends State<MinePage>
                         unselectedLabelColor: Colors.black54,
                         unselectedLabelStyle: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: AdaptiveTools.setRpx(32)),
+                            fontSize: AdaptiveTools.setRpx(28)),
                         labelStyle: TextStyle(
-                            fontSize: AdaptiveTools.setRpx(32),
+                            fontSize: AdaptiveTools.setRpx(28),
                             fontWeight: FontWeight.w900),
                         labelColor: Colors.blue,
                         controller: tabController,
@@ -473,9 +546,6 @@ class _MinePageState extends State<MinePage>
                           ),
                           Tab(
                             text: "推文和回复",
-                          ),
-                          Tab(
-                            text: "媒体",
                           ),
                           Tab(
                             text: "喜欢",
@@ -501,7 +571,6 @@ class _MinePageState extends State<MinePage>
   }
 }
 
-
 class TweetsOrReply extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -509,43 +578,45 @@ class TweetsOrReply extends StatelessWidget {
   }
 }
 
-class Media extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
-}
-
+// ignore: must_be_immutable
 class Like extends StatefulWidget {
-  List<MyPostItem> _item;
+  List<PostLikeItem> _item;
   String userId;
   String loginUserId;
-  Like(this._item,this.userId,this.loginUserId);
+  String avatar;
+
+  Like(this._item, this.userId, this.loginUserId, this.avatar);
 
   @override
   _LikeState createState() => _LikeState();
 }
 
 class _LikeState extends State<Like> {
-  void _deletePost(String id,BuildContext context) async {
+  /*void _deletePost(String id, BuildContext context) async {
     print("删除");
-    PostDao.deletePost(id,context).then((value){
+    PostDao.deletePost(id, context).then((value) {
       if (value == "success") {
-        Navigator.push(context, MaterialPageRoute(builder: (context)=> MinePage(userid: widget.userId,)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => MinePage(
+                      userid: widget.userId,
+                    )));
       }
     });
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
-    int i = 0;
     return Column(
       children: widget._item.map((e) {
-        return body(widget.userId,widget.loginUserId,e, context);
+        return body(
+            widget.userId, widget.loginUserId, e, widget.avatar, context);
       }).toList(),
     );
   }
-  Future<bool> onLike(bool isLiked, MyPostItem postItem) {
+
+  Future<bool> onLike(bool isLiked, PostLikeItem postItem) {
     final Completer<bool> completer = new Completer<bool>();
     Timer(const Duration(milliseconds: 200), () {
       if (postItem.islike) {
@@ -556,14 +627,14 @@ class _LikeState extends State<Like> {
         PostDao.like(postItem.id);
       }
       postItem.likeCount =
-      postItem.islike ? postItem.likeCount + 1 : postItem.likeCount - 1;
+          postItem.islike ? postItem.likeCount + 1 : postItem.likeCount - 1;
       postItem.islike = !postItem.islike;
       completer.complete(postItem.islike);
     });
     return completer.future;
   }
 
-  _buildLikeButton(MyPostItem postItem) {
+  _buildLikeButton(PostLikeItem postItem) {
     return LikeButton(
       size: 22,
       onTap: (bool isLiked) {
@@ -578,12 +649,12 @@ class _LikeState extends State<Like> {
       likeCount: postItem.likeCount,
       countBuilder: (int count, bool isLiked, String text) {
         final ColorSwatch<int> color =
-        isLiked ? Colors.pinkAccent : Colors.grey;
+            isLiked ? Colors.pinkAccent : Colors.grey;
         Widget result;
         if (count == 0) {
           result = Text(
             '赞',
-            style: TextStyle(color: color,fontSize: AdaptiveTools.setRpx(10)),
+            style: TextStyle(color: color, fontSize: AdaptiveTools.setRpx(10)),
           );
         } else
           result = Text(
@@ -599,7 +670,8 @@ class _LikeState extends State<Like> {
     );
   }
 
-  Widget body(String userId,String loginUserId,MyPostItem _item, BuildContext context) {
+  Widget body(String userId, String loginUserId, PostLikeItem _item,
+      String avatar, BuildContext context) {
     return Padding(
       child: Column(
         children: <Widget>[
@@ -607,19 +679,30 @@ class _LikeState extends State<Like> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Expanded(
-                child: Stack(
-                  children: <Widget>[
-                    Align(
-                      alignment: FractionalOffset.topLeft,
-                      child: Container(
-                        margin: EdgeInsets.only(left: AdaptiveTools.setPx(7)),
-                        alignment: Alignment.topLeft,
-                        child: CircleAvatar(
-                          backgroundImage: NetworkImage(_item.user.avatar),
+                child: InkWell(
+                  child: Stack(
+                    children: <Widget>[
+                      Align(
+                        alignment: FractionalOffset.topLeft,
+                        child: Container(
+                          margin: EdgeInsets.only(left: AdaptiveTools.setPx(7)),
+                          alignment: Alignment.topLeft,
+                          child: CircleAvatar(
+                            backgroundImage: NetworkImage(_item.userDto.avatar),
+                          ),
                         ),
-                      ),
-                    )
-                  ],
+                      )
+                    ],
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => MinePage(
+                                  userid: _item.userDto.id,
+                                  wLoginUserId: widget.loginUserId,
+                                )));
+                  },
                 ),
                 flex: 1,
               ),
@@ -627,99 +710,106 @@ class _LikeState extends State<Like> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Container(
-                              child: Text(
-                                _item.user.name,
-                                style: TextStyle(
-                                  letterSpacing: 2,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
+                    InkWell(
+                      child: Row(
+                        children: <Widget>[
+                          Row(
+                            children: <Widget>[
+                              Container(
+                                child: Text(
+                                  _item.userDto.name,
+                                  style: TextStyle(
+                                    letterSpacing: 2,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
-                            ),
-                            SizedBox(
-                              width: 4,
-                            ),
-                            Container(
-                              child: Text("@${_item.user.username}"),
-                            ),
-                            Container(
-                              child: Text(
-                                  "  ·  ${TimeUtil.parse(_item.ctime.toString())}"),
-                            ),
-                          ],
-                        ),
-                        userId == loginUserId?InkWell(
-                          child: Container(
-                            alignment: Alignment.topRight,
-                            child: Icon(
-                              Icons.keyboard_arrow_down,
-                              color: Colors.black54,
-                              size: AdaptiveTools.setPx(19),
-                            ),
+                              SizedBox(
+                                width: 4,
+                              ),
+                              Container(
+                                child: Text("@${_item.userDto.username}"),
+                              ),
+                            ],
                           ),
-                          onTap: (){
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return Stack(
-                                  children: <Widget>[
-                                    Container(
-                                      height: 25,
-                                      width: double.infinity,
-                                      color: Colors.black54,
-                                    ),
-                                    Container(
-                                      height: 60,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(25),
-                                          topRight: Radius.circular(25),
+                          /*userId == loginUserId?InkWell(
+                            child: Container(
+                              alignment: Alignment.topRight,
+                              child: Icon(
+                                Icons.keyboard_arrow_down,
+                                color: Colors.black54,
+                                size: AdaptiveTools.setPx(19),
+                              ),
+                            ),
+                            onTap: (){
+                              showModalBottomSheet(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return Stack(
+                                    children: <Widget>[
+                                      Container(
+                                        height: 25,
+                                        width: double.infinity,
+                                        color: Colors.black54,
+                                      ),
+                                      Container(
+                                        height: 60,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.only(
+                                            topLeft: Radius.circular(20),
+                                            topRight: Radius.circular(20),
+                                          ),
                                         ),
-                                      ),
-                                      child: ListView(
-                                        children: <Widget>[
-                                          ListTile(
-                                            leading: Container(
-                                              child: Image.asset("images/deletePost.png"),
-                                              padding: EdgeInsets.all(15),
-                                            ),
-                                            title: Text("删除推文",style: TextStyle(fontSize: 15),),
-                                            onTap: (){
-                                              print("删除");
-                                              showDialog(context: context,builder: (context){
-                                                return AlertDialog(
-                                                  content: Text('是否确认删除该帖子?'),
-                                                  actions: <Widget>[
-                                                    FlatButton(
-                                                      child: Text('取消'),
-                                                      onPressed: () => Navigator.pop(context),
-                                                    ),
-                                                    FlatButton(
-                                                      child: Text('确认'),
-                                                      onPressed: () => _deletePost(_item.id,context),
-                                                    )
-                                                  ],
-                                                );
-                                              });
-                                            },
-                                          )
-                                        ],
-                                      ),
-                                    )
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                        ):Container(),
-                      ],
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        child: ListView(
+                                          children: <Widget>[
+                                            ListTile(
+                                              leading: Container(
+                                                child: Image.asset("images/deletePost.png"),
+                                                padding: EdgeInsets.all(15),
+                                              ),
+                                              title: Text("删除推文",style: TextStyle(fontSize: 15),),
+                                              onTap: (){
+                                                print("删除");
+                                                showDialog(context: context,builder: (context){
+                                                  return AlertDialog(
+                                                    content: Text('是否确认删除该帖子?'),
+                                                    actions: <Widget>[
+                                                      FlatButton(
+                                                        child: Text('取消'),
+                                                        onPressed: () => Navigator.pop(context),
+                                                      ),
+                                                      FlatButton(
+                                                        child: Text('确认'),
+                                                        onPressed: () => _deletePost(_item.id,context),
+                                                      )
+                                                    ],
+                                                  );
+                                                });
+                                              },
+                                            )
+                                          ],
+                                        ),
+                                      )
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                          ):Container(),*/
+                        ],
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => MinePage(
+                                      userid: _item.userDto.id,
+                                      wLoginUserId: widget.loginUserId,
+                                    )));
+                      },
                     ),
                     InkWell(
                       child: Container(
@@ -727,15 +817,23 @@ class _LikeState extends State<Like> {
                         margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
                         child: Text(_item.content),
                       ),
-                      onTap: (){
+                      onTap: () {
                         print("跳转到某某地址");
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => HomeDetailPage(new PostItem(),postId: _item.id,)));
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => HomeDetailPage(
+                                      null,
+                                      postId: _item.id,
+                                    )));
                       },
                     ),
                     Container(
-                      margin: EdgeInsets.only(top: 8,bottom: 8),
+                      margin: EdgeInsets.only(top: 8, bottom: 5),
                       child: image(_item.photos, context),
                     ),
+                    if (_item.postId != null)
+                      _buildRetweet(_item.rPostLikeItem),
                     Container(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -763,9 +861,20 @@ class _LikeState extends State<Like> {
                             ),
                             height: AdaptiveTools.setPx(17),
                           ),
-                          Container(
-                            child: Image.asset("images/ic_home_forward.png"),
-                            height: AdaptiveTools.setPx(20),
+                          InkWell(
+                            child: Container(
+                              child: Image.asset("images/ic_home_forward.png"),
+                              height: AdaptiveTools.setPx(20),
+                            ),
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => PostPublishPage(
+                                            avatar: avatar,
+                                            postId: _item.id,
+                                          )));
+                            },
                           )
                         ],
                       ),
@@ -787,12 +896,267 @@ class _LikeState extends State<Like> {
     );
   }
 
+  Widget _buildRetweet(PostLikeItem postItem) {
+    print("postItem111 > ${postItem}");
+    Widget retweetWidget;
+    postItem != null && postItem.id != null
+        ? retweetWidget = InkWell(
+            child: Container(
+              margin: EdgeInsets.only(bottom: 10),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black12),
+                  borderRadius: BorderRadius.all(Radius.circular(10))),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.fromLTRB(10, 3, 3, 0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        CircleAvatar(
+                          radius: 15,
+                          backgroundImage:
+                              NetworkImage(postItem.userDto.avatar),
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Container(
+                              padding: EdgeInsets.fromLTRB(10, 8, 0, 10),
+                              child: Text("${postItem.userDto.name}"),
+                            ),
+                            Container(
+                              padding: EdgeInsets.fromLTRB(5, 7, 10, 10),
+                              child: Text(
+                                "@${postItem.userDto.username}",
+                                style: TextStyle(color: Colors.black38),
+                              ),
+                            )
+                          ],
+                        ),
+                        Spacer(),
+                        Container(
+                          padding: EdgeInsets.fromLTRB(10, 6, 10, 10),
+                          child: Text(
+                            "${TimeUtil.parse(postItem.ctime.toString())}",
+                            style:
+                                TextStyle(fontSize: 13, color: Colors.black38),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(10, 0, 3, 3),
+                    child: Text("${postItem.content}"),
+                  ),
+                  postItem.photos != null && postItem.photos.length != 0
+                      ? _buildRetweetImage(postItem.photos)
+                      : Container()
+                ],
+              ),
+            ),
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => HomeDetailPage(
+                        null,
+                        postId: postItem.id,
+                      )));
+            },
+          )
+        : retweetWidget = Container(
+            width: 0,
+            height: 0,
+          );
+    return retweetWidget;
+  }
+
+  _buildRetweetImage(List<String> photosList) {
+    Widget widgets;
+    switch (photosList.length) {
+      case 1:
+        widgets = Container(
+          height: 150,
+          margin: EdgeInsets.only(top: 5),
+          width: double.infinity,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(10),
+                  bottomRight: Radius.circular(10)),
+              image: DecorationImage(
+                  image: NetworkImage(photosList[0]), fit: BoxFit.cover)),
+        );
+        break;
+      case 2:
+        widgets = Container(
+          height: 150,
+          margin: EdgeInsets.only(top: 5),
+          width: double.infinity,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                      borderRadius:
+                          BorderRadius.only(bottomLeft: Radius.circular(10)),
+                      image: DecorationImage(
+                          image: NetworkImage(photosList[0]),
+                          fit: BoxFit.cover)),
+                ),
+              ),
+              SizedBox(
+                width: 5,
+              ),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                      borderRadius:
+                          BorderRadius.only(bottomRight: Radius.circular(10)),
+                      image: DecorationImage(
+                          image: NetworkImage(photosList[1]),
+                          fit: BoxFit.cover)),
+                ),
+              ),
+            ],
+          ),
+        );
+        break;
+      case 3:
+        widgets = Container(
+          height: 150,
+          margin: EdgeInsets.only(top: 5),
+          width: double.infinity,
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(10)),
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[0]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Expanded(
+                      child: Column(
+                        children: <Widget>[
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      image: NetworkImage(photosList[1]),
+                                      fit: BoxFit.cover)),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                      bottomRight: Radius.circular(10)),
+                                  image: DecorationImage(
+                                      image: NetworkImage(photosList[2]),
+                                      fit: BoxFit.cover)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+        break;
+      case 4:
+        widgets = Container(
+          height: 150,
+          margin: EdgeInsets.only(top: 5),
+          width: double.infinity,
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[0]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[1]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 5,
+              ),
+              Expanded(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(10)),
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[2]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                                bottomRight: Radius.circular(10)),
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[3]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        );
+        break;
+    }
+    return widgets;
+  }
+
   _showImage(BuildContext context, List<String> images, int index) {
     Navigator.of(context).push(FadeRoute(
         page: ImageAllScreenLook(
-          imgDataArr: images,
-          index: index,
-        )));
+      imgDataArr: images,
+      index: index,
+    )));
   }
 
   Widget image(List<String> images, BuildContext context) {

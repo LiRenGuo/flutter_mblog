@@ -13,6 +13,7 @@ import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/my_page.dart';
+import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
@@ -22,11 +23,12 @@ import 'package:like_button/like_button.dart';
 import 'fade_route.dart';
 
 class PostCard extends StatefulWidget {
+  final String avatar;
   final PostItem item;
   final int index;
   final String userId;
 
-  const PostCard({Key key, this.item, this.index, this.userId})
+  const PostCard({Key key, this.item, this.index, this.userId, this.avatar})
       : super(key: key);
 
   @override
@@ -50,7 +52,8 @@ class _PostCardState extends State<PostCard> {
 
   initAttention() async {
     UserModel userModel = await Shared_pre.Shared_getUser();
-    FollowModel followModel =  await UserDao.getFollowingList(userModel.id,context);
+    FollowModel followModel =
+        await UserDao.getFollowingList(userModel.id, context);
     bool isAtt = false;
     if (followModel != null && followModel.followList.length != 0) {
       followModel.followList.forEach((element) {
@@ -66,13 +69,6 @@ class _PostCardState extends State<PostCard> {
       });
     }
   }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -91,18 +87,23 @@ class _PostCardState extends State<PostCard> {
                 backgroundColor: Colors.black,
                 backgroundImage: NetworkImage(item.user.avatar),
               ),
-              onTap: (){
-                Navigator.of(context).push(MaterialPageRoute(builder: (context) => MinePage(userid: item.user.id,wLoginUserId: widget.userId,)));
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => MinePage(
+                          userid: item.user.id,
+                          wLoginUserId: widget.userId,
+                        )));
               },
             ),
-            Container(
-              margin: EdgeInsets.only(left: 10),
-              child: InkWell(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    InkWell(
-                      child: Container(
+            Expanded(
+              child: Container(
+                margin: EdgeInsets.only(left: 10),
+                child: InkWell(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      InkWell(
+                        child: Container(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
@@ -116,23 +117,30 @@ class _PostCardState extends State<PostCard> {
                                             fontWeight: FontWeight.w800)),
                                   ),
                                   Container(
-                                    margin: EdgeInsets.only(left: 3, bottom: 1),
+                                    margin: EdgeInsets.only(left: 4, bottom: 2),
                                     child: Text("@${item.user.username}",
-                                        style: TextStyle(color: Colors.grey, fontSize: 13)),
+                                        style: TextStyle(
+                                            color: Colors.grey, fontSize: 13)),
                                   ),
                                   Container(
-                                    child: Text(" · "+TimeUtil.parse(item.ctime.toString()),
+                                    child: Text(
+                                        " · " +
+                                            TimeUtil.parse(
+                                                item.ctime.toString()),
                                         style: TextStyle(
                                             color: Colors.grey, fontSize: 12)),
-                                    margin: EdgeInsets.only(left: 3, bottom: 1),
+                                    margin: EdgeInsets.only(left: 3, bottom: 4),
                                   )
                                 ],
                               ),
                               Container(
-                                  margin: EdgeInsets.only(top: 5),
+                                  margin: EdgeInsets.only(bottom: 2),
                                   child: InkWell(
-                                    child: Icon(Icons.keyboard_arrow_down,size: 19,),
-                                    onTap: (){
+                                    child: Icon(
+                                      Icons.keyboard_arrow_down,
+                                      size: 19,
+                                    ),
+                                    onTap: () {
                                       showModalBottomSheet(
                                         context: context,
                                         builder: (BuildContext context) {
@@ -147,24 +155,52 @@ class _PostCardState extends State<PostCard> {
                                                 height: 60,
                                                 decoration: BoxDecoration(
                                                   color: Colors.white,
-                                                  borderRadius: BorderRadius.only(
-                                                    topLeft: Radius.circular(25),
-                                                    topRight: Radius.circular(25),
+                                                  borderRadius:
+                                                      BorderRadius.only(
+                                                    topLeft:
+                                                        Radius.circular(20),
+                                                    topRight:
+                                                        Radius.circular(20),
                                                   ),
                                                 ),
                                                 child: ListView(
                                                   children: <Widget>[
-                                                    isOkAttention ?
-                                                    ListTile(
-                                                      leading: Container(
-                                                        child: isAttention?Image.asset("images/unattention.png"):Image.asset("images/attention.png"),
-                                                        padding: EdgeInsets.all(14),
-                                                      ),
-                                                      title: isAttention ?Text("取消关注 @${item.user.name}",style: TextStyle(fontSize: 15),):Text("关注 @${item.user.name}",style: TextStyle(fontSize: 15),),
-                                                      onTap: (){
-                                                        isAttention?_unfollowYou(item.user.id):_followYou(item.user.id);
-                                                      },
-                                                    ):Container()
+                                                    isOkAttention
+                                                        ? ListTile(
+                                                            leading: Container(
+                                                              child: isAttention
+                                                                  ? Image.asset(
+                                                                      "images/unattention.png")
+                                                                  : Image.asset(
+                                                                      "images/attention.png"),
+                                                              padding:
+                                                                  EdgeInsets
+                                                                      .all(14),
+                                                            ),
+                                                            title: isAttention
+                                                                ? Text(
+                                                                    "取消关注 @${item.user.name}",
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            15),
+                                                                  )
+                                                                : Text(
+                                                                    "关注 @${item.user.name}",
+                                                                    style: TextStyle(
+                                                                        fontSize:
+                                                                            15),
+                                                                  ),
+                                                            onTap: () {
+                                                              isAttention
+                                                                  ? _unfollowYou(
+                                                                      item.user
+                                                                          .id)
+                                                                  : _followYou(
+                                                                      item.user
+                                                                          .id);
+                                                            },
+                                                          )
+                                                        : Container()
                                                   ],
                                                 ),
                                               )
@@ -176,158 +212,350 @@ class _PostCardState extends State<PostCard> {
                                   ))
                             ],
                           ),
-                          width:AdaptiveTools.setRpx(575)
+                        ),
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => MinePage(
+                                    userid: item.user.id,
+                                  )));
+                        },
                       ),
-                      onTap: (){
-                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => MinePage(userid: item.user.id,)));
-                      },
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(top: 1, bottom: 4),
-                      child: _content(context),
-                      width: AdaptiveTools.setRpx(575),
-                    ),
-                    item.photos != null && item.photos.length != 0
-                        ? _buildImage(item.photos)
-                        : Container(),
-                    Container(
-                      width: AdaptiveTools.setRpx(575),
-                      margin: EdgeInsets.only(top: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          _buildLikeButton(),
-                          InkWell(
-                            onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => HomeDetailPage(item)));
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                Image.asset(
-                                  'images/ic_home_comment.webp',
-                                  width: 22,
-                                  height: 22,
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(left: 4),
-                                  child: Text(
-                                      item.commentCount == 0
-                                          ? '评论'
-                                          : item.commentCount.toString(),
-                                      style: TextStyle(
-                                          color: Colors.black54, fontSize: 13)),
-                                )
-                              ],
-                            ),
-                          ),
-                          InkWell(
-                            onTap: () {
-                              print("clicked...");
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                Image.asset(
-                                  'images/ic_home_forward.png',
-                                  width: 22,
-                                  height: 22,
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(left: 4),
-                                  child: Text(
-                                      item.forwardCount == 0
-                                          ? '转发'
-                                          : item.forwardCount.toString(),
-                                      style: TextStyle(
-                                          color: Colors.black54, fontSize: 13)),
-                                )
-                              ],
-                            ),
-                          ),
-                        ],
+                      Container(
+                        margin: EdgeInsets.only(top: 1, bottom: 4),
+                        child: _content(context),
                       ),
-                    )
-                  ],
-                ),
-                onTap: (){
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => HomeDetailPage(item)));
-                },
-              ),
-            )
-          ],
-        ));
-    /*Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            InkWell(
-              child: Container(
-                margin: EdgeInsets.only(bottom: 10),
-                child: Row(
-                  children: <Widget>[
-                    CircleAvatar(
-                      backgroundImage: NetworkImage(item.user.avatar),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(left: 10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(item.user.name,
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          Padding(
-                              padding: EdgeInsets.only(top: 5),
+                      item.photos != null && item.photos.length != 0
+                          ? _buildImage(item.photos)
+                          : Container(),
+                      _buildRetweet(item.forwardPost),
+                      Container(
+                        margin: EdgeInsets.only(top: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            _buildLikeButton(),
+                            InkWell(
+                              onTap: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) =>
+                                        HomeDetailPage(item)));
+                              },
                               child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: <Widget>[
-                                  Text(TimeUtil.parse(item.ctime.toString()),
-                                      style: TextStyle(
-                                          color: Colors.grey, fontSize: 12)),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 10),
-                                    child: Text('来自 ${item.devicemodel}',
+                                  Image.asset(
+                                    'images/ic_home_comment.webp',
+                                    width: 22,
+                                    height: 22,
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(left: 4),
+                                    child: Text(
+                                        item.commentCount == 0
+                                            ? '评论'
+                                            : item.commentCount.toString(),
                                         style: TextStyle(
-                                            color: Colors.grey, fontSize: 12)),
+                                            color: Colors.black54,
+                                            fontSize: 13)),
                                   )
                                 ],
                               ),
                             ),
+                            InkWell(
+                              onTap: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => PostPublishPage(
+                                          avatar: widget.avatar,
+                                          postItem: item,
+                                        )));
+                              },
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: <Widget>[
+                                  Image.asset(
+                                    'images/ic_home_forward.png',
+                                    width: 22,
+                                    height: 22,
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(left: 4),
+                                    child: Text(
+                                        item.forwardCount == 0
+                                            ? '转发'
+                                            : item.forwardCount.toString(),
+                                        style: TextStyle(
+                                            color: Colors.black54,
+                                            fontSize: 13)),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => HomeDetailPage(item)));
+                  },
+                ),
+              ),
+            )
+          ],
+        ));
+  }
+
+  Widget _buildRetweet(PostItem postItem) {
+    Widget retweetWidget;
+    postItem != null && postItem.id != null
+        ? retweetWidget = InkWell(
+            child: Container(
+              margin: EdgeInsets.only(top: 10),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black12),
+                  borderRadius: BorderRadius.all(Radius.circular(10))),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.fromLTRB(10, 3, 3, 0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        CircleAvatar(
+                          radius: 15,
+                          backgroundImage: NetworkImage(postItem.user.avatar),
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Container(
+                              padding: EdgeInsets.fromLTRB(10, 8, 0, 10),
+                              child: Text("${postItem.user.name}"),
+                            ),
+                            Container(
+                              padding: EdgeInsets.fromLTRB(5, 7, 10, 10),
+                              child: Text("@${postItem.user.username}",style: TextStyle(color: Colors.black38),),
+                            )
+                          ],
+                        ),
+                        Spacer(),
+                        Container(
+                          padding: EdgeInsets.fromLTRB(10, 6, 10, 10),
+                          child: Text(
+                            "${TimeUtil.parse(postItem.ctime.toString())}",
+                            style:
+                                TextStyle(fontSize: 13, color: Colors.black38),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(10, 0, 3, 3),
+                    child: Text("${postItem.content}"),
+                  ),
+                  postItem.photos != null && postItem.photos.length != 0
+                      ? _buildRetweetImage(postItem.photos)
+                      : Container()
+                ],
+              ),
+            ),
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => HomeDetailPage(new PostItem(),postId: postItem.id,)));
+            },
+          )
+        : retweetWidget = Container(
+            width: 0,
+            height: 0,
+          );
+    return retweetWidget;
+  }
+
+  _buildRetweetImage(List<String> photosList) {
+    Widget widgets;
+    switch (photosList.length) {
+      case 1:
+        widgets = Container(
+          height: 150,
+          margin: EdgeInsets.only(top: 5),
+          width: double.infinity,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(10),
+                  bottomRight: Radius.circular(10)),
+              image: DecorationImage(
+                  image: NetworkImage(photosList[0]), fit: BoxFit.cover)),
+        );
+        break;
+      case 2:
+        widgets = Container(
+          height: 150,
+          margin: EdgeInsets.only(top: 5),
+          width: double.infinity,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                      borderRadius:
+                          BorderRadius.only(bottomLeft: Radius.circular(10)),
+                      image: DecorationImage(
+                          image: NetworkImage(photosList[0]),
+                          fit: BoxFit.cover)),
+                ),
+              ),
+              SizedBox(
+                width: 5,
+              ),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                      borderRadius:
+                          BorderRadius.only(bottomRight: Radius.circular(10)),
+                      image: DecorationImage(
+                          image: NetworkImage(photosList[1]),
+                          fit: BoxFit.cover)),
+                ),
+              ),
+            ],
+          ),
+        );
+        break;
+      case 3:
+        widgets = Container(
+          height: 150,
+          margin: EdgeInsets.only(top: 5),
+          width: double.infinity,
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(10)),
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[0]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Expanded(
+                      child: Column(
+                        children: <Widget>[
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      image: NetworkImage(photosList[1]),
+                                      fit: BoxFit.cover)),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                      bottomRight: Radius.circular(10)),
+                                  image: DecorationImage(
+                                      image: NetworkImage(photosList[2]),
+                                      fit: BoxFit.cover)),
+                            ),
+                          ),
                         ],
                       ),
                     )
                   ],
                 ),
               ),
-              onTap: (){
-                Navigator.of(context).push(MaterialPageRoute(builder: (context) => MinePage(userid: item.user.id,)));
-              },
-            ),
-            InkWell(
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    alignment: Alignment.topLeft,
-                    child: _content(context),
-                  ),
-                  if (item.photos.length != 0) _photoItem(context),
-                ],
+            ],
+          ),
+        );
+        break;
+      case 4:
+        widgets = Container(
+          height: 150,
+          margin: EdgeInsets.only(top: 5),
+          width: double.infinity,
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[0]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[1]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              onTap: (){
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => HomeDetailPage(item)));
-              },
-            ),
-            Divider(
-              height: 20.0,
-            ),
-            _bottomAction()
-          ],
-        )*/
+              SizedBox(
+                height: 5,
+              ),
+              Expanded(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(10)),
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[2]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                                bottomRight: Radius.circular(10)),
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[3]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        );
+        break;
+    }
+    return widgets;
   }
 
-  _followYou(String userId){
+  _followYou(String userId) {
     print(userId);
     FollowDao.follow(userId, context);
     Navigator.pop(context);
@@ -338,7 +566,7 @@ class _PostCardState extends State<PostCard> {
     }
   }
 
-  _unfollowYou(String userId){
+  _unfollowYou(String userId) {
     print(userId);
     FollowDao.unfollow(userId, context);
     Navigator.pop(context);
@@ -355,8 +583,11 @@ class _PostCardState extends State<PostCard> {
       case 1:
         imageWidget = GestureDetector(
           child: Container(
-            height: 200,
-            width: AdaptiveTools.setRpx(575),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            height: 150,
+            width: double.infinity,
             margin: EdgeInsets.only(top: 3),
             child: ClipRRect(
               child: _cachedImage(photos[0]),
@@ -368,8 +599,10 @@ class _PostCardState extends State<PostCard> {
         break;
       case 2:
         imageWidget = Container(
-          height: 200,
-          width: AdaptiveTools.setRpx(575),
+          decoration:
+              BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(8))),
+          height: 150,
+          width: double.infinity,
           margin: EdgeInsets.only(top: 3),
           child: Row(
             children: <Widget>[
@@ -410,8 +643,8 @@ class _PostCardState extends State<PostCard> {
         break;
       case 3:
         imageWidget = Container(
-          height: 200,
-          width: AdaptiveTools.setRpx(575),
+          height: 150,
+          width: double.infinity,
           margin: EdgeInsets.only(top: 3),
           child: Column(
             children: <Widget>[
@@ -482,8 +715,8 @@ class _PostCardState extends State<PostCard> {
         break;
       case 4:
         imageWidget = Container(
-          height: 200,
-          width: AdaptiveTools.setRpx(575),
+          height: 150,
+          width: double.infinity,
           margin: EdgeInsets.only(top: 3),
           child: Column(
             children: <Widget>[
@@ -653,79 +886,12 @@ class _PostCardState extends State<PostCard> {
       placeholder: (context, url) {
         return Container(
           height: 20,
-          child: Center(child: Center(
+          child: Center(
+              child: Center(
             child: CircularProgressIndicator(),
           )),
         );
       },
-    );
-  }
-
-  _bottomAction() {
-    return Row(
-      mainAxisSize: MainAxisSize.max,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: <Widget>[
-        Flexible(
-          flex: 1,
-          child: InkWell(
-            onTap: () {
-              print("clicked...");
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Image.asset(
-                  'images/ic_home_forward.png',
-                  width: 22,
-                  height: 22,
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 4),
-                  child: Text(
-                      item.forwardCount == 0
-                          ? '转发'
-                          : item.forwardCount.toString(),
-                      style: TextStyle(color: Colors.black, fontSize: 13)),
-                )
-              ],
-            ),
-          ),
-        ),
-        Flexible(
-          flex: 1,
-          child: InkWell(
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => HomeDetailPage(item)));
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Image.asset(
-                  'images/ic_home_comment.webp',
-                  width: 22,
-                  height: 22,
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 4),
-                  child: Text(
-                      item.commentCount == 0
-                          ? '评论'
-                          : item.commentCount.toString(),
-                      style: TextStyle(color: Colors.black, fontSize: 13)),
-                )
-              ],
-            ),
-          ),
-        ),
-        Flexible(
-          flex: 1,
-          child: _buildLikeButton(),
-        )
-      ],
     );
   }
 
@@ -803,16 +969,19 @@ class _PostCardState extends State<PostCard> {
         ],
       ));
     }
-    return Text(content, style: contentStyle,maxLines: 3,softWrap: true,);
+    return Text(
+      content,
+      style: contentStyle,
+      maxLines: 3,
+      softWrap: true,
+    );
   }
 
   bool isExpansion(String text) {
     TextPainter _textPainter = TextPainter(
         maxLines: 3,
         text: TextSpan(
-          text: text,
-          style: TextStyle(color: Colors.black, fontSize: 15)
-        ),
+            text: text, style: TextStyle(color: Colors.black, fontSize: 15)),
         textDirection: TextDirection.ltr)
       ..layout(
           maxWidth: MediaQuery.of(context).size.width,
@@ -825,7 +994,8 @@ class _PostCardState extends State<PostCard> {
   }
 
   _tapRecognizer(BuildContext context) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => HomeDetailPage(item)));
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => HomeDetailPage(item)));
   }
 
   _showImage(BuildContext context, int index) {

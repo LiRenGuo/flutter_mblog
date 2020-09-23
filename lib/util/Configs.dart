@@ -53,11 +53,11 @@ class Constants{
   static final Shared_ReailName = 'Shared_reailname';
   static final Shared_Image= 'Shared_image';
   static final Shared_Email= 'Shared_email';
-  static final Shared_Article= 'Shared_article';
   static final Shared_Mobile= 'Shared_Mobile';
   static final Shared_Id= 'Shared_id';
   static final Shared_Following= 'Shared_following';
   static final Shared_Followers= 'Shared_followers';
   static final IconSize = 40.0;
+  static final Shared_Twitter= 'Shared_Twitter';
 
 }

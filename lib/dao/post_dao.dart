@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_mblog/model/mypost_model.dart';
 import 'package:flutter_mblog/model/post_comment_model.dart';
+import 'package:flutter_mblog/model/post_like_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
 import 'package:flutter_mblog/util/oauth.dart';
@@ -13,6 +14,7 @@ import 'package:multi_image_picker/multi_image_picker.dart';
 const POST_LIST_URL = "http://mblog.yunep.com/api/post";
 const POST_COMMENT_URL = "http://mblog.yunep.com/api/comment/post/";
 const POST_PUBLISH_URL = "http://mblog.yunep.com/api/post";
+const POST_RETWEET_URL = "http://mblog.yunep.com/api/post/quote";
 const MY_POST_LIST_URL = "http://mblog.yunep.com/api/post/my";
 const YOUR_POST_LIST_URL = "http://mblog.yunep.com/api/post/user/";
 const LIKE_URL = 'http://mblog.yunep.com/api/post/like'; //点赞接口
@@ -20,14 +22,23 @@ const SEND_COMMENT = "http://mblog.yunep.com/api/post/";
 const LIKE_POST_URI = "http://mblog.yunep.com/api/post/like/list/";
 
 class PostDao {
-  static Future<PostModel> getList(int page, int pageSize) async {
-    final response = await dio
-        .get(POST_LIST_URL, queryParameters: {"page": page, "size": pageSize});
-    if (response.statusCode == 200) {
-      final responseData = response.data;
-      return PostModel.fromJson(responseData);
-    } else {
-      throw Exception('loading data error.....');
+  static Future<PostModel> getList(int page, int pageSize,BuildContext context) async {
+    try {
+      String token = await Shared_pre.Shared_getToken();
+      Options options = Options(headers: {"Authorization": "Bearer $token"});
+      dio.options.connectTimeout = 5000;
+      dio.options.receiveTimeout = 10000;
+      final response = await dio
+          .get(POST_LIST_URL, queryParameters: {"page": page, "size": pageSize},options: options);
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+        return PostModel.fromJson(responseData);
+      } else {
+        throw Exception('loading data error.....');
+      }
+    }on DioError catch(e) {
+      print(e.toString());
+
     }
   }
 
@@ -135,19 +146,42 @@ class PostDao {
   }
 
   static Future publish(BuildContext context, FormData formData) async {
-    final response = Shared_pre.Shared_getToken().then((token) async {
-      Options options = Options(headers: {'Authorization': 'Bearer $token'});
-      final response =
-          await dio.post(POST_PUBLISH_URL, data: formData, options: options);
-      print("response = $response");
+    try {
+      final response = Shared_pre.Shared_getToken().then((token) async {
+        Options options = Options(headers: {'Authorization': 'Bearer $token'});
+        final response =
+        await dio.post(POST_PUBLISH_URL, data: formData, options: options);
+        print("response = $response");
 
-      if (response.statusCode == 401) {
-        Oauth_2.ResToken(context);
-        publish(context, formData);
-      }
-      return response.data;
-    });
-    return response;
+        if (response.statusCode == 401) {
+          Oauth_2.ResToken(context);
+          publish(context, formData);
+        }
+        return response.data;
+      });
+      return response;
+    }on DioError catch(e) {
+      print("e.data >> ${e.response.data["result"]}");
+    }
+  }
+
+  static Future retweetPublish(BuildContext context, FormData formData) async {
+    try {
+      final response = Shared_pre.Shared_getToken().then((token) async {
+        Options options = Options(headers: {'Authorization': 'Bearer $token'});
+        print("请求推文发布");
+        final response = await dio.post(POST_RETWEET_URL, data: formData, options: options);
+        print("response = $response");
+        if (response.statusCode == 401) {
+          Oauth_2.ResToken(context);
+          publish(context, formData);
+        }
+        return response.data;
+      });
+      return response;
+    }on DioError catch (e) {
+      print("e.data >> ${e.response.data["result"]}");
+    }
   }
 
   static Future like(String id) {
@@ -179,11 +213,33 @@ class PostDao {
     }
   }
 
+  static Future<PostLikeModel> getMyLikePost(String userId,int page,BuildContext context) async {
+    try {
+      print(userId);
+      String token = await Shared_pre.Shared_getToken();
+      Options options = Options(headers: {'Authorization': 'Bearer $token'});
+      final response = await dio.get(LIKE_POST_URI + "$userId",
+          options: options, queryParameters: {"page": page});
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+        return PostLikeModel.fromJson(responseData);
+      } else {
+        throw Exception("loading data error.....");
+      }
+    } on DioError catch (e) {
+      if (e.response.statusCode == 401) {
+        Oauth_2.ResToken(context);
+      }
+    }
+  }
+
+
   static Future<PostItem> getPostById(
       String postId, BuildContext context) async {
     try {
       String token = await Shared_pre.Shared_getToken();
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
+      print("POST_LIST_URL ==  ${POST_LIST_URL + "/$postId"}");
       final response =
           await dio.get(POST_LIST_URL + "/$postId", options: options);
       print(response);
@@ -200,26 +256,7 @@ class PostDao {
     }
   }
 
-  static Future<MyPostModel> getMyLikePost(String userId,int page,BuildContext context) async {
-    try {
-      String token = await Shared_pre.Shared_getToken();
-      Options options = Options(headers: {'Authorization': 'Bearer $token'});
-      final response = await dio.get(LIKE_POST_URI + "$userId",
-          options: options, queryParameters: {"page": page});
-      if (response.statusCode == 200) {
-        final responseData = response.data;
-        return MyPostModel.fromJson(responseData);
-      } else {
-        throw Exception("loading data error.....");
-      }
-    } on DioError catch (e) {
-      if (e.response.statusCode == 401) {
-        Oauth_2.ResToken(context);
-      }
-    }
-  }
-
-  static Future<MyPostModel> getYourLikePostList(
+  /*static Future<MyPostModel> getYourLikePostList(
       BuildContext context, String userId, int page) async {
     print("开始请求数据");
     String token = await Shared_pre.Shared_getToken();
@@ -233,13 +270,5 @@ class PostDao {
     } else {
       throw Exception("loading data error.....");
     }
-    /*try {
-
-    } on DioError catch (e) {
-      e.toString();
-      if (e.response.statusCode == 401) {
-        Oauth_2.ResToken(context);
-      }
-    }*/
-  }
+  }*/
 }

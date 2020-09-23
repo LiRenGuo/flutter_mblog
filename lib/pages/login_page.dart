@@ -1,12 +1,15 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/navigator/tab_navigator.dart';
 import 'package:flutter_mblog/pages/register/reset_password_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/common_util.dart';
 import 'file:///E:/android/flutter_mblog/lib/pages/register/register_page.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/oauth.dart';
+import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -107,6 +110,7 @@ class _LoginPageState extends State<LoginPage> {
                   elevation: 3,
                   child: MaterialButton(
                     onPressed: (){
+                      print("点击");
                       _onLogin();
                     },
                     child: Padding(
@@ -159,15 +163,19 @@ class _LoginPageState extends State<LoginPage> {
   void _onLogin() async {
     // 提交前，先验证各个表单字段是否合法
     if ((_formKey.currentState as FormState).validate()) {
+      CommonUtil.showLoadingDialog(context);
       Oauth_2.Login_oauth2(_unameController.text, _pwdController.text, context).then((boola) {
         if (boola == 'success') {
+          Shared_pre.Shared_getUser().then((value) => print(value.id));
           print("success");
+          Navigator.pop(context);
           Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
             builder: (context) => TabNavigator(),
           ),(Route<dynamic> route) => false);
         } else {
-          MyToast.show("用户名或密码错误");
           print("error");
+          Navigator.pop(context);
+          MyToast.show("用户名或密码错误");
         }
       });
     }

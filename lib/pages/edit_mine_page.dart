@@ -7,6 +7,7 @@ import 'package:flutter_mblog/dao/upload_dao.dart';
 import 'package:flutter_mblog/dao/user_dao.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:image_picker/image_picker.dart';
 
 class EditMinePage extends StatefulWidget {
@@ -43,8 +44,7 @@ class _EditMinePageState extends State<EditMinePage> {
   bool onUpdate = false;
   bool isFanqi = false;
 
-
-
+  bool onInitBody = true;
 
   getUserInfo() {
     return UserDao.getUserInfo(context);
@@ -92,13 +92,13 @@ class _EditMinePageState extends State<EditMinePage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child:Scaffold(
+      child: Scaffold(
         appBar: AppBar(
           iconTheme: IconThemeData(color: Colors.blue),
           backgroundColor: Colors.white,
           title: Text(
             "编辑个人资料",
-            style: TextStyle(fontWeight: FontWeight.w600,color: Colors.black),
+            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black),
           ),
           actions: <Widget>[
             Padding(
@@ -111,13 +111,16 @@ class _EditMinePageState extends State<EditMinePage> {
                 textColor: Colors.white,
                 onPressed: () {
                   FormData formDate = FormData.fromMap({
-                    "id":_userModel.id,
-                    "name":_nameEtController.text,
+                    "id": _userModel.id,
+                    "name": _nameEtController.text,
                     "banner": banner,
                     "avatar": avatar,
                     "intro": _introductionEtController.text,
                     "homepage": _urlEtController.text,
                   });
+                  Shared_pre.Shared_deleteUser();
+                  UserModel editUserModel = new UserModel(email: _userModel.email,mobile: _userModel.mobile,name: _nameEtController.text,username: _userModel.username,avatar: avatar,id: _userModel.id);
+                  Shared_pre.Shared_setUser(editUserModel);
                   UserDao.saveUserInfo(formDate);
                   Navigator.pop(context);
                 },
@@ -135,17 +138,20 @@ class _EditMinePageState extends State<EditMinePage> {
             if (snapshot.hasData) {
               print(avatar);
               _userModel = snapshot.data;
-              if (_nameEtController.text.isEmpty) {
-                _nameEtController.text = _userModel.name;
-              }
-              if (_introductionEtController.text.isEmpty) {
-                _introductionEtController.text = _userModel.intro;
-              }
-              if (_urlEtController.text.isEmpty) {
-                _urlEtController.text = _userModel.homepage;
-              }
-              if (_positionEtController.text.isEmpty) {
-                _positionEtController.text = _userModel.address;
+              if (onInitBody) {
+                if (_nameEtController.text.isEmpty) {
+                  _nameEtController.text = _userModel.name;
+                }
+                if (_introductionEtController.text.isEmpty) {
+                  _introductionEtController.text = _userModel.intro;
+                }
+                if (_urlEtController.text.isEmpty) {
+                  _urlEtController.text = _userModel.homepage;
+                }
+                if (_positionEtController.text.isEmpty) {
+                  _positionEtController.text = _userModel.address;
+                }
+                onInitBody = false;
               }
               return Container(
                 child: ListView(
@@ -156,94 +162,123 @@ class _EditMinePageState extends State<EditMinePage> {
                           children: <Widget>[
                             Container(
                               height: AdaptiveTools.setPx(140),
-                              width: MediaQuery
-                                  .of(context)
-                                  .size
-                                  .width,
-                              child: banner != null ? Image.network(banner,fit: BoxFit.cover,):Image.network(
-                                _userModel.banner,
-                                fit: BoxFit.cover,
-                              ),
+                              width: MediaQuery.of(context).size.width,
+                              child: banner != null
+                                  ? Image.network(
+                                      banner,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.network(
+                                      _userModel.banner,
+                                      fit: BoxFit.cover,
+                                    ),
                             ),
-                            Container(
-                              height: AdaptiveTools.setPx(140),
-                              padding:
-                              EdgeInsets.only(top: AdaptiveTools.setPx(60)),
-                              alignment: Alignment.topCenter,
-                              color: Colors.black38,
-                              child: InkWell(
+                            InkWell(
                                 child: Container(
-                                  height: AdaptiveTools.setPx(25),
-                                  child: Image.asset(
-                                    "images/ic_vector_camera_stroke.png",
-                                    color: Colors.white,
+                                  height: AdaptiveTools.setPx(140),
+                                  padding: EdgeInsets.only(
+                                      top: AdaptiveTools.setPx(60)),
+                                  alignment: Alignment.topCenter,
+                                  color: Colors.black38,
+                                  child: Container(
+                                    height: AdaptiveTools.setPx(25),
+                                    child: Image.asset(
+                                      "images/ic_vector_camera_stroke.png",
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                                 onTap: () {
                                   setState(() {
                                     onUpdate = true;
                                   });
-                                  print("选择图片");
                                   showModalBottomSheet(
-                                      context: context, builder: (context) {
-                                    return Container(
-                                      height: AdaptiveTools.setPx(140),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment
-                                            .center,
-                                        children: <Widget>[
-                                          InkWell(
-                                            child: Container(
-                                              child: Text("拍照", style: TextStyle(
-                                                  fontSize: AdaptiveTools.setPx(
-                                                      17)),),
-                                              margin: EdgeInsets.all(10),
+                                      context: context,
+                                      builder: (context) {
+                                        return Stack(
+                                          children: <Widget>[
+                                            Container(
+                                              height: 25,
+                                              width: double.infinity,
+                                              color: Colors.black54,
                                             ),
-                                            onTap: (){
-                                              _takePhoto("banner");
-                                              Navigator.pop(context);
-                                            },
-                                          ),
-                                          Container(
-                                            height: 1,
-                                            color: Colors.black12,
-                                          ),
-                                          InkWell(
-                                            child: Container(
-                                              margin: EdgeInsets.all(10),
-                                              child: Text("相册",
-                                                  style: TextStyle(
-                                                      fontSize: AdaptiveTools
-                                                          .setPx(17))),
-                                            ),
-                                            onTap: () {
-                                              _openGallery("banner");
-                                              Navigator.pop(context);
-                                            },
-                                          ),
-                                          Container(
-                                            height: 4,
-                                            color: Colors.black12,
-                                          ),
-                                          InkWell(
-                                            child: Container(
-                                              margin: EdgeInsets.all(10),
-                                              child: Text("取消",
-                                                  style: TextStyle(
-                                                      fontSize: AdaptiveTools
-                                                          .setPx(17))),
-                                            ),
-                                            onTap: () {
-                                              Navigator.pop(context);
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  });
-                                },
-                              ),
-                            )
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius: BorderRadius.only(
+                                                  topLeft: Radius.circular(20),
+                                                  topRight: Radius.circular(20),
+                                                ),
+                                              ),
+                                              height: AdaptiveTools.setPx(140),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                                children: <Widget>[
+                                                  InkWell(
+                                                    child: Container(
+                                                      child: Text(
+                                                        "拍照",
+                                                        style: TextStyle(
+                                                            fontSize:
+                                                            AdaptiveTools.setPx(
+                                                                17)),
+                                                      ),
+                                                      margin: EdgeInsets.all(10),
+                                                      width: double.infinity,
+                                                      alignment: Alignment.center,
+                                                    ),
+                                                    onTap: () {
+                                                      _takePhoto("banner");
+                                                      Navigator.pop(context);
+                                                    },
+                                                  ),
+                                                  Container(
+                                                    height: 1,
+                                                    color: Colors.black12,
+                                                  ),
+                                                  InkWell(
+                                                    child: Container(
+                                                      margin: EdgeInsets.all(10),
+                                                      child: Text("相册",
+                                                          style: TextStyle(
+                                                              fontSize:
+                                                              AdaptiveTools
+                                                                  .setPx(17))),
+                                                      width: double.infinity,
+                                                      alignment: Alignment.center,
+                                                    ),
+                                                    onTap: () {
+                                                      _openGallery("banner");
+                                                      Navigator.pop(context);
+                                                    },
+                                                  ),
+                                                  Container(
+                                                    height: 4,
+                                                    color: Colors.black12,
+                                                  ),
+                                                  InkWell(
+                                                    child: Container(
+                                                      margin: EdgeInsets.all(10),
+                                                      child: Text("取消",
+                                                          style: TextStyle(
+                                                              fontSize:
+                                                              AdaptiveTools
+                                                                  .setPx(17))),
+                                                      width: double.infinity,
+                                                      alignment: Alignment.center,
+                                                    ),
+                                                    onTap: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                  ),
+                                                ],
+                                              ),
+                                            )
+                                          ],
+                                        );
+                                      });
+                                })
                           ],
                         ),
                         Stack(
@@ -254,22 +289,24 @@ class _EditMinePageState extends State<EditMinePage> {
                                 child: Container(
                                   child: CircleAvatar(
                                       maxRadius: AdaptiveTools.setPx(40),
-                                      backgroundImage: avatar != null ?NetworkImage(avatar): NetworkImage(_userModel.avatar)),
+                                      backgroundImage: avatar != null
+                                          ? NetworkImage(avatar)
+                                          : NetworkImage(_userModel.avatar)),
                                   margin: EdgeInsets.only(
                                       left: AdaptiveTools.setPx(18),
                                       bottom: AdaptiveTools.setPx(10)),
                                 )),
-                            Container(
-                              height: AdaptiveTools.setPx(80),
-                              padding: EdgeInsets.all(AdaptiveTools.setPx(30)),
-                              decoration: BoxDecoration(
-                                  color: Colors.black38,
-                                  borderRadius:
-                                  BorderRadius.all(Radius.circular(40))),
-                              margin: EdgeInsets.only(
-                                  top: AdaptiveTools.setPx(110),
-                                  left: AdaptiveTools.setPx(18)),
-                              child: InkWell(
+                            InkWell(
+                              child: Container(
+                                height: AdaptiveTools.setPx(80),
+                                padding: EdgeInsets.all(AdaptiveTools.setPx(30)),
+                                decoration: BoxDecoration(
+                                    color: Colors.black38,
+                                    borderRadius:
+                                    BorderRadius.all(Radius.circular(40))),
+                                margin: EdgeInsets.only(
+                                    top: AdaptiveTools.setPx(110),
+                                    left: AdaptiveTools.setPx(18)),
                                 child: Container(
                                   height: AdaptiveTools.setPx(25),
                                   child: Image.asset(
@@ -277,70 +314,93 @@ class _EditMinePageState extends State<EditMinePage> {
                                     color: Colors.white,
                                   ),
                                 ),
-                                onTap: () {
-                                  print("修改头像");
-                                  setState(() {
-                                    onUpdate = true;
-                                  });
-                                  showModalBottomSheet(
-                                      context: context, builder: (context) {
-                                    return Container(
-                                      height: AdaptiveTools.setPx(140),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment
-                                            .center,
-                                        children: <Widget>[
-                                          InkWell(
-                                            child: Container(
-                                              child: Text("拍照", style: TextStyle(
-                                                  fontSize: AdaptiveTools.setPx(
-                                                      17)),),
-                                              margin: EdgeInsets.all(10),
-                                            ),
-                                            onTap: (){
-                                              _takePhoto("avatar");
-                                              Navigator.pop(context);
-                                            },
-                                          ),
-                                          Container(
-                                            height: 1,
-                                            color: Colors.black12,
-                                          ),
-                                          InkWell(
-                                            child: Container(
-                                              margin: EdgeInsets.all(10),
-                                              child: Text("相册",
-                                                  style: TextStyle(
-                                                      fontSize: AdaptiveTools
-                                                          .setPx(17))),
-                                            ),
-                                            onTap: () {
-                                              _openGallery("avatar");
-                                              Navigator.pop(context);
-                                            },
-                                          ),
-                                          Container(
-                                            height: 4,
-                                            color: Colors.black12,
-                                          ),
-                                          InkWell(
-                                            child: Container(
-                                              margin: EdgeInsets.all(10),
-                                              child: Text("取消",
-                                                  style: TextStyle(
-                                                      fontSize: AdaptiveTools
-                                                          .setPx(17))),
-                                            ),
-                                            onTap: () {
-                                              Navigator.pop(context);
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  });
-                                },
                               ),
+                              onTap: () {
+                                print("修改头像");
+                                setState(() {
+                                  onUpdate = true;
+                                });
+                                showModalBottomSheet(
+                                    context: context,
+                                    builder: (context) {
+                                      return Stack(
+                                        children: <Widget>[
+                                          Container(
+                                            height: 25,
+                                            width: double.infinity,
+                                            color: Colors.black54,
+                                          ),
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(20),
+                                                topRight: Radius.circular(20),
+                                              ),
+                                            ),
+                                            height: AdaptiveTools.setPx(140),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                              children: <Widget>[
+                                                InkWell(
+                                                  child: Container(
+                                                    child: Text(
+                                                      "拍照",
+                                                      style: TextStyle(
+                                                          fontSize:
+                                                          AdaptiveTools.setPx(
+                                                              17)),
+                                                    ),
+                                                    margin: EdgeInsets.all(10),
+                                                  ),
+                                                  onTap: () {
+                                                    _takePhoto("avatar");
+                                                    Navigator.pop(context);
+                                                  },
+                                                ),
+                                                Container(
+                                                  height: 1,
+                                                  color: Colors.black12,
+                                                ),
+                                                InkWell(
+                                                  child: Container(
+                                                    margin: EdgeInsets.all(10),
+                                                    child: Text("相册",
+                                                        style: TextStyle(
+                                                            fontSize:
+                                                            AdaptiveTools
+                                                                .setPx(17))),
+                                                  ),
+                                                  onTap: () {
+                                                    _openGallery("avatar");
+                                                    Navigator.pop(context);
+                                                  },
+                                                ),
+                                                Container(
+                                                  height: 4,
+                                                  color: Colors.black12,
+                                                ),
+                                                InkWell(
+                                                  child: Container(
+                                                    margin: EdgeInsets.all(10),
+                                                    child: Text("取消",
+                                                        style: TextStyle(
+                                                            fontSize:
+                                                            AdaptiveTools
+                                                                .setPx(17))),
+                                                  ),
+                                                  onTap: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        ],
+                                      );
+                                    });
+                              },
                             )
                           ],
                         ),
@@ -352,7 +412,13 @@ class _EditMinePageState extends State<EditMinePage> {
                           children: <Widget>[
                             Container(
                               padding: EdgeInsets.fromLTRB(9, 5, 10, 0),
-                              child: Text("用户名",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w100,color: Colors.black87),),
+                              child: Text(
+                                "用户名",
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w100,
+                                    color: Colors.black87),
+                              ),
                             ),
                             Container(
                               margin: EdgeInsets.only(top: 15),
@@ -360,8 +426,9 @@ class _EditMinePageState extends State<EditMinePage> {
                               child: TextField(
                                 controller: _nameEtController,
                                 focusNode: focusNameNode,
-                                style: TextStyle(fontSize: 16.0, color: Colors.black),
-                                onChanged: (value){
+                                style: TextStyle(
+                                    fontSize: 16.0, color: Colors.black),
+                                onChanged: (value) {
                                   setState(() {
                                     onUpdate = true;
                                   });
@@ -370,11 +437,11 @@ class _EditMinePageState extends State<EditMinePage> {
                                     hintText: "请输入用户名",
                                     hintStyle: TextStyle(fontSize: 16),
                                     focusedBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color: Colors.blue)),
+                                        borderSide:
+                                            BorderSide(color: Colors.blue)),
                                     enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color: Colors.black26))),
+                                        borderSide:
+                                            BorderSide(color: Colors.black26))),
                               ),
                             )
                           ],
@@ -383,7 +450,13 @@ class _EditMinePageState extends State<EditMinePage> {
                           children: <Widget>[
                             Container(
                               padding: EdgeInsets.fromLTRB(9, 5, 10, 0),
-                              child: Text("简介",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w100,color: Colors.black87),),
+                              child: Text(
+                                "简介",
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w100,
+                                    color: Colors.black87),
+                              ),
                             ),
                             Container(
                               margin: EdgeInsets.only(top: 15),
@@ -392,20 +465,21 @@ class _EditMinePageState extends State<EditMinePage> {
                                 maxLines: 3,
                                 controller: _introductionEtController,
                                 focusNode: focusIntroductionNode,
-                                onChanged: (value){
+                                onChanged: (value) {
                                   setState(() {
                                     onUpdate = true;
                                   });
                                 },
-                                style: TextStyle(fontSize: 16.0, color: Colors.black),
+                                style: TextStyle(
+                                    fontSize: 16.0, color: Colors.black),
                                 decoration: InputDecoration(
                                     hintText: "请输入简介",
                                     focusedBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color: Colors.blue)),
+                                        borderSide:
+                                            BorderSide(color: Colors.blue)),
                                     enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color: Colors.black26))),
+                                        borderSide:
+                                            BorderSide(color: Colors.black26))),
                               ),
                             )
                           ],
@@ -414,7 +488,13 @@ class _EditMinePageState extends State<EditMinePage> {
                           children: <Widget>[
                             Container(
                               padding: EdgeInsets.fromLTRB(9, 5, 10, 0),
-                              child: Text("位置",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w100,color: Colors.black87),),
+                              child: Text(
+                                "位置",
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w100,
+                                    color: Colors.black87),
+                              ),
                             ),
                             Container(
                               margin: EdgeInsets.only(top: 15),
@@ -422,21 +502,21 @@ class _EditMinePageState extends State<EditMinePage> {
                               child: TextField(
                                   controller: _positionEtController,
                                   focusNode: focusPositionNode,
-                                  onChanged: (value){
+                                  onChanged: (value) {
                                     setState(() {
                                       onUpdate = true;
                                     });
                                   },
-                                  style: TextStyle(fontSize: 16.0, color: Colors.black),
+                                  style: TextStyle(
+                                      fontSize: 16.0, color: Colors.black),
                                   decoration: InputDecoration(
                                       hintText: "请输入位置",
                                       focusedBorder: UnderlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: Colors.blue)),
+                                          borderSide:
+                                              BorderSide(color: Colors.blue)),
                                       enabledBorder: UnderlineInputBorder(
                                           borderSide: BorderSide(
-                                              color: Colors.black26)))
-                              ),
+                                              color: Colors.black26)))),
                             )
                           ],
                         ),
@@ -444,7 +524,13 @@ class _EditMinePageState extends State<EditMinePage> {
                           children: <Widget>[
                             Container(
                               padding: EdgeInsets.fromLTRB(9, 5, 10, 0),
-                              child: Text("网址",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w100,color: Colors.black87),),
+                              child: Text(
+                                "网址",
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w100,
+                                    color: Colors.black87),
+                              ),
                             ),
                             Container(
                               margin: EdgeInsets.only(top: 15),
@@ -452,20 +538,21 @@ class _EditMinePageState extends State<EditMinePage> {
                               child: TextField(
                                 controller: _urlEtController,
                                 focusNode: focusUrlNode,
-                                onChanged: (value){
+                                onChanged: (value) {
                                   setState(() {
                                     onUpdate = true;
                                   });
                                 },
-                                style: TextStyle(fontSize: 16.0, color: Colors.black),
+                                style: TextStyle(
+                                    fontSize: 16.0, color: Colors.black),
                                 decoration: InputDecoration(
                                     hintText: "请输入你的网址",
                                     focusedBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color: Colors.blue)),
+                                        borderSide:
+                                            BorderSide(color: Colors.blue)),
                                     enabledBorder: UnderlineInputBorder(
-                                        borderSide: BorderSide(
-                                            color: Colors.black26))),
+                                        borderSide:
+                                            BorderSide(color: Colors.black26))),
                               ),
                             )
                           ],
@@ -484,44 +571,7 @@ class _EditMinePageState extends State<EditMinePage> {
             }
           },
         ),
-      )/*WillPopScope(
-        child:  ,
-        onWillPop: () async{
-          if (onUpdate) {
-          print("111");
-            showDialog(context: context,builder: (context){
-              return AlertDialog(
-                title: Text("编辑个人资料"),
-                content: Text('放弃修改？'),
-                actions: <Widget>[
-                  FlatButton(
-                    child: Text('取消'),
-                    onPressed: (){
-                      setState(() {
-                        isFanqi = true;
-                      });
-                      Navigator.of(context).pop(3);
-                    },
-                  ),
-                  FlatButton(
-                    child: Text('放弃'),
-                    onPressed: (){
-                      setState(() {
-                        isFanqi = true;
-                      });
-                      Navigator.of(context).pop(3);
-                    },
-                  )
-                ],
-              );
-            });
-          print("2222 : " + isFanqi.toString());
-          return isFanqi;
-          }else{
-            return true;
-          }
-        },
-      )*/,
+      ),
     );
   }
 
@@ -529,12 +579,12 @@ class _EditMinePageState extends State<EditMinePage> {
 
   _takePhoto(String flag) async {
     var pickedFile = await _picker.getImage(source: ImageSource.camera);
-    if(pickedFile == null) return;
+    if (pickedFile == null) return;
     var image = File(pickedFile.path);
 
     if (flag == "banner") {
       banner = await UploadDao.uploadImage(UploadDao.UPDATE_BANNER, image);
-    }else if(flag == "avatar"){
+    } else if (flag == "avatar") {
       avatar = await UploadDao.uploadImage(UploadDao.UPDATE_BANNER, image);
     }
     setState(() {});
@@ -542,11 +592,11 @@ class _EditMinePageState extends State<EditMinePage> {
 
   _openGallery(String flag) async {
     var pickedFile = await _picker.getImage(source: ImageSource.gallery);
-    if(pickedFile == null) return;
+    if (pickedFile == null) return;
     var image = File(pickedFile.path);
     if (flag == "banner") {
       banner = await UploadDao.uploadImage(UploadDao.UPDATE_BANNER, image);
-    }else if(flag == "avatar"){
+    } else if (flag == "avatar") {
       avatar = await UploadDao.uploadImage(UploadDao.UPDATE_BANNER, image);
     }
     setState(() {});

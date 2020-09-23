@@ -9,6 +9,7 @@ import 'package:flutter_mblog/pages/home_page.dart';
 import 'package:flutter_mblog/pages/login_page.dart';
 import 'package:flutter_mblog/pages/register/register_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/oauth.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -76,8 +77,7 @@ class _WelcomePageState extends State<WelcomePage> {
   isLogin()async{
     String token =  await Shared_pre.Shared_getToken();
     if (token != null) {
-      print("不为空");
-      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => TabNavigator()), (route) => false);
+      Oauth_2.ResToken(context);
     }
     setState(() {
       isok = true;

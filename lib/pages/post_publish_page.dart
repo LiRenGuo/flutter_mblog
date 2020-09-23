@@ -1,37 +1,46 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:date_format/date_format.dart';
 import 'package:device_info/device_info.dart';
 import 'package:dio/dio.dart';
 import 'package:emoji_picker/emoji_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
-import 'package:flutter_mblog/pages/home_page.dart';
+import 'package:flutter_mblog/model/post_model.dart';
+import 'package:flutter_mblog/navigator/tab_navigator.dart';
+import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/widget/loading_container.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 
 class PostPublishPage extends StatefulWidget {
   final String avatar;
+  final PostItem postItem;
+  final String postId;
 
-  const PostPublishPage({Key key, this.avatar}) : super(key: key);
+  const PostPublishPage({Key key, this.avatar, this.postItem,this.postId})
+      : super(key: key);
 
   @override
   _PostPublishPageState createState() => _PostPublishPageState();
 }
 
 class _PostPublishPageState extends State<PostPublishPage> {
+  PostItem postItem;
   String devicemodel;
   FocusNode _commentFocus = FocusNode();
   TextEditingController _contentController = TextEditingController();
   List<Asset> fileList = List<Asset>();
   File selectedImageFile;
   bool _loading = false;
+  bool isOkForPostItem = false;
 
   @override
   void initState() {
     getDeviceInfo();
+    initPostItem();
     super.initState();
   }
 
@@ -41,8 +50,23 @@ class _PostPublishPageState extends State<PostPublishPage> {
     super.dispose();
   }
 
+  initPostItem()async{
+    if (widget.postId != null) {
+      postItem =  await PostDao.getPostById(widget.postId,context);
+    }
+    if(widget.postItem != null){
+      postItem = widget.postItem;
+    }
+    if (mounted) {
+      setState(() {
+        isOkForPostItem = true;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    print("postItem >>> ${postItem}");
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -64,10 +88,10 @@ class _PostPublishPageState extends State<PostPublishPage> {
                 _onPublish(context);
               },
               child: Container(
-                width: 50,
+                width: 60,
                 decoration: BoxDecoration(
                     color: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.circular(10)),
+                    borderRadius: BorderRadius.circular(20)),
                 child: Center(
                   child: Text('发送',
                       style: TextStyle(color: Colors.white),
@@ -78,7 +102,11 @@ class _PostPublishPageState extends State<PostPublishPage> {
           )
         ],
       ),
-      body: _publishContent(),
+      body: isOkForPostItem ? _publishContent():Container(
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
     );
   }
 
@@ -95,12 +123,12 @@ class _PostPublishPageState extends State<PostPublishPage> {
                 ListView(
                   children: <Widget>[
                     _buildTextContent(),
-                    _buildGridImage(),
+                    fileList.length == 0 ? Container() : _buildGridImage(),
+                    postItem != null ? _buildRetweetCard() : Container()
                   ],
                 ),
                 Positioned(
-                  child:
-                      LoadingContainer(isLoading: _loading, child: Container()),
+                  child: LoadingContainer(isLoading: _loading, child: Container()),
                 ),
               ],
             ),
@@ -109,6 +137,238 @@ class _PostPublishPageState extends State<PostPublishPage> {
         ],
       ),
     );
+  }
+
+  // 构建转推卡片
+  _buildRetweetCard() {
+    return Padding(
+      child: Container(
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.black12),
+            borderRadius: BorderRadius.all(Radius.circular(10))),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              child: Row(
+                children: <Widget>[
+                  CircleAvatar(
+                    backgroundImage: NetworkImage(postItem.user.avatar),
+                    radius: 10,
+                  ),
+                  Container(
+                    child: Text(postItem.user.name),
+                    margin: EdgeInsets.only(left: 10),
+                  ),
+                  Container(
+                    child: Text(
+                      "@${postItem.user.username}",
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: Colors.black38),
+                    ),
+                  ),
+                  Spacer(),
+                  Container(
+                    child: Text(
+                      '${TimeUtil.parse(postItem.ctime.toString())}',
+                      style: TextStyle(color: Colors.black38),
+                    ),
+                  )
+                ],
+              ),
+              padding: EdgeInsets.fromLTRB(15, 5, 5, 5),
+            ),
+            Container(
+              child: Text("${postItem.content}"),
+              padding: EdgeInsets.fromLTRB(15, 5, 5, 5),
+            ),
+            postItem.photos != null && postItem.photos.length != 0
+                ? _buildImage(postItem.photos)
+                : Container(),
+          ],
+        ),
+      ),
+      padding: EdgeInsets.fromLTRB(20, 5, 20, 20),
+    );
+  }
+
+  _buildImage(List<String> photosList) {
+    Widget widgets;
+    switch (photosList.length) {
+      case 1:
+        widgets = Container(
+          height: 150,
+          margin: EdgeInsets.only(top: 5),
+          width: double.infinity,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(10),
+                  bottomRight: Radius.circular(10)),
+              image: DecorationImage(
+                  image: NetworkImage(photosList[0]), fit: BoxFit.cover)),
+        );
+        break;
+      case 2:
+        widgets = Container(
+          height: 150,
+          margin: EdgeInsets.only(top: 5),
+          width: double.infinity,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                      borderRadius:
+                          BorderRadius.only(bottomLeft: Radius.circular(10)),
+                      image: DecorationImage(
+                          image: NetworkImage(photosList[0]),
+                          fit: BoxFit.cover)),
+                ),
+              ),
+              SizedBox(
+                width: 5,
+              ),
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                      borderRadius:
+                          BorderRadius.only(bottomRight: Radius.circular(10)),
+                      image: DecorationImage(
+                          image: NetworkImage(photosList[1]),
+                          fit: BoxFit.cover)),
+                ),
+              ),
+            ],
+          ),
+        );
+        break;
+      case 3:
+        widgets = Container(
+          height: 150,
+          margin: EdgeInsets.only(top: 5),
+          width: double.infinity,
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(10)),
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[0]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Expanded(
+                      child: Column(
+                        children: <Widget>[
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      image: NetworkImage(photosList[1]),
+                                      fit: BoxFit.cover)),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 5,
+                          ),
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.only(
+                                      bottomRight: Radius.circular(10)),
+                                  image: DecorationImage(
+                                      image: NetworkImage(photosList[2]),
+                                      fit: BoxFit.cover)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+        break;
+      case 4:
+        widgets = Container(
+          height: 150,
+          margin: EdgeInsets.only(top: 5),
+          width: double.infinity,
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[0]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[1]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 5,
+              ),
+              Expanded(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(10)),
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[2]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                                bottomRight: Radius.circular(10)),
+                            image: DecorationImage(
+                                image: NetworkImage(photosList[3]),
+                                fit: BoxFit.cover)),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        );
+        break;
+    }
+    return widgets;
   }
 
   //底部操作栏布局
@@ -125,7 +385,8 @@ class _PostPublishPageState extends State<PostPublishPage> {
             _buildBottomIcon("images/icon_mention.png", () => print('@联系人')),
             _buildBottomIcon("images/icon_topic.png", () => print("topic..")),
             _buildBottomIcon("images/icon_gif.png", () => print("")),
-            _buildBottomIcon("images/icon_emotion.png", () => _loadEmojiPicker()),
+            _buildBottomIcon(
+                "images/icon_emotion.png", () => _loadEmojiPicker()),
             _buildBottomIcon("images/icon_add.png", () => print("")),
           ],
         ),
@@ -177,66 +438,69 @@ class _PostPublishPageState extends State<PostPublishPage> {
       gridCount = fileList.length;
     }
 
-    return GridView.count(
-      shrinkWrap: true,
-      primary: false,
-      crossAxisCount: 3,
-      children: List.generate(gridCount, (index) {
-        // 这个方法用于生成GridView中的一个item
-        var content;
-        if (index == fileList.length) {
-          // 添加图片按钮
-          var addCell = Center(
-            child: Image.asset(
-              'images/mine_feedback_add_image.png',
-              width: 300,
-              height: 300,
-            ),
-          );
-          content = GestureDetector(
-            onTap: () {
-              // 如果已添加了4张图片，则提示不允许添加更多
-              if (fileList.length > 9) {
-                Scaffold.of(context).showSnackBar(SnackBar(
-                  content: Text('最多只能添加4张图片'),
-                ));
-                return;
-              }
-              _loadAssets();
-            },
-            child: addCell,
-          );
-        } else {
-          content = Stack(
-            children: <Widget>[
-              Center(
-                  child: AssetThumb(
-                      width: 300, height: 300, asset: fileList[index])),
-              Align(
-                alignment: Alignment.topRight,
-                child: InkWell(
-                  onTap: () {
-                    fileList.removeAt(index);
-                    setState(() {});
-                  },
-                  child: Image.asset(
-                    'images/mine_feedback_ic_del.png',
-                    width: 20,
-                    height: 20,
+    return Padding(
+      child: GridView.count(
+        shrinkWrap: true,
+        primary: false,
+        crossAxisCount: 3,
+        children: List.generate(gridCount, (index) {
+          // 这个方法用于生成GridView中的一个item
+          var content;
+          if (index == fileList.length) {
+            // 添加图片按钮
+            var addCell = Center(
+              child: Image.asset(
+                'images/mine_feedback_add_image.png',
+                width: 300,
+                height: 300,
+              ),
+            );
+            content = GestureDetector(
+              onTap: () {
+                // 如果已添加了4张图片，则提示不允许添加更多
+                if (fileList.length > 9) {
+                  Scaffold.of(context).showSnackBar(SnackBar(
+                    content: Text('最多只能添加4张图片'),
+                  ));
+                  return;
+                }
+                _loadAssets();
+              },
+              child: addCell,
+            );
+          } else {
+            content = Stack(
+              children: <Widget>[
+                Center(
+                    child: AssetThumb(
+                        width: 300, height: 300, asset: fileList[index])),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: InkWell(
+                    onTap: () {
+                      fileList.removeAt(index);
+                      setState(() {});
+                    },
+                    child: Image.asset(
+                      'images/mine_feedback_ic_del.png',
+                      width: 20,
+                      height: 20,
+                    ),
                   ),
-                ),
-              )
-            ],
+                )
+              ],
+            );
+          }
+          return Container(
+            margin: EdgeInsets.all(10),
+            width: 80,
+            height: 80,
+            color: Colors.white,
+            child: content,
           );
-        }
-        return Container(
-          margin: EdgeInsets.all(10),
-          width: 80,
-          height: 80,
-          color: Colors.white,
-          child: content,
-        );
-      }),
+        }),
+      ),
+      padding: EdgeInsets.fromLTRB(10, 5, 10, 0),
     );
   }
 
@@ -329,12 +593,17 @@ class _PostPublishPageState extends State<PostPublishPage> {
   _publishApi(BuildContext context, FormData formData) async {
     //发布帖子
     print("发布帖子");
-    await PostDao.publish(context, formData);
+    if (postItem != null && postItem.id != null) {
+      print("我是转发啊");
+      formData.fields.add(MapEntry("postId",postItem.id));
+      await PostDao.retweetPublish(context, formData);
+    }else{
+      await PostDao.publish(context, formData);
+    }
     setState(() {
       _loading = false;
     });
-    Navigator.push(
-        context, MaterialPageRoute(builder: (content) => HomePage()));
+    Navigator.push(context, MaterialPageRoute(builder: (content) => TabNavigator()));
   }
 
   Future getDeviceInfo() async {

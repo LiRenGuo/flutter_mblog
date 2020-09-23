@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/follow_dao.dart';
 import 'package:flutter_mblog/dao/user_dao.dart';
 import 'package:flutter_mblog/model/follow_model.dart';
+import 'package:flutter_mblog/util/AdaptiveTools.dart';
 
 class FollowMePage extends StatefulWidget {
   String userId;
@@ -172,11 +173,11 @@ class _FollowMePageState extends State<FollowMePage> {
                             child: Text("关注",style: TextStyle(fontWeight: FontWeight.w800,color: Colors.white),),
                           ),
                         ),
-                        margin: EdgeInsets.only(right: 5),
+                        height: AdaptiveTools.setRpx(55),
                       )
                     ],
                   ),
-                  height: 40,
+                  height:  AdaptiveTools.setRpx(70),
                 ),
                 Container(
                   child: Text(

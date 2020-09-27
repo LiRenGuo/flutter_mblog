@@ -44,6 +44,8 @@ dependencies:
   emoji_picker: ^0.1.0
   connectivity: ^0.4.9+2
 
+  cache_image: ^1.0.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -87,6 +89,8 @@ flutter:
     - images/unattention.png
     - images/deletePost.png
     - images/lng.png
+    - images/home.png
+    - images/onhome.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

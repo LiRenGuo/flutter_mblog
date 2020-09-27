@@ -39,7 +39,7 @@ class Oauth_2 {
     }
   }
 
-  static ResToken(BuildContext context) {
+  static ResToken(BuildContext context,{bool isLogin = true}) {
     print("Token过期，重新刷新");
     Shared_pre.Shared_getResToken().then((token) async {
       Map<String, dynamic> params = {
@@ -50,15 +50,16 @@ class Oauth_2 {
       };
       Options options = Options(headers: {HttpHeaders.authorizationHeader:"Basic d2ViOmUyNWJlNzU5MmI2YThhMmM"});
       await NetUtils.postdata(Test.TokenUrl, params: params,options: options).then((result) {
-        print("result = ${result}");
         if (result == 400 || result == 401) {
           Navigator.pushAndRemoveUntil(context,
               MaterialPageRoute(builder: (context) => LoginPage()), (route) => route == null);
         } else {
           Shared_pre.Shared_setToken(result['access_token']);
           Shared_pre.Shared_setResToken(result['refresh_token']);
-          Navigator.pushAndRemoveUntil(context,
-              MaterialPageRoute(builder: (context) => TabNavigator()), (route) => route == null);
+          if (isLogin) {
+            Navigator.pushAndRemoveUntil(context,
+                MaterialPageRoute(builder: (context) => TabNavigator()), (route) => route == null);
+          }
         }
       });
     });

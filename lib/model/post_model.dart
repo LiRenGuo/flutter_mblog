@@ -3,13 +3,13 @@ import 'package:flutter_mblog/model/mypost_model.dart' as model;
 
 class PostModel {
   int totalPages;
-  List<PostItem> resultList;
-  PostModel({this.resultList, this.totalPages});
+  List<PostItem> content;
+  PostModel({this.content, this.totalPages});
   PostModel.fromJson(Map<String, dynamic> json) {
     if(json['content'] != null) {
-      resultList = new List<PostItem>();
+      content = new List<PostItem>();
       json['content'].forEach((v) {
-        resultList.add(new PostItem.fromJson(v));
+        content.add(new PostItem.fromJson(v));
       });
     }
     totalPages = json['totalPages'];
@@ -17,11 +17,16 @@ class PostModel {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.resultList != null) {
-      data['resultList'] = this.resultList.map((v) => v.toJson()).toList();
+    if (this.content != null) {
+      data['content'] = this.content.map((v) => v.toJson()).toList();
     }
     data['totalPages'] = totalPages;
     return data;
+  }
+
+  @override
+  String toString() {
+    return 'PostModel{totalPages: $totalPages, content: $content}';
   }
 }
 

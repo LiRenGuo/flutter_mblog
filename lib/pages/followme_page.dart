@@ -59,6 +59,7 @@ class _FollowMePageState extends State<FollowMePage> {
           child: RefreshIndicator(
             onRefresh: _onRefresh,
             child: ListView.builder(
+              cacheExtent: 1.0,
                 itemCount: _followMeModel.followList.length,
                 itemBuilder: (context, index) {
                   return Column(

@@ -41,7 +41,8 @@ class Shared_pre {
     String username = preferences.get(Constants.Shared_Username);
     String mobile = preferences.get(Constants.Shared_Mobile);
     String name = preferences.get(Constants.Shared_Name) ?? "登陆";
-    String avatar = preferences.get(Constants.Shared_Avatar) ?? "https://zzm888.oss-cn-shenzhen.aliyuncs.com/avatar-default.png";
+    String avatar = preferences.get(Constants.Shared_Avatar) ??
+        "https://zzm888.oss-cn-shenzhen.aliyuncs.com/avatar-default.png";
     String followers = preferences.get(Constants.Shared_Followers) ?? "0";
     String following = preferences.get(Constants.Shared_Following) ?? "0";
     return UserModel(
@@ -63,8 +64,10 @@ class Shared_pre {
     preferences.setString(Constants.Shared_Username, model.username);
     preferences.setString(Constants.Shared_Avatar, model.avatar);
     preferences.setString(Constants.Shared_Id, model.id);
-    preferences.setString(Constants.Shared_Following, model.following.toString());
-    preferences.setString(Constants.Shared_Followers, model.followers.toString());
+    preferences.setString(
+        Constants.Shared_Following, model.following.toString());
+    preferences.setString(
+        Constants.Shared_Followers, model.followers.toString());
   }
 
   static Future<String> Shared_deleteUser() async {
@@ -97,26 +100,21 @@ class Shared_pre {
 
   static Future<String> Shared_setTwitter(PostModel postModel) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    preferences.setString(Constants.Shared_Twitter,json.encode(postModel));
+    preferences.setString(Constants.Shared_Twitter, json.encode(postModel));
   }
 
-  static Future<String> SharedSetMoreTwitterData(PostModel postModel) async {
+  static Future<PostModel> Shared_getTwitter() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    String twitterData = await preferences.getString(Constants.Shared_Twitter);
+    String twitterData = preferences.getString(Constants.Shared_Twitter);
+    PostModel newPostModel;
     if (twitterData != null) {
-      PostModel oldPostModel =  PostModel.fromJson(json.decode(twitterData));
-      if (oldPostModel.resultList != null && oldPostModel.resultList.length <= 200) {
-
-      }
-    }else{
-      await Shared_setTwitter(postModel);
+      newPostModel = PostModel.fromJson(json.decode(twitterData));
     }
+    return Future.value(newPostModel);
   }
 
-  static Future<String> SharedDeleteTwitter() async{
+  static Future<String> SharedDeleteTwitter() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    preferences.setString(Constants.Shared_Twitter,null);
+    preferences.setString(Constants.Shared_Twitter, null);
   }
-
-
 }

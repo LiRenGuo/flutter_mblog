@@ -71,18 +71,9 @@ class _WelcomePageState extends State<WelcomePage> {
     // TODO: implement initState
     super.initState();
     initConnectivity();
-    isLogin();
   }
 
-  isLogin()async{
-    String token =  await Shared_pre.Shared_getToken();
-    if (token != null) {
-      Oauth_2.ResToken(context);
-    }
-    setState(() {
-      isok = true;
-    });
-  }
+
 
   @override
   Widget build(BuildContext context) {

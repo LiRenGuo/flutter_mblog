@@ -21,7 +21,28 @@ const LIKE_URL = 'http://mblog.yunep.com/api/post/like'; //点赞接口
 const SEND_COMMENT = "http://mblog.yunep.com/api/post/";
 const LIKE_POST_URI = "http://mblog.yunep.com/api/post/like/list/";
 
+
+const POST_RANDOM_LIST = "http://mblog.yunep.com/api/post/list";
+
 class PostDao {
+
+  static Future<PostModel> getRandomList()async{
+    print("获取首页推特数据");
+    String token = await Shared_pre.Shared_getToken();
+    Options options = Options(headers: {"Authorization": "Bearer $token"});
+    dio.options.connectTimeout = 5000;
+    dio.options.receiveTimeout = 10000;
+    final response = await dio
+        .get(POST_RANDOM_LIST,options: options);
+    if (response.statusCode == 200) {
+      final responseData = response.data;
+      return PostModel.fromJson(responseData);
+    } else {
+      throw Exception('loading data error.....');
+    }
+  }
+
+
   static Future<PostModel> getList(int page, int pageSize,BuildContext context) async {
     try {
       String token = await Shared_pre.Shared_getToken();
@@ -43,7 +64,9 @@ class PostDao {
   }
 
   static Future<PostCommentModel> getCommentList(String postId) async {
-    final response = await dio.get(POST_COMMENT_URL + "/$postId");
+    String token = await Shared_pre.Shared_getToken();
+    Options options = Options(headers: {'Authorization': 'Bearer $token'});
+    final response = await dio.get(POST_COMMENT_URL + "/$postId",options: options);
     if (response.statusCode == 200) {
       final responseData = response.data;
       print("数据" + responseData.toString());

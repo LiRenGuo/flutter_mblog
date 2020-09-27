@@ -66,7 +66,7 @@ class _MinePageState extends State<MinePage>
     initAttention();
     _getMyPostList();
     _getLikePostList(1);
-    tabController = TabController(vsync: this, length: 3, initialIndex: 0);
+    tabController = TabController(vsync: this, length: 2, initialIndex: 0);
     loginUserId = widget.wLoginUserId;
     _controller.addListener(() {
       var maxScroll = _controller.position.maxScrollExtent;
@@ -226,6 +226,7 @@ class _MinePageState extends State<MinePage>
     ];
     return Scaffold(
       floatingActionButton: FloatingActionButton(
+        heroTag: "btn1",
           onPressed: () {
             Navigator.push(
                 context,
@@ -544,9 +545,9 @@ class _MinePageState extends State<MinePage>
                           Tab(
                             text: "推文",
                           ),
-                          Tab(
+                          /*Tab(
                             text: "推文和回复",
-                          ),
+                          ),*/
                           Tab(
                             text: "喜欢",
                           ),
@@ -818,7 +819,6 @@ class _LikeState extends State<Like> {
                         child: Text(_item.content),
                       ),
                       onTap: () {
-                        print("跳转到某某地址");
                         Navigator.push(
                             context,
                             MaterialPageRoute(

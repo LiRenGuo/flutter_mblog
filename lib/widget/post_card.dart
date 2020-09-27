@@ -1,24 +1,18 @@
 import 'dart:async';
 
+import 'package:cache_image/cache_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/follow_dao.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
-import 'package:flutter_mblog/dao/user_dao.dart';
-import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
-import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
-import 'package:flutter_mblog/pages/my_page.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
-import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
-import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:flutter_mblog/widget/image_all_screen_look.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:like_button/like_button.dart';
 import 'fade_route.dart';
 
@@ -27,8 +21,9 @@ class PostCard extends StatefulWidget {
   final PostItem item;
   final int index;
   final String userId;
+  final bool isLoadingImage;
 
-  const PostCard({Key key, this.item, this.index, this.userId, this.avatar})
+  const PostCard({Key key, this.item, this.index, this.userId, this.avatar,this.isLoadingImage})
       : super(key: key);
 
   @override
@@ -38,19 +33,15 @@ class PostCard extends StatefulWidget {
 class _PostCardState extends State<PostCard> {
   PostItem item;
   int index;
-  bool isAttention;
-  bool isOkAttention = false;
 
   @override
   void initState() {
     this.item = widget.item;
     this.index = widget.index;
-    this.isAttention = false;
-    initAttention();
     super.initState();
   }
 
-  initAttention() async {
+  /*initAttention() async {
     UserModel userModel = await Shared_pre.Shared_getUser();
     FollowModel followModel =
         await UserDao.getFollowingList(userModel.id, context);
@@ -68,7 +59,7 @@ class _PostCardState extends State<PostCard> {
         isAttention = isAtt;
       });
     }
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +76,7 @@ class _PostCardState extends State<PostCard> {
               child: CircleAvatar(
                 radius: 25,
                 backgroundColor: Colors.black,
-                backgroundImage: NetworkImage(item.user.avatar),
+                backgroundImage: CacheImage(item.user.avatar)/*NetworkImage(item.user.avatar)*/,
               ),
               onTap: () {
                 Navigator.of(context).push(MaterialPageRoute(
@@ -165,42 +156,35 @@ class _PostCardState extends State<PostCard> {
                                                 ),
                                                 child: ListView(
                                                   children: <Widget>[
-                                                    isOkAttention
-                                                        ? ListTile(
-                                                            leading: Container(
-                                                              child: isAttention
-                                                                  ? Image.asset(
-                                                                      "images/unattention.png")
-                                                                  : Image.asset(
-                                                                      "images/attention.png"),
-                                                              padding:
-                                                                  EdgeInsets
-                                                                      .all(14),
+                                                    ListTile(
+                                                      leading: Container(
+                                                        child: item.user.isfollow
+                                                            ? Image.asset(
+                                                                "images/unattention.png")
+                                                            : Image.asset(
+                                                                "images/attention.png"),
+                                                        padding:
+                                                            EdgeInsets.all(14),
+                                                      ),
+                                                      title: item.user.isfollow
+                                                          ? Text(
+                                                              "取消关注 @${item.user.name}",
+                                                              style: TextStyle(
+                                                                  fontSize: 15),
+                                                            )
+                                                          : Text(
+                                                              "关注 @${item.user.name}",
+                                                              style: TextStyle(
+                                                                  fontSize: 15),
                                                             ),
-                                                            title: isAttention
-                                                                ? Text(
-                                                                    "取消关注 @${item.user.name}",
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            15),
-                                                                  )
-                                                                : Text(
-                                                                    "关注 @${item.user.name}",
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            15),
-                                                                  ),
-                                                            onTap: () {
-                                                              isAttention
-                                                                  ? _unfollowYou(
-                                                                      item.user
-                                                                          .id)
-                                                                  : _followYou(
-                                                                      item.user
-                                                                          .id);
-                                                            },
-                                                          )
-                                                        : Container()
+                                                      onTap: () {
+                                                        item.user.isfollow
+                                                            ? _unfollowYou(
+                                                                item.user.id)
+                                                            : _followYou(
+                                                                item.user.id);
+                                                      },
+                                                    )
                                                   ],
                                                 ),
                                               )
@@ -224,7 +208,8 @@ class _PostCardState extends State<PostCard> {
                         margin: EdgeInsets.only(top: 1, bottom: 4),
                         child: _content(context),
                       ),
-                      item.photos != null && item.photos.length != 0
+                      //TODO
+                      item.photos != null && item.photos.length != 0 && widget.isLoadingImage
                           ? _buildImage(item.photos)
                           : Container(),
                       _buildRetweet(item.forwardPost),
@@ -328,7 +313,8 @@ class _PostCardState extends State<PostCard> {
                       children: <Widget>[
                         CircleAvatar(
                           radius: 15,
-                          backgroundImage: NetworkImage(postItem.user.avatar),
+                          /*TODO*/
+                          backgroundImage:CacheImage(postItem.user.avatar)/*NetworkImage(postItem.user.avatar)*/,
                         ),
                         Row(
                           children: <Widget>[
@@ -338,7 +324,10 @@ class _PostCardState extends State<PostCard> {
                             ),
                             Container(
                               padding: EdgeInsets.fromLTRB(5, 7, 10, 10),
-                              child: Text("@${postItem.user.username}",style: TextStyle(color: Colors.black38),),
+                              child: Text(
+                                "@${postItem.user.username}",
+                                style: TextStyle(color: Colors.black38),
+                              ),
                             )
                           ],
                         ),
@@ -358,15 +347,19 @@ class _PostCardState extends State<PostCard> {
                     padding: EdgeInsets.fromLTRB(10, 0, 3, 3),
                     child: Text("${postItem.content}"),
                   ),
-                  postItem.photos != null && postItem.photos.length != 0
+                  // TODO
+                 /* postItem.photos != null && postItem.photos.length != 0
                       ? _buildRetweetImage(postItem.photos)
-                      : Container()
+                      : Container()*/
                 ],
               ),
             ),
             onTap: () {
               Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => HomeDetailPage(new PostItem(),postId: postItem.id,)));
+                  builder: (context) => HomeDetailPage(
+                        new PostItem(),
+                        postId: postItem.id,
+                      )));
             },
           )
         : retweetWidget = Container(
@@ -556,23 +549,21 @@ class _PostCardState extends State<PostCard> {
   }
 
   _followYou(String userId) {
-    print(userId);
     FollowDao.follow(userId, context);
     Navigator.pop(context);
     if (mounted) {
       setState(() {
-        isAttention = true;
+        item.user.isfollow = true;
       });
     }
   }
 
   _unfollowYou(String userId) {
-    print(userId);
     FollowDao.unfollow(userId, context);
     Navigator.pop(context);
     if (mounted) {
       setState(() {
-        isAttention = false;
+        item.user.isfollow = false;
       });
     }
   }
@@ -583,16 +574,20 @@ class _PostCardState extends State<PostCard> {
       case 1:
         imageWidget = GestureDetector(
           child: Container(
-            decoration: BoxDecoration(
+            /*decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-            ),
+              image: DecorationImage(
+                fit: BoxFit.cover,
+                image: CacheImage(photos[0])
+              )
+            ),*/
             height: 150,
             width: double.infinity,
             margin: EdgeInsets.only(top: 3),
             child: ClipRRect(
               child: _cachedImage(photos[0]),
               borderRadius: BorderRadius.circular(8),
-            ),
+            )
           ),
           onTap: () => _showImage(context, 0),
         );
@@ -610,12 +605,21 @@ class _PostCardState extends State<PostCard> {
                 child: GestureDetector(
                   child: Container(
                     height: double.infinity,
+                    /*decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(8),
+                            bottomLeft: Radius.circular(8)),
+                      image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: CacheImage(photos[0])
+                      )
+                    ),*/
                     child: ClipRRect(
                       child: _cachedImage(photos[0]),
                       borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(8),
                           bottomLeft: Radius.circular(8)),
-                    ),
+                    )
                   ),
                   onTap: () => _showImage(context, 0),
                 ),
@@ -627,6 +631,15 @@ class _PostCardState extends State<PostCard> {
                 child: GestureDetector(
                   child: Container(
                     height: double.infinity,
+                    /*decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(8),
+                            bottomRight: Radius.circular(8)),
+                        image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: CacheImage(photos[1])
+                        )
+                    ),*/
                     child: ClipRRect(
                       child: _cachedImage(photos[1]),
                       borderRadius: BorderRadius.only(
@@ -654,6 +667,15 @@ class _PostCardState extends State<PostCard> {
                     Expanded(
                       child: GestureDetector(
                         child: Container(
+                          /*decoration: BoxDecoration(
+                              borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(8),
+                                  bottomLeft: Radius.circular(8)),
+                              image: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: CacheImage(photos[0])
+                              )
+                          ),*/
                           child: ClipRRect(
                             child: _cachedImage(photos[0]),
                             borderRadius: BorderRadius.only(
@@ -675,6 +697,14 @@ class _PostCardState extends State<PostCard> {
                           Expanded(
                             child: GestureDetector(
                               child: Container(
+                                /*decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                        topRight: Radius.circular(8)),
+                                    image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: CacheImage(photos[1])
+                                    )
+                                ),*/
                                 child: ClipRRect(
                                   child: _cachedImage(photos[1]),
                                   borderRadius: BorderRadius.only(
@@ -692,6 +722,14 @@ class _PostCardState extends State<PostCard> {
                           Expanded(
                             child: GestureDetector(
                               child: Container(
+                                /*decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                        bottomRight: Radius.circular(8)),
+                                    image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: CacheImage(photos[2])
+                                    )
+                                ),*/
                                 child: ClipRRect(
                                   child: _cachedImage(photos[2]),
                                   borderRadius: BorderRadius.only(
@@ -729,6 +767,14 @@ class _PostCardState extends State<PostCard> {
                           Expanded(
                             child: GestureDetector(
                               child: Container(
+                                /*decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(8)),
+                                    image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: CacheImage(photos[0])
+                                    )
+                                ),*/
                                 child: ClipRRect(
                                   child: _cachedImage(photos[0]),
                                   borderRadius: BorderRadius.only(
@@ -746,6 +792,14 @@ class _PostCardState extends State<PostCard> {
                           Expanded(
                             child: GestureDetector(
                               child: Container(
+                                /*decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                        bottomLeft: Radius.circular(8)),
+                                    image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: CacheImage(photos[1])
+                                    )
+                                ),*/
                                 child: ClipRRect(
                                   child: _cachedImage(photos[1]),
                                   borderRadius: BorderRadius.only(
@@ -769,6 +823,14 @@ class _PostCardState extends State<PostCard> {
                           Expanded(
                             child: GestureDetector(
                               child: Container(
+                                /*decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                        topRight: Radius.circular(8)),
+                                    image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: CacheImage(photos[2])
+                                    )
+                                ),*/
                                 child: ClipRRect(
                                   child: _cachedImage(photos[2]),
                                   borderRadius: BorderRadius.only(
@@ -786,6 +848,14 @@ class _PostCardState extends State<PostCard> {
                           Expanded(
                             child: GestureDetector(
                               child: Container(
+                                /*decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                        bottomRight: Radius.circular(8)),
+                                    image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: CacheImage(photos[3])
+                                    )
+                                ),*/
                                 child: ClipRRect(
                                   child: _cachedImage(photos[3]),
                                   borderRadius: BorderRadius.only(

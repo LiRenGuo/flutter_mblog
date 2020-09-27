@@ -60,8 +60,8 @@ class UserDao{
 
   static Future<FollowModel> getFollowingList(
       String userId, BuildContext context) async {
+    print("获取FollowingList");
     try {
-      print(userId);
       String token = await Shared_pre.Shared_getToken();
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
       final response =
@@ -79,8 +79,8 @@ class UserDao{
 
   static Future<FollowModel> getFollowersList(
       String userId, BuildContext context) async {
+      print("获取FollowersList数据");
     try {
-      print(userId);
       String token = await Shared_pre.Shared_getToken();
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
       final response =

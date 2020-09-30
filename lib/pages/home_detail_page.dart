@@ -12,13 +12,16 @@ import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/CacheImage.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
+import 'package:flutter_mblog/util/common_util.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:flutter_mblog/widget/fade_route.dart';
 import 'package:flutter_mblog/widget/image_all_screen_look.dart';
 import 'package:flutter_mblog/widget/post_detail_card.dart';
 import 'package:like_button/like_button.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
+import 'package:optimized_cached_image/image_provider/_image_provider_io.dart';
 
 // ignore: must_be_immutable
 class HomeDetailPage extends StatefulWidget {
@@ -110,6 +113,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
               Expanded(
                 child: RefreshIndicator(
                   child: ListView(
+                    physics: new AlwaysScrollableScrollPhysics(),
                     children: <Widget>[
                       PostDetailCard(item: _item),
                       Container(
@@ -200,7 +204,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                       Column(
                         children: <Widget>[
                           CircleAvatar(
-                            backgroundImage: NetworkImage(e.user.avatar),
+                            backgroundImage: OptimizedCacheImageProvider(e.user.avatar),
                             radius: 25
                           )
                         ],
@@ -372,21 +376,6 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
     )));
   }
 
-  _cachedImage(String img) {
-    return CachedNetworkImage(
-      imageUrl: img,
-      fit: BoxFit.cover,
-      placeholder: (context, url) {
-        return Container(
-          height: 20,
-          child: Center(child: Center(
-            child: CircularProgressIndicator(),
-          )),
-        );
-      },
-    );
-  }
-
   Widget image(List<String> images) {
     Widget imageWidget;
     switch (images.length) {
@@ -397,7 +386,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
             width: AdaptiveTools.setRpx(575),
             margin: EdgeInsets.only(top: 10),
             child: ClipRRect(
-              child: _cachedImage(images[0]),
+              child: CacheImage.cachedImage(images[0]),
               borderRadius: BorderRadius.circular(8),
             ),
           ),
@@ -418,7 +407,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                     height: double.infinity,
                     width: double.infinity,
                     child: ClipRRect(
-                      child: _cachedImage(images[0]),
+                      child: CacheImage.cachedImage(images[0]),
                       borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(8),
                           bottomLeft: Radius.circular(8)),
@@ -436,7 +425,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                     height: double.infinity,
                     width: double.infinity,
                     child: ClipRRect(
-                      child: _cachedImage(images[0]),
+                      child: CacheImage.cachedImage(images[1]),
                       borderRadius: BorderRadius.only(
                           topRight: Radius.circular(8),
                           bottomRight: Radius.circular(8)),
@@ -460,6 +449,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
   }
 
   Future<void> sendComeent(PostItem item) async {
+    CommonUtil.showLoadingDialog(context);
     PostCommentItem commentItem = await PostDao.sendComment(
         context, item.id, _commentEditingController.text, fileList);
     setState(() {

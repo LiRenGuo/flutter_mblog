@@ -7,6 +7,7 @@ import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/navigator/tab_navigator.dart';
 import 'package:flutter_mblog/pages/home_page.dart';
 import 'package:flutter_mblog/pages/login_page.dart';
+import 'package:flutter_mblog/pages/welcome_page.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:flutter/material.dart';
@@ -41,7 +42,7 @@ class Oauth_2 {
 
   static ResToken(BuildContext context,{bool isLogin = true}) {
     print("Token过期，重新刷新");
-    Shared_pre.Shared_getResToken().then((token) async {
+    Shared_pre.Shared_getResToken().then((token) {
       Map<String, dynamic> params = {
         'grant_type': 'refresh_token',
         'refresh_token': '$token',
@@ -49,19 +50,22 @@ class Oauth_2 {
         'client_secret': '$secret'
       };
       Options options = Options(headers: {HttpHeaders.authorizationHeader:"Basic d2ViOmUyNWJlNzU5MmI2YThhMmM"});
-      await NetUtils.postdata(Test.TokenUrl, params: params,options: options).then((result) {
-        if (result == 400 || result == 401) {
-          Navigator.pushAndRemoveUntil(context,
-              MaterialPageRoute(builder: (context) => LoginPage()), (route) => route == null);
-        } else {
-          Shared_pre.Shared_setToken(result['access_token']);
-          Shared_pre.Shared_setResToken(result['refresh_token']);
-          if (isLogin) {
+      print("准备请求token");
+      try {
+        NetUtils.postdata(Test.TokenUrl, params: params,options: options).then((result) {
+          print("请求Token:${result}");
+          if (result == 400 || result == 401) {
+            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => WelcomePage()), (route) => false);
+          } else {
+            Shared_pre.Shared_setToken(result['access_token']);
+            Shared_pre.Shared_setResToken(result['refresh_token']);
             Navigator.pushAndRemoveUntil(context,
                 MaterialPageRoute(builder: (context) => TabNavigator()), (route) => route == null);
           }
-        }
-      });
+        });
+      }on DioError catch(e) {
+        print(e);
+      }
     });
    }
 }

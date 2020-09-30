@@ -2,9 +2,6 @@ import 'dart:ui';
 
 class AppColors {
   static const TabIconActive = 0xff66ccff;
-
-
-
 }
 class Test{
   static final ipaddress = "http://mblog.yunep.com";
@@ -59,5 +56,4 @@ class Constants{
   static final Shared_Followers= 'Shared_followers';
   static final IconSize = 40.0;
   static final Shared_Twitter= 'Shared_Twitter';
-
 }

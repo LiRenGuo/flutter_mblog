@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/navigator/tab_navigator.dart';
@@ -58,21 +59,21 @@ class _LoginPageState extends State<LoginPage> {
             children: <Widget>[
               Padding(
                 padding: EdgeInsets.fromLTRB(30, 0, 30, 0),
-                child: Image.asset('images/logo.png', width: 180, height: 180,),
+                child: Image.asset('images/logo.png', width: 180, height: 180,filterQuality: FilterQuality.low,),
               ),
               Padding(
                 padding: EdgeInsets.fromLTRB(30, 10, 30, 4),
                 child: TextFormField(
                     decoration: InputDecoration(
-                      labelText: "用户名",
-                      hintText: "请输入用户名",
+                      labelText: "手机号",
+                      hintText: "请输入手机号",
                       prefixIcon: Icon(Icons.person),
                     ),
                     style: hintTips,
                     controller: _unameController,
                     // 校验用户名（不能为空）
                     validator: (v) {
-                      return v.trim().isNotEmpty ? null : '用户名不能为空';
+                      return v.trim().isNotEmpty ? null : '手机号不能为空';
                     }
                 ),
               ),
@@ -102,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               Container(
-                width: 385,
+                width: AdaptiveTools.setRpx(660),
                 margin: EdgeInsets.only(top: 20),
                 padding: EdgeInsets.symmetric(vertical: 4),
                 child: Card(
@@ -173,11 +174,19 @@ class _LoginPageState extends State<LoginPage> {
             builder: (context) => TabNavigator(),
           ),(Route<dynamic> route) => false);
         } else {
-          print("error");
           Navigator.pop(context);
-          MyToast.show("用户名或密码错误");
+          (Connectivity().checkConnectivity()).then((onConnectivtiry){
+            if (onConnectivtiry == ConnectivityResult.none) {
+              FocusScope.of(context).requestFocus(FocusNode());
+              MyToast.show("网络未连接");
+            }else{
+              Navigator.pop(context);
+              MyToast.show("用户名或密码错误");
+            }
+          });
         }
       });
     }
   }
+
 }

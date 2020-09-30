@@ -64,10 +64,8 @@ class Shared_pre {
     preferences.setString(Constants.Shared_Username, model.username);
     preferences.setString(Constants.Shared_Avatar, model.avatar);
     preferences.setString(Constants.Shared_Id, model.id);
-    preferences.setString(
-        Constants.Shared_Following, model.following.toString());
-    preferences.setString(
-        Constants.Shared_Followers, model.followers.toString());
+    preferences.setString(Constants.Shared_Following, model.following.toString());
+    preferences.setString(Constants.Shared_Followers, model.followers.toString());
   }
 
   static Future<String> Shared_deleteUser() async {
@@ -77,6 +75,26 @@ class Shared_pre {
     preferences.setString(Constants.Shared_Name, null);
     preferences.setString(Constants.Shared_Username, null);
     preferences.setString(Constants.Shared_Avatar, null);
+  }
+
+  static Future<String> Shared_deleteUserName() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    preferences.setString(Constants.Shared_Username, null);
+  }
+
+  static Future<String> Shared_setUserName(String username) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    preferences.setString(Constants.Shared_Username, username);
+  }
+
+  static Future<String> Shared_deleteMobile() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    preferences.setString(Constants.Shared_Mobile, null);
+  }
+
+  static Future<String> Shared_setMobile(String mobile) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    preferences.setString(Constants.Shared_Mobile, mobile);
   }
 
   static Future<String> Shared_getResToken() async {

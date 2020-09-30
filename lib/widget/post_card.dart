@@ -1,19 +1,24 @@
 import 'dart:async';
 
-import 'package:cache_image/cache_image.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/follow_dao.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
+import 'package:flutter_mblog/main.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
+import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/CacheImage.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/widget/image_all_screen_look.dart';
 import 'package:like_button/like_button.dart';
+import 'package:optimized_cached_image/image_cache_manager.dart';
+import 'package:optimized_cached_image/optimized_cached_image.dart';
 import 'fade_route.dart';
 
 class PostCard extends StatefulWidget {
@@ -21,9 +26,8 @@ class PostCard extends StatefulWidget {
   final PostItem item;
   final int index;
   final String userId;
-  final bool isLoadingImage;
 
-  const PostCard({Key key, this.item, this.index, this.userId, this.avatar,this.isLoadingImage})
+  const PostCard({Key key, this.item, this.index, this.userId, this.avatar})
       : super(key: key);
 
   @override
@@ -41,256 +45,230 @@ class _PostCardState extends State<PostCard> {
     super.initState();
   }
 
-  /*initAttention() async {
-    UserModel userModel = await Shared_pre.Shared_getUser();
-    FollowModel followModel =
-        await UserDao.getFollowingList(userModel.id, context);
-    bool isAtt = false;
-    if (followModel != null && followModel.followList.length != 0) {
-      followModel.followList.forEach((element) {
-        if (element.id == item.user.id) {
-          isAtt = true;
-        }
-      });
-    }
-    if (mounted) {
-      setState(() {
-        isOkAttention = true;
-        isAttention = isAtt;
-      });
-    }
-  }*/
-
   @override
   Widget build(BuildContext context) {
     return Container(
-        margin: EdgeInsets.only(bottom: 5),
-        padding: EdgeInsets.all(11),
-        decoration: BoxDecoration(
-          color: Colors.white,
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            InkWell(
-              child: CircleAvatar(
-                radius: 25,
-                backgroundColor: Colors.black,
-                backgroundImage: CacheImage(item.user.avatar)/*NetworkImage(item.user.avatar)*/,
+      margin: EdgeInsets.only(bottom: 5),
+      padding: EdgeInsets.all(11),
+      decoration: BoxDecoration(
+        color: Colors.white,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            child: Container(
+              child: ClipOval(
+                child: Image(
+                  fit: BoxFit.cover,
+                  image: OptimizedCacheImageProvider(item.user.avatar),
+                ),
               ),
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => MinePage(
-                          userid: item.user.id,
-                          wLoginUserId: widget.userId,
-                        )));
-              },
+              width: 60,
+              height: 60,
             ),
-            Expanded(
-              child: Container(
-                margin: EdgeInsets.only(left: 10),
-                child: InkWell(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      InkWell(
-                        child: Container(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Row(
-                                children: <Widget>[
-                                  Container(
-                                    child: Text(item.user.name,
-                                        style: TextStyle(
-                                            fontSize: 15,
-                                            fontFamily: "sans-serif",
-                                            fontWeight: FontWeight.w800)),
-                                  ),
-                                  Container(
-                                    margin: EdgeInsets.only(left: 4, bottom: 2),
-                                    child: Text("@${item.user.username}",
-                                        style: TextStyle(
-                                            color: Colors.grey, fontSize: 13)),
-                                  ),
-                                  Container(
-                                    child: Text(
-                                        " · " +
-                                            TimeUtil.parse(
-                                                item.ctime.toString()),
-                                        style: TextStyle(
-                                            color: Colors.grey, fontSize: 12)),
-                                    margin: EdgeInsets.only(left: 3, bottom: 4),
-                                  )
-                                ],
-                              ),
-                              Container(
-                                  margin: EdgeInsets.only(bottom: 2),
-                                  child: InkWell(
-                                    child: Icon(
-                                      Icons.keyboard_arrow_down,
-                                      size: 19,
-                                    ),
-                                    onTap: () {
-                                      showModalBottomSheet(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return Stack(
-                                            children: <Widget>[
-                                              Container(
-                                                height: 25,
-                                                width: double.infinity,
-                                                color: Colors.black54,
-                                              ),
-                                              Container(
-                                                height: 60,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.only(
-                                                    topLeft:
-                                                        Radius.circular(20),
-                                                    topRight:
-                                                        Radius.circular(20),
-                                                  ),
-                                                ),
-                                                child: ListView(
-                                                  children: <Widget>[
-                                                    ListTile(
-                                                      leading: Container(
-                                                        child: item.user.isfollow
-                                                            ? Image.asset(
-                                                                "images/unattention.png")
-                                                            : Image.asset(
-                                                                "images/attention.png"),
-                                                        padding:
-                                                            EdgeInsets.all(14),
-                                                      ),
-                                                      title: item.user.isfollow
-                                                          ? Text(
-                                                              "取消关注 @${item.user.name}",
-                                                              style: TextStyle(
-                                                                  fontSize: 15),
-                                                            )
-                                                          : Text(
-                                                              "关注 @${item.user.name}",
-                                                              style: TextStyle(
-                                                                  fontSize: 15),
-                                                            ),
-                                                      onTap: () {
-                                                        item.user.isfollow
-                                                            ? _unfollowYou(
-                                                                item.user.id)
-                                                            : _followYou(
-                                                                item.user.id);
-                                                      },
-                                                    )
-                                                  ],
-                                                ),
-                                              )
-                                            ],
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ))
-                            ],
-                          ),
-                        ),
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => MinePage(
-                                    userid: item.user.id,
-                                  )));
-                        },
-                      ),
-                      Container(
-                        margin: EdgeInsets.only(top: 1, bottom: 4),
-                        child: _content(context),
-                      ),
-                      //TODO
-                      item.photos != null && item.photos.length != 0 && widget.isLoadingImage
-                          ? _buildImage(item.photos)
-                          : Container(),
-                      _buildRetweet(item.forwardPost),
-                      Container(
-                        margin: EdgeInsets.only(top: 10),
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => MinePage(
+                        userid: item.user.id,
+                        wLoginUserId: widget.userId,
+                      )));
+            },
+          ),
+          Expanded(
+            child: Container(
+              margin: EdgeInsets.only(left: 10),
+              child: InkWell(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    InkWell(
+                      child: Container(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            _buildLikeButton(),
-                            InkWell(
-                              onTap: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) =>
-                                        HomeDetailPage(item)));
-                              },
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: <Widget>[
-                                  Image.asset(
-                                    'images/ic_home_comment.webp',
-                                    width: 22,
-                                    height: 22,
-                                  ),
-                                  Container(
-                                    margin: EdgeInsets.only(left: 4),
-                                    child: Text(
-                                        item.commentCount == 0
-                                            ? '评论'
-                                            : item.commentCount.toString(),
-                                        style: TextStyle(
-                                            color: Colors.black54,
-                                            fontSize: 13)),
-                                  )
-                                ],
-                              ),
+                            Row(
+                              children: <Widget>[
+                                Container(
+                                  child: Text(item.user.name,
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          fontFamily: "sans-serif",
+                                          fontWeight: FontWeight.w800)),
+                                ),
+                                Container(
+                                  width: AdaptiveTools.setRpx(250),
+                                  margin: EdgeInsets.only(left: 4, bottom: 2),
+                                  child: Text("@${item.user.username}",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          color: Colors.grey, fontSize: 13)),
+                                ),
+                              ],
                             ),
-                            InkWell(
-                              onTap: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => PostPublishPage(
-                                          avatar: widget.avatar,
-                                          postItem: item,
-                                        )));
-                              },
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: <Widget>[
-                                  Image.asset(
-                                    'images/ic_home_forward.png',
-                                    width: 22,
-                                    height: 22,
+                            Container(
+                                margin: EdgeInsets.only(bottom: 2),
+                                child: InkWell(
+                                  child: Icon(
+                                    Icons.keyboard_arrow_down,
+                                    size: 19,
                                   ),
-                                  Container(
-                                    margin: EdgeInsets.only(left: 4),
-                                    child: Text(
-                                        item.forwardCount == 0
-                                            ? '转发'
-                                            : item.forwardCount.toString(),
-                                        style: TextStyle(
-                                            color: Colors.black54,
-                                            fontSize: 13)),
-                                  )
-                                ],
-                              ),
-                            ),
+                                  onTap: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return Stack(
+                                          children: <Widget>[
+                                            Container(
+                                              height: 25,
+                                              width: double.infinity,
+                                              color: Colors.black54,
+                                            ),
+                                            Container(
+                                              height: 60,
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius: BorderRadius.only(
+                                                  topLeft: Radius.circular(20),
+                                                  topRight: Radius.circular(20),
+                                                ),
+                                              ),
+                                              // TODO
+                                              child: Column(
+                                                children: <Widget>[
+                                                  ListTile(
+                                                    leading: Container(
+                                                      child: item.user.isfollow
+                                                          ? Image.asset(
+                                                              "images/unattention.png")
+                                                          : Image.asset(
+                                                              "images/attention.png"),
+                                                      padding:
+                                                          EdgeInsets.all(14),
+                                                    ),
+                                                    title: item.user.isfollow
+                                                        ? Text(
+                                                            "取消关注 @${item.user.name}",
+                                                            style: TextStyle(
+                                                                fontSize: 15),
+                                                          )
+                                                        : Text(
+                                                            "关注 @${item.user.name}",
+                                                            style: TextStyle(
+                                                                fontSize: 15),
+                                                          ),
+                                                    onTap: () {
+                                                      item.user.isfollow
+                                                          ? _unfollowYou(
+                                                              item.user.id)
+                                                          : _followYou(
+                                                              item.user.id);
+                                                    },
+                                                  )
+                                                ],
+                                              ),
+                                            )
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  },
+                                ))
                           ],
                         ),
-                      )
-                    ],
-                  ),
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => HomeDetailPage(item)));
-                  },
+                      ),
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => MinePage(
+                                  userid: item.user.id,
+                                )));
+                      },
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(top: 1, bottom: 4),
+                      child: _content(context),
+                    ),
+                    //TODO
+                    item.photos != null && item.photos.length != 0
+                        ? _buildImage(item.photos)
+                        : Container(),
+                    _buildRetweet(item.forwardPost),
+                    Container(
+                      margin: EdgeInsets.only(top: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          _buildLikeButton(),
+                          InkWell(
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => HomeDetailPage(item)));
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                Image.asset(
+                                  'images/ic_home_comment.webp',
+                                  width: 22,
+                                  height: 22,
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(left: 4),
+                                  child: Text(
+                                      item.commentCount == 0
+                                          ? '评论'
+                                          : item.commentCount.toString(),
+                                      style: TextStyle(
+                                          color: Colors.black54, fontSize: 13)),
+                                )
+                              ],
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => PostPublishPage(
+                                        avatar: widget.avatar,
+                                        postItem: item,
+                                      )));
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                Image.asset(
+                                  'images/ic_home_forward.png',
+                                  width: 22,
+                                  height: 22,
+                                ),
+                                Container(
+                                  margin: EdgeInsets.only(left: 4),
+                                  child: Text(
+                                      item.forwardCount == 0
+                                          ? '转发'
+                                          : item.forwardCount.toString(),
+                                      style: TextStyle(
+                                          color: Colors.black54, fontSize: 13)),
+                                )
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
                 ),
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => HomeDetailPage(item)));
+                },
               ),
-            )
-          ],
-        ));
+            ),
+          )
+        ],
+      ),
+    );
   }
 
   Widget _buildRetweet(PostItem postItem) {
@@ -311,10 +289,16 @@ class _PostCardState extends State<PostCard> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        CircleAvatar(
-                          radius: 15,
-                          /*TODO*/
-                          backgroundImage:CacheImage(postItem.user.avatar)/*NetworkImage(postItem.user.avatar)*/,
+                        //TODO/*NetworkImage(postItem.user.avatar)*/
+                        Container(
+                          child: ClipOval(
+                            child: Image(
+                              fit: BoxFit.cover,
+                              image: OptimizedCacheImageProvider(item.user.avatar),
+                            ),
+                          ),
+                          width: 30,
+                          height: 30,
                         ),
                         Row(
                           children: <Widget>[
@@ -348,9 +332,9 @@ class _PostCardState extends State<PostCard> {
                     child: Text("${postItem.content}"),
                   ),
                   // TODO
-                 /* postItem.photos != null && postItem.photos.length != 0
+                  postItem.photos != null && postItem.photos.length != 0
                       ? _buildRetweetImage(postItem.photos)
-                      : Container()*/
+                      : Container()
                 ],
               ),
             ),
@@ -374,16 +358,15 @@ class _PostCardState extends State<PostCard> {
     switch (photosList.length) {
       case 1:
         widgets = Container(
-          height: 150,
-          margin: EdgeInsets.only(top: 5),
-          width: double.infinity,
-          decoration: BoxDecoration(
+            height: 150,
+            margin: EdgeInsets.only(top: 5),
+            width: double.infinity,
+            child: ClipRRect(
+              child: CacheImage.cachedImage(photosList[0]),
               borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(10),
-                  bottomRight: Radius.circular(10)),
-              image: DecorationImage(
-                  image: NetworkImage(photosList[0]), fit: BoxFit.cover)),
-        );
+                  bottomRight: Radius.circular(10),
+                  bottomLeft: Radius.circular(10)),
+            ));
         break;
       case 2:
         widgets = Container(
@@ -394,12 +377,11 @@ class _PostCardState extends State<PostCard> {
             children: <Widget>[
               Expanded(
                 child: Container(
-                  decoration: BoxDecoration(
-                      borderRadius:
-                          BorderRadius.only(bottomLeft: Radius.circular(10)),
-                      image: DecorationImage(
-                          image: NetworkImage(photosList[0]),
-                          fit: BoxFit.cover)),
+                  child: ClipRRect(
+                    child: CacheImage.cachedImage(photosList[0]),
+                    borderRadius:
+                        BorderRadius.only(bottomLeft: Radius.circular(10)),
+                  ),
                 ),
               ),
               SizedBox(
@@ -407,12 +389,11 @@ class _PostCardState extends State<PostCard> {
               ),
               Expanded(
                 child: Container(
-                  decoration: BoxDecoration(
-                      borderRadius:
-                          BorderRadius.only(bottomRight: Radius.circular(10)),
-                      image: DecorationImage(
-                          image: NetworkImage(photosList[1]),
-                          fit: BoxFit.cover)),
+                  child: ClipRRect(
+                    child: CacheImage.cachedImage(photosList[1]),
+                    borderRadius:
+                        BorderRadius.only(bottomLeft: Radius.circular(10)),
+                  ),
                 ),
               ),
             ],
@@ -431,12 +412,11 @@ class _PostCardState extends State<PostCard> {
                   children: <Widget>[
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(10)),
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[0]),
-                                fit: BoxFit.cover)),
+                        child: ClipRRect(
+                          child: CacheImage.cachedImage(photosList[0]),
+                          borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(10)),
+                        ),
                       ),
                     ),
                     SizedBox(
@@ -447,10 +427,10 @@ class _PostCardState extends State<PostCard> {
                         children: <Widget>[
                           Expanded(
                             child: Container(
-                              decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                      image: NetworkImage(photosList[1]),
-                                      fit: BoxFit.cover)),
+                              width: double.infinity,
+                              child: ClipRRect(
+                                child: CacheImage.cachedImage(photosList[1]),
+                              ),
                             ),
                           ),
                           SizedBox(
@@ -458,12 +438,12 @@ class _PostCardState extends State<PostCard> {
                           ),
                           Expanded(
                             child: Container(
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.only(
-                                      bottomRight: Radius.circular(10)),
-                                  image: DecorationImage(
-                                      image: NetworkImage(photosList[2]),
-                                      fit: BoxFit.cover)),
+                              width: double.infinity,
+                              child: ClipRRect(
+                                child: CacheImage.cachedImage(photosList[2]),
+                                borderRadius: BorderRadius.only(
+                                    bottomRight: Radius.circular(10)),
+                              ),
                             ),
                           ),
                         ],
@@ -488,10 +468,9 @@ class _PostCardState extends State<PostCard> {
                   children: <Widget>[
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[0]),
-                                fit: BoxFit.cover)),
+                        child: ClipRRect(
+                          child: CacheImage.cachedImage(photosList[0]),
+                        ),
                       ),
                     ),
                     SizedBox(
@@ -499,10 +478,9 @@ class _PostCardState extends State<PostCard> {
                     ),
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[1]),
-                                fit: BoxFit.cover)),
+                        child: ClipRRect(
+                          child: CacheImage.cachedImage(photosList[1]),
+                        ),
                       ),
                     ),
                   ],
@@ -516,12 +494,10 @@ class _PostCardState extends State<PostCard> {
                   children: <Widget>[
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(10)),
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[2]),
-                                fit: BoxFit.cover)),
+                        child: ClipRRect(
+                          child: CacheImage.cachedImage(photosList[2]),
+                          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10)),
+                        ),
                       ),
                     ),
                     SizedBox(
@@ -529,12 +505,10 @@ class _PostCardState extends State<PostCard> {
                     ),
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                                bottomRight: Radius.circular(10)),
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[3]),
-                                fit: BoxFit.cover)),
+                        child: ClipRRect(
+                          child: CacheImage.cachedImage(photosList[3]),
+                          borderRadius: BorderRadius.only(bottomRight: Radius.circular(10)),
+                        ),
                       ),
                     ),
                   ],
@@ -574,21 +548,20 @@ class _PostCardState extends State<PostCard> {
       case 1:
         imageWidget = GestureDetector(
           child: Container(
-            /*decoration: BoxDecoration(
+              /*decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               image: DecorationImage(
                 fit: BoxFit.cover,
                 image: CacheImage(photos[0])
               )
             ),*/
-            height: 150,
-            width: double.infinity,
-            margin: EdgeInsets.only(top: 3),
-            child: ClipRRect(
-              child: _cachedImage(photos[0]),
-              borderRadius: BorderRadius.circular(8),
-            )
-          ),
+              height: 150,
+              width: double.infinity,
+              margin: EdgeInsets.only(top: 3),
+              child: ClipRRect(
+                child: CacheImage.cachedImage(photos[0]),
+                borderRadius: BorderRadius.circular(8),
+              )),
           onTap: () => _showImage(context, 0),
         );
         break;
@@ -604,8 +577,8 @@ class _PostCardState extends State<PostCard> {
               Expanded(
                 child: GestureDetector(
                   child: Container(
-                    height: double.infinity,
-                    /*decoration: BoxDecoration(
+                      height: double.infinity,
+                      /*decoration: BoxDecoration(
                         borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(8),
                             bottomLeft: Radius.circular(8)),
@@ -614,13 +587,12 @@ class _PostCardState extends State<PostCard> {
                           image: CacheImage(photos[0])
                       )
                     ),*/
-                    child: ClipRRect(
-                      child: _cachedImage(photos[0]),
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(8),
-                          bottomLeft: Radius.circular(8)),
-                    )
-                  ),
+                      child: ClipRRect(
+                        child: CacheImage.cachedImage(photos[0]),
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(8),
+                            bottomLeft: Radius.circular(8)),
+                      )),
                   onTap: () => _showImage(context, 0),
                 ),
               ),
@@ -641,7 +613,7 @@ class _PostCardState extends State<PostCard> {
                         )
                     ),*/
                     child: ClipRRect(
-                      child: _cachedImage(photos[1]),
+                      child: CacheImage.cachedImage(photos[1]),
                       borderRadius: BorderRadius.only(
                           topRight: Radius.circular(8),
                           bottomRight: Radius.circular(8)),
@@ -677,7 +649,7 @@ class _PostCardState extends State<PostCard> {
                               )
                           ),*/
                           child: ClipRRect(
-                            child: _cachedImage(photos[0]),
+                            child: CacheImage.cachedImage(photos[0]),
                             borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(8),
                                 bottomLeft: Radius.circular(8)),
@@ -706,7 +678,7 @@ class _PostCardState extends State<PostCard> {
                                     )
                                 ),*/
                                 child: ClipRRect(
-                                  child: _cachedImage(photos[1]),
+                                  child: CacheImage.cachedImage(photos[1]),
                                   borderRadius: BorderRadius.only(
                                       topRight: Radius.circular(8)),
                                 ),
@@ -731,7 +703,7 @@ class _PostCardState extends State<PostCard> {
                                     )
                                 ),*/
                                 child: ClipRRect(
-                                  child: _cachedImage(photos[2]),
+                                  child: CacheImage.cachedImage(photos[2]),
                                   borderRadius: BorderRadius.only(
                                       bottomRight: Radius.circular(8)),
                                 ),
@@ -776,7 +748,7 @@ class _PostCardState extends State<PostCard> {
                                     )
                                 ),*/
                                 child: ClipRRect(
-                                  child: _cachedImage(photos[0]),
+                                  child: CacheImage.cachedImage(photos[0]),
                                   borderRadius: BorderRadius.only(
                                       topLeft: Radius.circular(8)),
                                 ),
@@ -801,7 +773,7 @@ class _PostCardState extends State<PostCard> {
                                     )
                                 ),*/
                                 child: ClipRRect(
-                                  child: _cachedImage(photos[1]),
+                                  child: CacheImage.cachedImage(photos[1]),
                                   borderRadius: BorderRadius.only(
                                       bottomLeft: Radius.circular(8)),
                                 ),
@@ -832,7 +804,7 @@ class _PostCardState extends State<PostCard> {
                                     )
                                 ),*/
                                 child: ClipRRect(
-                                  child: _cachedImage(photos[2]),
+                                  child: CacheImage.cachedImage(photos[2]),
                                   borderRadius: BorderRadius.only(
                                       topRight: Radius.circular(8)),
                                 ),
@@ -857,7 +829,7 @@ class _PostCardState extends State<PostCard> {
                                     )
                                 ),*/
                                 child: ClipRRect(
-                                  child: _cachedImage(photos[3]),
+                                  child: CacheImage.cachedImage(photos[3]),
                                   borderRadius: BorderRadius.only(
                                       bottomRight: Radius.circular(8)),
                                 ),
@@ -882,87 +854,6 @@ class _PostCardState extends State<PostCard> {
         break;
     }
     return imageWidget;
-  }
-
-  _buildAttention() {
-    return widget.userId != item.user.id
-        ? Expanded(
-            child: Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: Colors.orange),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '+ 关注',
-                      style: TextStyle(color: Colors.orange, fontSize: 12),
-                    ),
-                  ),
-                )),
-          )
-        : Container();
-  }
-
-  _photoItem(BuildContext context) {
-    if (item.photos.length == 1) {
-      return GestureDetector(
-        onTap: () => _showImage(context, 1),
-        child: Container(
-          height: 200,
-          margin: EdgeInsets.only(top: 10),
-          child: ConstrainedBox(
-            constraints: BoxConstraints.expand(),
-            child: _cachedImage(item.photos[0]),
-          ),
-        ),
-      );
-    } else {
-      return Container(
-        margin: EdgeInsets.only(top: 10),
-        child: GridView.count(
-            shrinkWrap: true,
-            crossAxisCount: 3,
-            mainAxisSpacing: 5,
-            crossAxisSpacing: 5,
-            physics: NeverScrollableScrollPhysics(),
-            children: _buildList(context)),
-      );
-    }
-  }
-
-  List<Widget> _buildList(BuildContext context) {
-    return Iterable.generate(item.photos.length)
-        .map((index) => _item(item.photos[index], index, context))
-        .toList();
-  }
-
-  Widget _item(String img, int index, BuildContext context) {
-    return GestureDetector(
-      onTap: () => _showImage(context, index),
-      child: Container(
-        child: _cachedImage(img),
-      ),
-    );
-  }
-
-  _cachedImage(String img) {
-    return CachedNetworkImage(
-      imageUrl: img,
-      fit: BoxFit.cover,
-      placeholder: (context, url) {
-        return Container(
-          height: 20,
-          child: Center(
-              child: Center(
-            child: CircularProgressIndicator(),
-          )),
-        );
-      },
-    );
   }
 
   _buildLikeButton() {
@@ -1045,22 +936,6 @@ class _PostCardState extends State<PostCard> {
       maxLines: 3,
       softWrap: true,
     );
-  }
-
-  bool isExpansion(String text) {
-    TextPainter _textPainter = TextPainter(
-        maxLines: 3,
-        text: TextSpan(
-            text: text, style: TextStyle(color: Colors.black, fontSize: 15)),
-        textDirection: TextDirection.ltr)
-      ..layout(
-          maxWidth: MediaQuery.of(context).size.width,
-          minWidth: MediaQuery.of(context).size.width);
-    if (_textPainter.didExceedMaxLines) {
-      return true;
-    } else {
-      return false;
-    }
   }
 
   _tapRecognizer(BuildContext context) {

@@ -7,9 +7,10 @@ import 'package:flutter_mblog/util/AdaptiveTools.dart';
 
 class FollowingPage extends StatefulWidget {
   String userId;
+  String wLoginId;
   FollowModel followModel;
 
-  FollowingPage({this.userId, this.followModel});
+  FollowingPage({this.userId,this.wLoginId, this.followModel});
 
   @override
   _FollowingPageState createState() => _FollowingPageState();
@@ -61,7 +62,7 @@ class _FollowingPageState extends State<FollowingPage> {
                 child: RefreshIndicator(
                   onRefresh: _onRefresh,
                   child: ListView.builder(
-                    cacheExtent: 1.0,
+                      physics: new AlwaysScrollableScrollPhysics(),
                       itemCount: _followModel.followList.length,
                       itemBuilder: (context, index) {
                         return Column(
@@ -162,7 +163,7 @@ class _FollowingPageState extends State<FollowingPage> {
                             ),
                           ],
                         ),
-                        Container(
+                        widget.userId == widget.wLoginId ?Container(
                           height: 30,
                           child: FlatButton(
                             shape: RoundedRectangleBorder(
@@ -182,10 +183,10 @@ class _FollowingPageState extends State<FollowingPage> {
                             ),
                           ),
                           margin: EdgeInsets.only(right: 5,top: 3),
-                        )
+                        ):Container()
                       ],
                     ),
-                    height: AdaptiveTools.setRpx(80),
+                    height: AdaptiveTools.setRpx(100),
                   ),
                   Container(
                     child: Text(
@@ -199,7 +200,7 @@ class _FollowingPageState extends State<FollowingPage> {
             )
           ],
         ),
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       ),
       onTap: (){
         Navigator.push(context, MaterialPageRoute(builder: (context) => MinePage(userid: follow.id,wLoginUserId: widget.userId,)));

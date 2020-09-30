@@ -7,6 +7,7 @@ import 'package:flutter_mblog/dao/upload_dao.dart';
 import 'package:flutter_mblog/dao/user_dao.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/common_util.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -113,13 +114,20 @@ class _EditMinePageState extends State<EditMinePage> {
                   FormData formDate = FormData.fromMap({
                     "id": _userModel.id,
                     "name": _nameEtController.text,
-                    "banner": banner,
-                    "avatar": avatar,
+                    "banner": banner ?? _userModel.banner,
+                    "avatar": avatar ?? _userModel.avatar,
                     "intro": _introductionEtController.text,
                     "homepage": _urlEtController.text,
                   });
+                  print("avatar ?? _userModel.avatar >> ${avatar ?? _userModel.avatar}");
                   Shared_pre.Shared_deleteUser();
-                  UserModel editUserModel = new UserModel(email: _userModel.email,mobile: _userModel.mobile,name: _nameEtController.text,username: _userModel.username,avatar: avatar,id: _userModel.id);
+                  UserModel editUserModel = new UserModel(
+                    email: _userModel.email,
+                    mobile: _userModel.mobile,
+                    name: _nameEtController.text,
+                    username: _userModel.username,
+                    avatar: avatar ?? _userModel.avatar,
+                    id: _userModel.id,following: _userModel.following,followers: _userModel.followers);
                   Shared_pre.Shared_setUser(editUserModel);
                   UserDao.saveUserInfo(formDate);
                   Navigator.pop(context);
@@ -136,7 +144,6 @@ class _EditMinePageState extends State<EditMinePage> {
           future: getUserInfo(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              print(avatar);
               _userModel = snapshot.data;
               if (onInitBody) {
                 if (_nameEtController.text.isEmpty) {
@@ -581,11 +588,11 @@ class _EditMinePageState extends State<EditMinePage> {
     var pickedFile = await _picker.getImage(source: ImageSource.camera);
     if (pickedFile == null) return;
     var image = File(pickedFile.path);
-
+    CommonUtil.showLoadingDialog(context);
     if (flag == "banner") {
-      banner = await UploadDao.uploadImage(UploadDao.UPDATE_BANNER, image);
+      banner = await UploadDao.uploadImage(UploadDao.UPDATE_BANNER, image,context);
     } else if (flag == "avatar") {
-      avatar = await UploadDao.uploadImage(UploadDao.UPDATE_BANNER, image);
+      avatar = await UploadDao.uploadImage(UploadDao.UPDATE_BANNER, image,context);
     }
     setState(() {});
   }
@@ -594,10 +601,11 @@ class _EditMinePageState extends State<EditMinePage> {
     var pickedFile = await _picker.getImage(source: ImageSource.gallery);
     if (pickedFile == null) return;
     var image = File(pickedFile.path);
+    CommonUtil.showLoadingDialog(context);
     if (flag == "banner") {
-      banner = await UploadDao.uploadImage(UploadDao.UPDATE_BANNER, image);
+      banner = await UploadDao.uploadImage(UploadDao.UPDATE_BANNER, image,context);
     } else if (flag == "avatar") {
-      avatar = await UploadDao.uploadImage(UploadDao.UPDATE_BANNER, image);
+      avatar = await UploadDao.uploadImage(UploadDao.UPDATE_BANNER, image,context);
     }
     setState(() {});
   }

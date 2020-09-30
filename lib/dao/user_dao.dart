@@ -10,6 +10,7 @@ import '../util/net_utils.dart';
 import '../util/oauth.dart';
 
 const USER_INFO_URL = "http://mblog.yunep.com/api/profile";
+const EDIT_USERNAME_URL = "http://mblog.yunep.com/api/reset/username";
 const USER_ID_INFO_URL = "http://mblog.yunep.com/api/user";
 const USER_FOLLOWING_LIST = "http://mblog.yunep.com/api/user/following";
 
@@ -50,7 +51,9 @@ class UserDao{
   }
 
   static Future<void> saveUserInfo(FormData formData) async {
-    final response = await dio.post(USER_INFO_URL, data: formData);
+    String token = await Shared_pre.Shared_getToken();
+    Options options = Options(headers: {'Authorization': 'Bearer $token'});
+    final response = await dio.post(USER_INFO_URL, data: formData,options: options);
     if (response.statusCode == 200) {
       return response.data;
     } else {
@@ -60,7 +63,6 @@ class UserDao{
 
   static Future<FollowModel> getFollowingList(
       String userId, BuildContext context) async {
-    print("获取FollowingList");
     try {
       String token = await Shared_pre.Shared_getToken();
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
@@ -73,13 +75,12 @@ class UserDao{
         throw Exception("loading data error");
       }
     } on DioError catch (e) {
-      print("报400啦");
+      print("e1 ${e.response.statusCode}");
     }
   }
 
   static Future<FollowModel> getFollowersList(
       String userId, BuildContext context) async {
-      print("获取FollowersList数据");
     try {
       String token = await Shared_pre.Shared_getToken();
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
@@ -92,17 +93,18 @@ class UserDao{
         throw Exception("loading data error");
       }
     } on DioError catch (e) {
-      /*switch (e.type) {
-        case DioErrorType.CONNECT_TIMEOUT:
-          MyToast.show("服务器连接超时");
-          break;
-        case DioErrorType.SEND_TIMEOUT:
-          MyToast.show("请求超时");
-          break;
-        case DioErrorType.RECEIVE_TIMEOUT:
-          MyToast.show("响应超时");
-          break;
-      }*/
+      print("e ${e.response.statusCode}");
+    }
+  }
+
+  static Future<String> editUserName(FormData formData) async {
+    String token = await Shared_pre.Shared_getToken();
+    Options options = Options(headers: {'Authorization': 'Bearer $token'});
+    final response = await dio.post(EDIT_USERNAME_URL, data: formData,options: options);
+    if (response.statusCode == 200) {
+      return "success";
+    } else {
+      throw Exception("save info error....");
     }
   }
 }

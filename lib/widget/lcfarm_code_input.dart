@@ -133,7 +133,7 @@ class _CodeInputTextFieldState extends State<CodeInputTextField>
   ///倒计时秒
   int _seconds;
   ///按钮文案
-  String _codeStr = '获取验证码';
+  String _codeStr = '重新获取验证码';
   ///倒计时文案
   String _countStr = '';
   AnimationController _animationController;

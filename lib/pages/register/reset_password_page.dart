@@ -1,7 +1,10 @@
+import 'package:connectivity/connectivity.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/pages/register/rest_password_code_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/common_util.dart';
+import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -92,9 +95,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   }
 
   void _sendMobileCode() async {
+    CommonUtil.showLoadingDialog(context);
     _sendCode().then((isSuccess){
       if (isSuccess) {
+        Navigator.pop(context);
         Navigator.push(context,MaterialPageRoute(builder: (context) => RestPasswordPage(_phoneController.text)));
+      }else{
+        Navigator.pop(context);
+        MyToast.show("获取验证码失败");
       }
     }); // TODO 发送验证码
   }
@@ -111,15 +119,14 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       }
       return false;
     }on DioError catch(e) {
-      Fluttertoast.showToast(
-          msg: e.response.data["result"],
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Color(0XF20A2F4),
-          textColor: Colors.white,
-          fontSize: 16.0
-      );
+      (Connectivity().checkConnectivity()).then((onConnectivtiry){
+        if (onConnectivtiry == ConnectivityResult.none) {
+          FocusScope.of(context).requestFocus(FocusNode());
+          MyToast.show("网络未连接");
+        }else{
+          MyToast.show(e.response.data["result"]);
+        }
+      });
       return false;
     }
   }

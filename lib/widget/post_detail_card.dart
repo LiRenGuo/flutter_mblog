@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/follow_dao.dart';
 import 'package:flutter_mblog/dao/user_dao.dart';
@@ -7,12 +6,12 @@ import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/home_detail_page.dart';
-import 'package:flutter_mblog/pages/my_page.dart';
-import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/CacheImage.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:flutter_mblog/widget/fade_route.dart';
 import 'package:flutter_mblog/widget/image_all_screen_look.dart';
+import 'package:optimized_cached_image/widgets.dart';
 
 class PostDetailCard extends StatefulWidget {
   final PostItem item;
@@ -92,7 +91,7 @@ class _PostDetailCardState extends State<PostDetailCard> {
                   Row(
                     children: <Widget>[
                       CircleAvatar(
-                        backgroundImage: NetworkImage(widget.item.user.avatar),
+                        backgroundImage: OptimizedCacheImageProvider(widget.item.user.avatar)/*NetworkImage(widget.item.user.avatar)*/,
                         radius: 28,
                       ),
                       Padding(
@@ -214,7 +213,7 @@ class _PostDetailCardState extends State<PostDetailCard> {
                 children: <Widget>[
                   CircleAvatar(
                     radius: 15,
-                    backgroundImage: NetworkImage(postItem.user.avatar),
+                    backgroundImage: OptimizedCacheImageProvider(postItem.user.avatar)/*NetworkImage(postItem.user.avatar)*/,
                   ),
                   Row(
                     children: <Widget>[
@@ -267,32 +266,30 @@ class _PostDetailCardState extends State<PostDetailCard> {
     switch (photosList.length) {
       case 1:
         widgets = Container(
-          height: 130,
-          margin: EdgeInsets.only(top: 5),
-          width: double.infinity,
-          decoration: BoxDecoration(
+            height: 150,
+            margin: EdgeInsets.only(top: 5),
+            width: double.infinity,
+            child: ClipRRect(
+              child: CacheImage.cachedImage(photosList[0]),
               borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(10),
-                  bottomRight: Radius.circular(10)),
-              image: DecorationImage(
-                  image: NetworkImage(photosList[0]), fit: BoxFit.cover)),
-        );
+                  bottomRight: Radius.circular(10),
+                  bottomLeft: Radius.circular(10)),
+            ));
         break;
       case 2:
         widgets = Container(
-          height: 130,
+          height: 150,
           margin: EdgeInsets.only(top: 5),
           width: double.infinity,
           child: Row(
             children: <Widget>[
               Expanded(
                 child: Container(
-                  decoration: BoxDecoration(
-                      borderRadius:
-                      BorderRadius.only(bottomLeft: Radius.circular(10)),
-                      image: DecorationImage(
-                          image: NetworkImage(photosList[0]),
-                          fit: BoxFit.cover)),
+                  child: ClipRRect(
+                    child: CacheImage.cachedImage(photosList[0]),
+                    borderRadius:
+                    BorderRadius.only(bottomLeft: Radius.circular(10)),
+                  ),
                 ),
               ),
               SizedBox(
@@ -300,12 +297,11 @@ class _PostDetailCardState extends State<PostDetailCard> {
               ),
               Expanded(
                 child: Container(
-                  decoration: BoxDecoration(
-                      borderRadius:
-                      BorderRadius.only(bottomRight: Radius.circular(10)),
-                      image: DecorationImage(
-                          image: NetworkImage(photosList[1]),
-                          fit: BoxFit.cover)),
+                  child: ClipRRect(
+                    child: CacheImage.cachedImage(photosList[1]),
+                    borderRadius:
+                    BorderRadius.only(bottomLeft: Radius.circular(10)),
+                  ),
                 ),
               ),
             ],
@@ -314,7 +310,7 @@ class _PostDetailCardState extends State<PostDetailCard> {
         break;
       case 3:
         widgets = Container(
-          height: 130,
+          height: 150,
           margin: EdgeInsets.only(top: 5),
           width: double.infinity,
           child: Column(
@@ -324,12 +320,11 @@ class _PostDetailCardState extends State<PostDetailCard> {
                   children: <Widget>[
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(10)),
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[0]),
-                                fit: BoxFit.cover)),
+                        child: ClipRRect(
+                          child: CacheImage.cachedImage(photosList[0]),
+                          borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(10)),
+                        ),
                       ),
                     ),
                     SizedBox(
@@ -340,10 +335,10 @@ class _PostDetailCardState extends State<PostDetailCard> {
                         children: <Widget>[
                           Expanded(
                             child: Container(
-                              decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                      image: NetworkImage(photosList[1]),
-                                      fit: BoxFit.cover)),
+                              width: double.infinity,
+                              child: ClipRRect(
+                                child: CacheImage.cachedImage(photosList[1]),
+                              ),
                             ),
                           ),
                           SizedBox(
@@ -351,12 +346,12 @@ class _PostDetailCardState extends State<PostDetailCard> {
                           ),
                           Expanded(
                             child: Container(
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.only(
-                                      bottomRight: Radius.circular(10)),
-                                  image: DecorationImage(
-                                      image: NetworkImage(photosList[2]),
-                                      fit: BoxFit.cover)),
+                              width: double.infinity,
+                              child: ClipRRect(
+                                child: CacheImage.cachedImage(photosList[2]),
+                                borderRadius: BorderRadius.only(
+                                    bottomRight: Radius.circular(10)),
+                              ),
                             ),
                           ),
                         ],
@@ -371,7 +366,7 @@ class _PostDetailCardState extends State<PostDetailCard> {
         break;
       case 4:
         widgets = Container(
-          height: 130,
+          height: 150,
           margin: EdgeInsets.only(top: 5),
           width: double.infinity,
           child: Column(
@@ -381,10 +376,9 @@ class _PostDetailCardState extends State<PostDetailCard> {
                   children: <Widget>[
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[0]),
-                                fit: BoxFit.cover)),
+                        child: ClipRRect(
+                          child: CacheImage.cachedImage(photosList[0]),
+                        ),
                       ),
                     ),
                     SizedBox(
@@ -392,10 +386,9 @@ class _PostDetailCardState extends State<PostDetailCard> {
                     ),
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[1]),
-                                fit: BoxFit.cover)),
+                        child: ClipRRect(
+                          child: CacheImage.cachedImage(photosList[1]),
+                        ),
                       ),
                     ),
                   ],
@@ -409,12 +402,10 @@ class _PostDetailCardState extends State<PostDetailCard> {
                   children: <Widget>[
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(10)),
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[2]),
-                                fit: BoxFit.cover)),
+                        child: ClipRRect(
+                          child: CacheImage.cachedImage(photosList[2]),
+                          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10)),
+                        ),
                       ),
                     ),
                     SizedBox(
@@ -422,12 +413,10 @@ class _PostDetailCardState extends State<PostDetailCard> {
                     ),
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                                bottomRight: Radius.circular(10)),
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[3]),
-                                fit: BoxFit.cover)),
+                        child: ClipRRect(
+                          child: CacheImage.cachedImage(photosList[3]),
+                          borderRadius: BorderRadius.only(bottomRight: Radius.circular(10)),
+                        ),
                       ),
                     ),
                   ],
@@ -450,33 +439,6 @@ class _PostDetailCardState extends State<PostDetailCard> {
     ));
   }
 
-  List<Widget> _buildList(BuildContext context) {
-    return Iterable.generate(widget.item.photos.length).map((index) => _item(widget.item.photos[index], index, context)).toList();
-  }
-
-  Widget _item(String img, int index, BuildContext context) {
-    return GestureDetector(
-      onTap: () => _showImage(context, index),
-      child: Container(
-        child: _cachedImage(img),
-      ),
-    );
-  }
-
-  _cachedImage(String img) {
-    return CachedNetworkImage(
-      imageUrl: img,
-      fit: BoxFit.cover,
-      placeholder: (context, url) {
-        return Container(
-          height: 20,
-          child: Center(child: Center(
-            child: CircularProgressIndicator(),
-          )),
-        );
-      },
-    );
-  }
 
   Widget _buildImage(List<String> photos) {
     Widget imageWidget;
@@ -484,34 +446,44 @@ class _PostDetailCardState extends State<PostDetailCard> {
       case 1:
         imageWidget = GestureDetector(
           child: Container(
-            height: 200,
-            width: double.infinity,
-            margin: EdgeInsets.only(top: 10),
-            child: ClipRRect(
-              child: _cachedImage(photos[0]),
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
+              height: 200,
+              width: double.infinity,
+              margin: EdgeInsets.only(top: 3),
+              child: ClipRRect(
+                child: CacheImage.cachedImage(photos[0]),
+                borderRadius: BorderRadius.circular(8),
+              )),
           onTap: () => _showImage(context, 0),
         );
         break;
       case 2:
         imageWidget = Container(
+          decoration:
+          BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(8))),
           height: 200,
-          margin: EdgeInsets.only(top: 10),
+          width: double.infinity,
+          margin: EdgeInsets.only(top: 3),
           child: Row(
             children: <Widget>[
               Expanded(
                 child: GestureDetector(
                   child: Container(
-                    height: double.infinity,
-                    child: ClipRRect(
-                      child: _cachedImage(photos[0]),
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(8),
-                          bottomLeft: Radius.circular(8)),
-                    ),
-                  ),
+                      height: double.infinity,
+                      /*decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(8),
+                            bottomLeft: Radius.circular(8)),
+                      image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: CacheImage(photos[0])
+                      )
+                    ),*/
+                      child: ClipRRect(
+                        child: CacheImage.cachedImage(photos[0]),
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(8),
+                            bottomLeft: Radius.circular(8)),
+                      )),
                   onTap: () => _showImage(context, 0),
                 ),
               ),
@@ -522,8 +494,17 @@ class _PostDetailCardState extends State<PostDetailCard> {
                 child: GestureDetector(
                   child: Container(
                     height: double.infinity,
+                    /*decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(8),
+                            bottomRight: Radius.circular(8)),
+                        image: DecorationImage(
+                            fit: BoxFit.cover,
+                            image: CacheImage(photos[1])
+                        )
+                    ),*/
                     child: ClipRRect(
-                      child: _cachedImage(photos[1]),
+                      child: CacheImage.cachedImage(photos[1]),
                       borderRadius: BorderRadius.only(
                           topRight: Radius.circular(8),
                           bottomRight: Radius.circular(8)),
@@ -539,7 +520,8 @@ class _PostDetailCardState extends State<PostDetailCard> {
       case 3:
         imageWidget = Container(
           height: 200,
-          margin: EdgeInsets.only(top: 10),
+          width: double.infinity,
+          margin: EdgeInsets.only(top: 3),
           child: Column(
             children: <Widget>[
               Expanded(
@@ -548,8 +530,17 @@ class _PostDetailCardState extends State<PostDetailCard> {
                     Expanded(
                       child: GestureDetector(
                         child: Container(
+                          /*decoration: BoxDecoration(
+                              borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(8),
+                                  bottomLeft: Radius.circular(8)),
+                              image: DecorationImage(
+                                  fit: BoxFit.cover,
+                                  image: CacheImage(photos[0])
+                              )
+                          ),*/
                           child: ClipRRect(
-                            child: _cachedImage(photos[0]),
+                            child: CacheImage.cachedImage(photos[0]),
                             borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(8),
                                 bottomLeft: Radius.circular(8)),
@@ -569,8 +560,16 @@ class _PostDetailCardState extends State<PostDetailCard> {
                           Expanded(
                             child: GestureDetector(
                               child: Container(
+                                /*decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                        topRight: Radius.circular(8)),
+                                    image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: CacheImage(photos[1])
+                                    )
+                                ),*/
                                 child: ClipRRect(
-                                  child: _cachedImage(photos[1]),
+                                  child: CacheImage.cachedImage(photos[1]),
                                   borderRadius: BorderRadius.only(
                                       topRight: Radius.circular(8)),
                                 ),
@@ -586,8 +585,16 @@ class _PostDetailCardState extends State<PostDetailCard> {
                           Expanded(
                             child: GestureDetector(
                               child: Container(
+                                /*decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                        bottomRight: Radius.circular(8)),
+                                    image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: CacheImage(photos[2])
+                                    )
+                                ),*/
                                 child: ClipRRect(
-                                  child: _cachedImage(photos[2]),
+                                  child: CacheImage.cachedImage(photos[2]),
                                   borderRadius: BorderRadius.only(
                                       bottomRight: Radius.circular(8)),
                                 ),
@@ -610,7 +617,8 @@ class _PostDetailCardState extends State<PostDetailCard> {
       case 4:
         imageWidget = Container(
           height: 200,
-          margin: EdgeInsets.only(top: 10),
+          width: double.infinity,
+          margin: EdgeInsets.only(top: 3),
           child: Column(
             children: <Widget>[
               Expanded(
@@ -622,8 +630,16 @@ class _PostDetailCardState extends State<PostDetailCard> {
                           Expanded(
                             child: GestureDetector(
                               child: Container(
+                                /*decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(8)),
+                                    image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: CacheImage(photos[0])
+                                    )
+                                ),*/
                                 child: ClipRRect(
-                                  child: _cachedImage(photos[0]),
+                                  child: CacheImage.cachedImage(photos[0]),
                                   borderRadius: BorderRadius.only(
                                       topLeft: Radius.circular(8)),
                                 ),
@@ -639,8 +655,16 @@ class _PostDetailCardState extends State<PostDetailCard> {
                           Expanded(
                             child: GestureDetector(
                               child: Container(
+                                /*decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                        bottomLeft: Radius.circular(8)),
+                                    image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: CacheImage(photos[1])
+                                    )
+                                ),*/
                                 child: ClipRRect(
-                                  child: _cachedImage(photos[1]),
+                                  child: CacheImage.cachedImage(photos[1]),
                                   borderRadius: BorderRadius.only(
                                       bottomLeft: Radius.circular(8)),
                                 ),
@@ -662,8 +686,16 @@ class _PostDetailCardState extends State<PostDetailCard> {
                           Expanded(
                             child: GestureDetector(
                               child: Container(
+                                /*decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                        topRight: Radius.circular(8)),
+                                    image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: CacheImage(photos[2])
+                                    )
+                                ),*/
                                 child: ClipRRect(
-                                  child: _cachedImage(photos[2]),
+                                  child: CacheImage.cachedImage(photos[2]),
                                   borderRadius: BorderRadius.only(
                                       topRight: Radius.circular(8)),
                                 ),
@@ -679,8 +711,16 @@ class _PostDetailCardState extends State<PostDetailCard> {
                           Expanded(
                             child: GestureDetector(
                               child: Container(
+                                /*decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                        bottomRight: Radius.circular(8)),
+                                    image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: CacheImage(photos[3])
+                                    )
+                                ),*/
                                 child: ClipRRect(
-                                  child: _cachedImage(photos[3]),
+                                  child: CacheImage.cachedImage(photos[3]),
                                   borderRadius: BorderRadius.only(
                                       bottomRight: Radius.circular(8)),
                                 ),
@@ -706,6 +746,7 @@ class _PostDetailCardState extends State<PostDetailCard> {
     }
     return imageWidget;
   }
+
 
   _content(BuildContext context) {
     String content = widget.item.content;

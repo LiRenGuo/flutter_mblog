@@ -10,10 +10,12 @@ import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/CacheImage.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/widget/fade_route.dart';
 import 'package:flutter_mblog/widget/image_all_screen_look.dart';
 import 'package:like_button/like_button.dart';
+import 'package:optimized_cached_image/optimized_cached_image.dart';
 
 class Tweets extends StatefulWidget {
   List<MyPostItem> _item;
@@ -114,11 +116,21 @@ class _TweetsState extends State<Tweets> {
                       alignment: FractionalOffset.topLeft,
                       child: Container(
                         margin: EdgeInsets.only(left: AdaptiveTools.setPx(7)),
+                        child:ClipOval(
+                          child: Image(
+                            fit: BoxFit.cover,
+                            image: OptimizedCacheImageProvider(_item.user.avatar),
+                          ),
+                        ),
+                        width: AdaptiveTools.setRpx(80),
+                        height:  AdaptiveTools.setRpx(80),
+                      )/*Container(
+                        margin: EdgeInsets.only(left: AdaptiveTools.setPx(7)),
                         alignment: Alignment.topLeft,
                         child: CircleAvatar(
                           backgroundImage: NetworkImage(_item.user.avatar),
                         ),
-                      ),
+                      )*/,
                     )
                   ],
                 ),
@@ -130,31 +142,25 @@ class _TweetsState extends State<Tweets> {
                   children: <Widget>[
                     Row(
                       children: <Widget>[
-                        Row(
-                          children: <Widget>[
-                            Container(
-                              child: Text(
-                                _item.user.name,
-                                style: TextStyle(
-                                  letterSpacing: 2,
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                        Container(
+                          child: Text(
+                            _item.user.name,
+                            style: TextStyle(
+                              letterSpacing: 2,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
                             ),
-                            SizedBox(
-                              width: 4,
-                            ),
-                            Container(
-                              child: Text("@${_item.user.username}"),
-                            ),
-                            Container(
-                              child: Text(
-                                  "  ·  ${TimeUtil.parse(_item.ctime.toString())}"),
-                            ),
-                          ],
+                          ),
                         ),
-                        userId == loginUserId?InkWell(
+                        SizedBox(
+                          width: 4,
+                        ),
+                        Container(
+                          width: AdaptiveTools.setRpx(320),
+                          child: Text("@${_item.user.username}",overflow: TextOverflow.ellipsis,),
+                        ),
+                        Spacer(),
+                        userId == loginUserId? InkWell(
                           child: Container(
                             alignment: Alignment.topRight,
                             child: Icon(
@@ -218,9 +224,8 @@ class _TweetsState extends State<Tweets> {
                               },
                             );
                           },
-                        ):Container(),
+                        ) : Container(),
                       ],
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     ),
                     InkWell(
                       child: Container(
@@ -316,9 +321,15 @@ class _TweetsState extends State<Tweets> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  CircleAvatar(
-                    radius: 15,
-                    backgroundImage: NetworkImage(postItem.user.avatar),
+                  Container(
+                    child: ClipOval(
+                      child: Image(
+                        fit: BoxFit.cover,
+                        image: OptimizedCacheImageProvider(postItem.user.avatar),
+                      ),
+                    ),
+                    width: AdaptiveTools.setRpx(50),
+                    height:  AdaptiveTools.setRpx(50),
                   ),
                   Row(
                     children: <Widget>[
@@ -371,16 +382,15 @@ class _TweetsState extends State<Tweets> {
     switch (photosList.length) {
       case 1:
         widgets = Container(
-          height: 150,
-          margin: EdgeInsets.only(top: 5),
-          width: double.infinity,
-          decoration: BoxDecoration(
+            height: 150,
+            margin: EdgeInsets.only(top: 5),
+            width: double.infinity,
+            child: ClipRRect(
+              child: CacheImage.cachedImage(photosList[0]),
               borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(10),
-                  bottomRight: Radius.circular(10)),
-              image: DecorationImage(
-                  image: NetworkImage(photosList[0]), fit: BoxFit.cover)),
-        );
+                  bottomRight: Radius.circular(10),
+                  bottomLeft: Radius.circular(10)),
+            ));
         break;
       case 2:
         widgets = Container(
@@ -391,12 +401,11 @@ class _TweetsState extends State<Tweets> {
             children: <Widget>[
               Expanded(
                 child: Container(
-                  decoration: BoxDecoration(
-                      borderRadius:
-                      BorderRadius.only(bottomLeft: Radius.circular(10)),
-                      image: DecorationImage(
-                          image: NetworkImage(photosList[0]),
-                          fit: BoxFit.cover)),
+                  child: ClipRRect(
+                    child: CacheImage.cachedImage(photosList[0]),
+                    borderRadius:
+                    BorderRadius.only(bottomLeft: Radius.circular(10)),
+                  ),
                 ),
               ),
               SizedBox(
@@ -404,12 +413,11 @@ class _TweetsState extends State<Tweets> {
               ),
               Expanded(
                 child: Container(
-                  decoration: BoxDecoration(
-                      borderRadius:
-                      BorderRadius.only(bottomRight: Radius.circular(10)),
-                      image: DecorationImage(
-                          image: NetworkImage(photosList[1]),
-                          fit: BoxFit.cover)),
+                  child: ClipRRect(
+                    child: CacheImage.cachedImage(photosList[1]),
+                    borderRadius:
+                    BorderRadius.only(bottomLeft: Radius.circular(10)),
+                  ),
                 ),
               ),
             ],
@@ -428,12 +436,11 @@ class _TweetsState extends State<Tweets> {
                   children: <Widget>[
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(10)),
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[0]),
-                                fit: BoxFit.cover)),
+                        child: ClipRRect(
+                          child: CacheImage.cachedImage(photosList[0]),
+                          borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(10)),
+                        ),
                       ),
                     ),
                     SizedBox(
@@ -444,10 +451,10 @@ class _TweetsState extends State<Tweets> {
                         children: <Widget>[
                           Expanded(
                             child: Container(
-                              decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                      image: NetworkImage(photosList[1]),
-                                      fit: BoxFit.cover)),
+                              width: double.infinity,
+                              child: ClipRRect(
+                                child: CacheImage.cachedImage(photosList[1]),
+                              ),
                             ),
                           ),
                           SizedBox(
@@ -455,12 +462,12 @@ class _TweetsState extends State<Tweets> {
                           ),
                           Expanded(
                             child: Container(
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.only(
-                                      bottomRight: Radius.circular(10)),
-                                  image: DecorationImage(
-                                      image: NetworkImage(photosList[2]),
-                                      fit: BoxFit.cover)),
+                              width: double.infinity,
+                              child: ClipRRect(
+                                child: CacheImage.cachedImage(photosList[2]),
+                                borderRadius: BorderRadius.only(
+                                    bottomRight: Radius.circular(10)),
+                              ),
                             ),
                           ),
                         ],
@@ -485,10 +492,9 @@ class _TweetsState extends State<Tweets> {
                   children: <Widget>[
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[0]),
-                                fit: BoxFit.cover)),
+                        child: ClipRRect(
+                          child: CacheImage.cachedImage(photosList[0]),
+                        ),
                       ),
                     ),
                     SizedBox(
@@ -496,10 +502,9 @@ class _TweetsState extends State<Tweets> {
                     ),
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[1]),
-                                fit: BoxFit.cover)),
+                        child: ClipRRect(
+                          child: CacheImage.cachedImage(photosList[1]),
+                        ),
                       ),
                     ),
                   ],
@@ -513,12 +518,10 @@ class _TweetsState extends State<Tweets> {
                   children: <Widget>[
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(10)),
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[2]),
-                                fit: BoxFit.cover)),
+                        child: ClipRRect(
+                          child: CacheImage.cachedImage(photosList[2]),
+                          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10)),
+                        ),
                       ),
                     ),
                     SizedBox(
@@ -526,12 +529,10 @@ class _TweetsState extends State<Tweets> {
                     ),
                     Expanded(
                       child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                                bottomRight: Radius.circular(10)),
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[3]),
-                                fit: BoxFit.cover)),
+                        child: ClipRRect(
+                          child: CacheImage.cachedImage(photosList[3]),
+                          borderRadius: BorderRadius.only(bottomRight: Radius.circular(10)),
+                        ),
                       ),
                     ),
                   ],
@@ -553,22 +554,6 @@ class _TweetsState extends State<Tweets> {
         )));
   }
 
-  _cachedImage(String img) {
-    return CachedNetworkImage(
-      imageUrl: img,
-      fit: BoxFit.cover,
-      placeholder: (context, url) {
-        return Container(
-          height: 20,
-          child: Center(
-              child: Center(
-                child: CircularProgressIndicator(),
-              )),
-        );
-      },
-    );
-  }
-
   Widget image(List<String> images, BuildContext context) {
     Widget imageWidget;
     switch (images.length) {
@@ -582,24 +567,12 @@ class _TweetsState extends State<Tweets> {
             width: double.infinity,
             margin: EdgeInsets.only(top: 3),
             child: ClipRRect(
-              child: _cachedImage(images[0]),
+              child: CacheImage.cachedImage(images[0]),
               borderRadius: BorderRadius.circular(8),
             ),
           ),
           onTap: () => _showImage(context,images, 0),
-        )/*InkWell(
-          child: Container(
-            height: AdaptiveTools.setPx(165),
-            decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: NetworkImage(images[0]), fit: BoxFit.cover),
-                border: Border.all(color: Colors.black26),
-                borderRadius: BorderRadius.all(Radius.circular(18))),
-          ),
-          onTap: () {
-            _showImage(context, images, 0);
-          },
-        )*/;
+        );
         break;
       case 2:
         imageWidget = Container(
@@ -615,7 +588,7 @@ class _TweetsState extends State<Tweets> {
                   child: Container(
                     height: double.infinity,
                     child: ClipRRect(
-                      child: _cachedImage(images[0]),
+                      child: CacheImage.cachedImage(images[0]),
                       borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(8),
                           bottomLeft: Radius.circular(8)),
@@ -632,7 +605,7 @@ class _TweetsState extends State<Tweets> {
                   child: Container(
                     height: double.infinity,
                     child: ClipRRect(
-                      child: _cachedImage(images[1]),
+                      child: CacheImage.cachedImage(images[1]),
                       borderRadius: BorderRadius.only(
                           topRight: Radius.circular(8),
                           bottomRight: Radius.circular(8)),
@@ -659,7 +632,7 @@ class _TweetsState extends State<Tweets> {
                       child: GestureDetector(
                         child: Container(
                           child: ClipRRect(
-                            child: _cachedImage(images[0]),
+                            child: CacheImage.cachedImage(images[0]),
                             borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(8),
                                 bottomLeft: Radius.circular(8)),
@@ -680,7 +653,7 @@ class _TweetsState extends State<Tweets> {
                             child: GestureDetector(
                               child: Container(
                                 child: ClipRRect(
-                                  child: _cachedImage(images[1]),
+                                  child: CacheImage.cachedImage(images[1]),
                                   borderRadius: BorderRadius.only(
                                       topRight: Radius.circular(8)),
                                 ),
@@ -697,7 +670,7 @@ class _TweetsState extends State<Tweets> {
                             child: GestureDetector(
                               child: Container(
                                 child: ClipRRect(
-                                  child: _cachedImage(images[2]),
+                                  child: CacheImage.cachedImage(images[2]),
                                   borderRadius: BorderRadius.only(
                                       bottomRight: Radius.circular(8)),
                                 ),
@@ -734,7 +707,7 @@ class _TweetsState extends State<Tweets> {
                             child: GestureDetector(
                               child: Container(
                                 child: ClipRRect(
-                                  child: _cachedImage(images[0]),
+                                  child: CacheImage.cachedImage(images[0]),
                                   borderRadius: BorderRadius.only(
                                       topLeft: Radius.circular(8)),
                                 ),
@@ -751,7 +724,7 @@ class _TweetsState extends State<Tweets> {
                             child: GestureDetector(
                               child: Container(
                                 child: ClipRRect(
-                                  child: _cachedImage(images[1]),
+                                  child: CacheImage.cachedImage(images[1]),
                                   borderRadius: BorderRadius.only(
                                       bottomLeft: Radius.circular(8)),
                                 ),
@@ -774,7 +747,7 @@ class _TweetsState extends State<Tweets> {
                             child: GestureDetector(
                               child: Container(
                                 child: ClipRRect(
-                                  child: _cachedImage(images[2]),
+                                  child: CacheImage.cachedImage(images[2]),
                                   borderRadius: BorderRadius.only(
                                       topRight: Radius.circular(8)),
                                 ),
@@ -791,7 +764,7 @@ class _TweetsState extends State<Tweets> {
                             child: GestureDetector(
                               child: Container(
                                 child: ClipRRect(
-                                  child: _cachedImage(images[3]),
+                                  child: CacheImage.cachedImage(images[3]),
                                   borderRadius: BorderRadius.only(
                                       bottomRight: Radius.circular(8)),
                                 ),

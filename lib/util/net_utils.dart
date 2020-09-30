@@ -58,11 +58,10 @@ class NetUtils {
   static Future postdata(String url,
       {Map<String, dynamic> params, options}) async {
     try {
-      var respose =
-          await dio.post(url, queryParameters: params, options: options);
+      var respose = await dio.post(url, queryParameters: params, options: options);
       return respose.data;
     } on DioError catch (a) {
-      print(a.response.statusCode);
+      print(a);
       return a.response.statusCode;
       //  Register.fromJson(a.response);
     }

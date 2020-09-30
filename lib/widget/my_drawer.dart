@@ -5,7 +5,10 @@ import 'package:flutter_mblog/pages/following_page.dart';
 import 'package:flutter_mblog/pages/followme_page.dart';
 import 'package:flutter_mblog/pages/login_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
+import 'package:flutter_mblog/pages/settings/settings_page.dart';
 import 'package:flutter_mblog/pages/welcome_page.dart';
+import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/CacheImage.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 
 class MyDrawer extends StatelessWidget {
@@ -45,10 +48,16 @@ class MyDrawer extends StatelessWidget {
           children: <Widget>[
             Padding(
               padding: EdgeInsets.only(bottom: 5),
-              child: CircleAvatar(
+              child: Container(
+                child: ClipOval(
+                  child: CacheImage.cachedImage(userModel.avatar,height: AdaptiveTools.setRpx(100)),
+                ),
+                height:100,
+                width: 100,
+              )/*CircleAvatar(
                 radius: 40,
                 backgroundImage: NetworkImage(userModel.avatar),
-              ),
+              )*/,
             ),
             Text(
               userModel.name,
@@ -114,55 +123,26 @@ class MyDrawer extends StatelessWidget {
           ListTile(
               leading: Icon(Icons.settings),
               title: Text('隐私设置'),
-              onTap: () => print('隐私设置')),
+              onTap: () => Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (context) => SettingsPage(userModel)))),
           ListTile(
               leading: Icon(Icons.help_outline),
               title: Text('关于我们'),
               onTap: () => print('关于我们')),
-          ListTile(
+          /*ListTile(
               leading: Icon(Icons.color_lens),
               title: Text('换肤'),
-              onTap: () => print('换肤')),
+              onTap: () => print('换肤')),*/
           /*ListTile(
               leading: Icon(Icons.language),
               title: Text('语言'),
               onTap: () => print('语言')),*/
-          ListTile(
+          /*ListTile(
               leading: Icon(Icons.power_settings_new),
               title: Text('登出'),
-              onTap: () {
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      return _confirmLogout(context);
-                    });
-              })
+              )*/
         ],
       ),
     );
-  }
-
-  _confirmLogout(BuildContext context) {
-    return AlertDialog(
-      content: Text('是否确认退出登录?'),
-      actions: <Widget>[
-        FlatButton(
-          child: Text('取消'),
-          onPressed: () => Navigator.pop(context),
-        ),
-        FlatButton(
-          child: Text('确认'),
-          onPressed: () => _logout(context),
-        )
-      ],
-    );
-  }
-
-  _logout(BuildContext context) {
-    Shared_pre.Shared_deleteToken();
-    Shared_pre.Shared_deleteResToken();
-    Shared_pre.Shared_deleteUser();
-    Navigator.pushAndRemoveUntil(
-        context, MaterialPageRoute(builder: (context) => WelcomePage()), (route) => route == null);
   }
 }

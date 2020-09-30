@@ -32,7 +32,7 @@ class FollowDao{
     if(response.statusCode == 200) {
       final responseData = response.data;
       Fluttertoast.showToast(
-          msg: "你成功关注了${userModel.name}",
+          msg: "你成功关注了该用户",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
@@ -70,7 +70,7 @@ class FollowDao{
       final responseData = response.data;
       print("response = ${responseData}");
       Fluttertoast.showToast(
-          msg: "取消关注了${userModel.name}",
+          msg: "取消关注了该用户",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,

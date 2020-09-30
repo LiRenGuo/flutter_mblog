@@ -43,9 +43,8 @@ dependencies:
   camera: ^0.5.8+5
   emoji_picker: ^0.1.0
   connectivity: ^0.4.9+2
-
-  cache_image: ^1.0.5
-
+  optimized_cached_image: ^1.0.0
+  path_provider: ^1.6.18
 dev_dependencies:
   flutter_test:
     sdk: flutter

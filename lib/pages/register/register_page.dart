@@ -1,3 +1,4 @@
+import 'package:connectivity/connectivity.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -138,15 +139,22 @@ class _RegisterPageState extends State<RegisterPage> {
       }
       return false;
     }on DioError catch(e) {
-      Fluttertoast.showToast(
-          msg: e.response.data["result"],
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Color(0XF20A2F4),
-          textColor: Colors.white,
-          fontSize: 16.0
-      );
+      (Connectivity().checkConnectivity()).then((onConnectivtiry){
+        if (onConnectivtiry == ConnectivityResult.none) {
+          FocusScope.of(context).requestFocus(FocusNode());
+          MyToast.show("网络未连接");
+        }else{
+          Fluttertoast.showToast(
+              msg: e.response.data["result"],
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Color(0XF20A2F4),
+              textColor: Colors.white,
+              fontSize: 16.0
+          );
+        }
+      });
       return false;
     }
   }

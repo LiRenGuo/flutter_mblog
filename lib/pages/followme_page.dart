@@ -59,7 +59,8 @@ class _FollowMePageState extends State<FollowMePage> {
           child: RefreshIndicator(
             onRefresh: _onRefresh,
             child: ListView.builder(
-              cacheExtent: 1.0,
+                physics: new AlwaysScrollableScrollPhysics(),
+                cacheExtent: 1.0,
                 itemCount: _followMeModel.followList.length,
                 itemBuilder: (context, index) {
                   return Column(
@@ -178,7 +179,7 @@ class _FollowMePageState extends State<FollowMePage> {
                       )
                     ],
                   ),
-                  height:  AdaptiveTools.setRpx(70),
+                  height:  AdaptiveTools.setRpx(80),
                 ),
                 Container(
                   child: Text(

@@ -21,14 +21,7 @@ packages:
       name: cached_network_image
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.2.0+1"
-  camera:
-    dependency: "direct main"
-    description:
-      name: camera
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.5.8+5"
+    version: "2.3.2+1"
   characters:
     dependency: transitive
     description:
@@ -188,13 +181,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.4.1"
-  flutter_image_compress:
-    dependency: transitive
+  flutter_easyrefresh:
+    dependency: "direct main"
     description:
-      name: flutter_image_compress
+      name: flutter_easyrefresh
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.7.0"
+    version: "2.1.5"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -295,14 +288,7 @@ packages:
       name: octo_image
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.2.1"
-  optimized_cached_image:
-    dependency: "direct main"
-    description:
-      name: optimized_cached_image
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "1.0.0"
+    version: "0.3.0"
   path:
     dependency: transitive
     description:
@@ -441,13 +427,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.7.0"
-  sprintf:
-    dependency: transitive
-    description:
-      name: sprintf
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "4.1.0"
   sqflite:
     dependency: transitive
     description:
@@ -540,5 +519,5 @@ packages:
     source: hosted
     version: "0.1.0"
 sdks:
-  dart: ">=2.9.0-14.0.dev <3.0.0"
-  flutter: ">=1.12.13+hotfix.5 <2.0.0"
+  dart: ">=2.9.0 <3.0.0"
+  flutter: ">=1.20.0 <2.0.0"

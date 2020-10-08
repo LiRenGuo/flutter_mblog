@@ -2,17 +2,15 @@ import 'dart:convert';
 
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/navigator/tab_navigator.dart';
 import 'package:flutter_mblog/pages/register/reset_password_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/common_util.dart';
-import 'file:///E:/android/flutter_mblog/lib/pages/register/register_page.dart';
+import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/oauth.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'register/register_page.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -57,9 +55,10 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.start,
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
-              Padding(
-                padding: EdgeInsets.fromLTRB(30, 0, 30, 0),
-                child: Image.asset('images/logo.png', width: 180, height: 180,filterQuality: FilterQuality.low,),
+              Container(
+                width: AdaptiveTools.setRpx(500),
+                child: ImageProcessTools.AssetProcessImage("images/logo.png",cacheHeight: 450,cacheWidth: 640)/*Image.asset('images/logo.png', width: 180, height: 180,filterQuality: FilterQuality.low,)*/,
+                padding: EdgeInsets.fromLTRB(30, 30, 30, 0),
               ),
               Padding(
                 padding: EdgeInsets.fromLTRB(30, 10, 30, 4),
@@ -162,7 +161,7 @@ class _LoginPageState extends State<LoginPage> {
 
 
   void _onLogin() async {
-    // 提交前，先验证各个表单字段是否合法
+    /// 提交前，先验证各个表单字段是否合法
     if ((_formKey.currentState as FormState).validate()) {
       CommonUtil.showLoadingDialog(context);
       Oauth_2.Login_oauth2(_unameController.text, _pwdController.text, context).then((boola) {

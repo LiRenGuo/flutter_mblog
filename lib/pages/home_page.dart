@@ -7,6 +7,7 @@ import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/CacheImage.dart';
+import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:flutter_mblog/widget/my_drawer.dart';
 import 'package:flutter_mblog/widget/post_card.dart';
@@ -32,7 +33,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
     super.didChangeDependencies();
     if (mounted) {
       setState(() {});
@@ -153,10 +153,7 @@ class _HomePageState extends State<HomePage> {
             child: CircularProgressIndicator(),
           ),
         ),
-      )/*LoadingContainer(
-        isLoading: _loading,
-        child: ,
-      )*/,
+      ),
       backgroundColor: Color(0xfff5f5f5),
     );
   }
@@ -186,7 +183,7 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.white
             ),
             child: ClipRRect(
-              child: CacheImage.cachedImage(avatar,height: AdaptiveTools.setRpx(100)),
+              child: ImageProcessTools.CachedNetworkProcessImage(avatar,memCacheHeight: 250,memCacheWidth: 250),
               borderRadius: BorderRadius.circular(50),
             ),
           ),

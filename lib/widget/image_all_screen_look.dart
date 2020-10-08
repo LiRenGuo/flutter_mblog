@@ -104,7 +104,6 @@ class _ImageAllScreenLookState extends State<ImageAllScreenLook> {
               alignment: Alignment.bottomCenter,
               child:
               Container(
-//                color: Colors.red,
                 width: widget.imgDataArr.length>=6 ? 200:widget.imgDataArr.length<3 ? 50:100,
                 height: widget.imgDataArr.length==1 ? 0:50,
                 child: Row(
@@ -113,7 +112,6 @@ class _ImageAllScreenLookState extends State<ImageAllScreenLook> {
                     widget.imgDataArr.length,
                         (i) => GestureDetector(
                       child: CircleAvatar(
-//                      foregroundColor: Theme.of(context).primaryColor,
                         radius: 5.0,
                         backgroundColor: currentIndex == i ? selColor : otherColor,
                       ),
@@ -122,8 +120,6 @@ class _ImageAllScreenLookState extends State<ImageAllScreenLook> {
                 ),
               )
           )
-
-
         ],
       ),
     );

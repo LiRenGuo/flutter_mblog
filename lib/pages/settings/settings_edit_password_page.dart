@@ -21,7 +21,7 @@ class _SettingsEditPasswordPageState extends State<SettingsEditPasswordPage> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.white,
-          title: Text('修改手机号', style: TextStyle(color: Colors.black)),
+          title: Text('修改密码', style: TextStyle(color: Colors.black)),
           iconTheme: IconThemeData(color: Colors.blue),
         ),
         body: Form(

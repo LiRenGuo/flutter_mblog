@@ -8,6 +8,7 @@ import 'package:flutter_mblog/dao/user_dao.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/common_util.dart';
+import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -17,77 +18,26 @@ class EditMinePage extends StatefulWidget {
 }
 
 class _EditMinePageState extends State<EditMinePage> {
+  final _picker = ImagePicker();
   var banner;
   var avatar;
 
   TextEditingController _nameEtController = TextEditingController();
-  FocusNode focusNameNode = new FocusNode();
-  Color nameColor = Colors.black54;
-  double nameSize = 20;
 
   TextEditingController _introductionEtController = TextEditingController();
-  FocusNode focusIntroductionNode = new FocusNode();
-  Color introductionColor = Colors.black54;
-  double introductionSize = 20;
 
   TextEditingController _positionEtController = TextEditingController();
-  FocusNode focusPositionNode = new FocusNode();
-  Color positionColor = Colors.black54;
-  double positionSize = 20;
 
   TextEditingController _urlEtController = TextEditingController();
-  FocusNode focusUrlNode = new FocusNode();
-  Color urlColor = Colors.black54;
-  double urlSize = 20;
 
   UserModel _userModel;
 
   bool onUpdate = false;
   bool isFanqi = false;
-
   bool onInitBody = true;
 
   getUserInfo() {
     return UserDao.getUserInfo(context);
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    focusUrlNode.addListener(() {
-      setState(() {
-        if (focusUrlNode.hasFocus) {
-          urlColor = Colors.blue;
-          urlSize = 25;
-        } else {
-          urlColor = Colors.black54;
-          urlSize = 20;
-        }
-      });
-    });
-    focusIntroductionNode.addListener(() {
-      setState(() {
-        if (focusIntroductionNode.hasFocus) {
-          introductionColor = Colors.blue;
-          introductionSize = 25;
-        } else {
-          introductionColor = Colors.black54;
-          introductionSize = 20;
-        }
-      });
-    });
-    focusNameNode.addListener(() {
-      setState(() {
-        if (focusNameNode.hasFocus) {
-          nameColor = Colors.blue;
-          nameSize = 25;
-        } else {
-          nameColor = Colors.black54;
-          nameSize = 20;
-        }
-      });
-    });
   }
 
   @override
@@ -130,7 +80,7 @@ class _EditMinePageState extends State<EditMinePage> {
                     id: _userModel.id,following: _userModel.following,followers: _userModel.followers);
                   Shared_pre.Shared_setUser(editUserModel);
                   UserDao.saveUserInfo(formDate);
-                  Navigator.pop(context);
+                  Navigator.pop(context,_userModel.hobby ?? "");
                 },
                 child: Text(
                   "保存",
@@ -173,10 +123,14 @@ class _EditMinePageState extends State<EditMinePage> {
                               child: banner != null
                                   ? Image.network(
                                       banner,
+                                      cacheWidth: 640,
+                                      cacheHeight: 450,
                                       fit: BoxFit.cover,
                                     )
                                   : Image.network(
                                       _userModel.banner,
+                                      cacheWidth: 640,
+                                      cacheHeight: 450,
                                       fit: BoxFit.cover,
                                     ),
                             ),
@@ -217,7 +171,7 @@ class _EditMinePageState extends State<EditMinePage> {
                                                   topRight: Radius.circular(20),
                                                 ),
                                               ),
-                                              height: AdaptiveTools.setPx(140),
+                                              height: AdaptiveTools.setRpx(240),
                                               child: Column(
                                                 crossAxisAlignment:
                                                 CrossAxisAlignment.center,
@@ -292,13 +246,13 @@ class _EditMinePageState extends State<EditMinePage> {
                           children: <Widget>[
                             Container(
                                 margin: EdgeInsets.only(
-                                    top: AdaptiveTools.setPx(110)),
+                                    top: AdaptiveTools.setPx(109)),
                                 child: Container(
-                                  child: CircleAvatar(
-                                      maxRadius: AdaptiveTools.setPx(40),
-                                      backgroundImage: avatar != null
-                                          ? NetworkImage(avatar)
-                                          : NetworkImage(_userModel.avatar)),
+                                  height: AdaptiveTools.setPx(80),
+                                  child:  ClipRRect(
+                                    child: avatar != null ? Image.network(avatar,cacheHeight: 250,cacheWidth: 250,):Image.network(_userModel.avatar,cacheHeight: 250,cacheWidth: 250,),
+                                    borderRadius: BorderRadius.circular(42),
+                                  ),
                                   margin: EdgeInsets.only(
                                       left: AdaptiveTools.setPx(18),
                                       bottom: AdaptiveTools.setPx(10)),
@@ -345,7 +299,7 @@ class _EditMinePageState extends State<EditMinePage> {
                                                 topRight: Radius.circular(20),
                                               ),
                                             ),
-                                            height: AdaptiveTools.setPx(140),
+                                            height: AdaptiveTools.setRpx(240),
                                             child: Column(
                                               crossAxisAlignment:
                                               CrossAxisAlignment.center,
@@ -360,6 +314,8 @@ class _EditMinePageState extends State<EditMinePage> {
                                                               17)),
                                                     ),
                                                     margin: EdgeInsets.all(10),
+                                                    alignment: Alignment.center,
+                                                    width: double.infinity,
                                                   ),
                                                   onTap: () {
                                                     _takePhoto("avatar");
@@ -378,6 +334,8 @@ class _EditMinePageState extends State<EditMinePage> {
                                                             fontSize:
                                                             AdaptiveTools
                                                                 .setPx(17))),
+                                                    alignment: Alignment.center,
+                                                    width: double.infinity,
                                                   ),
                                                   onTap: () {
                                                     _openGallery("avatar");
@@ -396,6 +354,8 @@ class _EditMinePageState extends State<EditMinePage> {
                                                             fontSize:
                                                             AdaptiveTools
                                                                 .setPx(17))),
+                                                    alignment: Alignment.center,
+                                                    width: double.infinity,
                                                   ),
                                                   onTap: () {
                                                     Navigator.pop(context);
@@ -432,7 +392,6 @@ class _EditMinePageState extends State<EditMinePage> {
                               padding: EdgeInsets.fromLTRB(10, 0, 10, 5),
                               child: TextField(
                                 controller: _nameEtController,
-                                focusNode: focusNameNode,
                                 style: TextStyle(
                                     fontSize: 16.0, color: Colors.black),
                                 onChanged: (value) {
@@ -471,7 +430,6 @@ class _EditMinePageState extends State<EditMinePage> {
                               child: TextField(
                                 maxLines: 3,
                                 controller: _introductionEtController,
-                                focusNode: focusIntroductionNode,
                                 onChanged: (value) {
                                   setState(() {
                                     onUpdate = true;
@@ -508,7 +466,6 @@ class _EditMinePageState extends State<EditMinePage> {
                               padding: EdgeInsets.fromLTRB(10, 0, 10, 5),
                               child: TextField(
                                   controller: _positionEtController,
-                                  focusNode: focusPositionNode,
                                   onChanged: (value) {
                                     setState(() {
                                       onUpdate = true;
@@ -544,7 +501,6 @@ class _EditMinePageState extends State<EditMinePage> {
                               padding: EdgeInsets.fromLTRB(10, 0, 10, 5),
                               child: TextField(
                                 controller: _urlEtController,
-                                focusNode: focusUrlNode,
                                 onChanged: (value) {
                                   setState(() {
                                     onUpdate = true;
@@ -582,7 +538,6 @@ class _EditMinePageState extends State<EditMinePage> {
     );
   }
 
-  final _picker = ImagePicker();
 
   _takePhoto(String flag) async {
     var pickedFile = await _picker.getImage(source: ImageSource.camera);

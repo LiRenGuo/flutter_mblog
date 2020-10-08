@@ -1,7 +1,4 @@
-
 import 'dart:async';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/model/mypost_model.dart';
@@ -10,12 +7,10 @@ import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
-import 'package:flutter_mblog/util/CacheImage.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
-import 'package:flutter_mblog/widget/fade_route.dart';
-import 'package:flutter_mblog/widget/image_all_screen_look.dart';
+import 'package:flutter_mblog/util/image_process_tools.dart';
+import 'package:flutter_mblog/widget/four_square_grid_image.dart';
 import 'package:like_button/like_button.dart';
-import 'package:optimized_cached_image/optimized_cached_image.dart';
 
 class Tweets extends StatefulWidget {
   List<MyPostItem> _item;
@@ -30,17 +25,18 @@ class Tweets extends StatefulWidget {
 
 class _TweetsState extends State<Tweets> {
   void _deletePost(String id,BuildContext context) async {
-    print("删除");
     PostDao.deletePost(id,context).then((value){
       if (value == "success") {
-        Navigator.push(context, MaterialPageRoute(builder: (context)=> MinePage(userid: widget.userId,)));
+        Navigator.pop(context);
+        Navigator.pop(context);
+        Navigator.pop(context);
+        Navigator.push(context, MaterialPageRoute(builder: (context) => MinePage(userid: widget.userId,wLoginUserId: widget.loginUserId,)));
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    int i = 0;
     return Column(
       children: widget._item.map((e) {
         return body(widget.userId,widget.loginUserId,e, context);
@@ -116,21 +112,12 @@ class _TweetsState extends State<Tweets> {
                       alignment: FractionalOffset.topLeft,
                       child: Container(
                         margin: EdgeInsets.only(left: AdaptiveTools.setPx(7)),
-                        child:ClipOval(
-                          child: Image(
-                            fit: BoxFit.cover,
-                            image: OptimizedCacheImageProvider(_item.user.avatar),
-                          ),
+                        child: ClipOval(
+                          child: ImageProcessTools.CachedNetworkProcessImage(_item.user.avatar,memCacheWidth: 250,memCacheHeight: 250),
                         ),
                         width: AdaptiveTools.setRpx(80),
                         height:  AdaptiveTools.setRpx(80),
-                      )/*Container(
-                        margin: EdgeInsets.only(left: AdaptiveTools.setPx(7)),
-                        alignment: Alignment.topLeft,
-                        child: CircleAvatar(
-                          backgroundImage: NetworkImage(_item.user.avatar),
-                        ),
-                      )*/,
+                      ),
                     )
                   ],
                 ),
@@ -198,7 +185,6 @@ class _TweetsState extends State<Tweets> {
                                             ),
                                             title: Text("删除推文",style: TextStyle(fontSize: 15),),
                                             onTap: (){
-                                              print("删除");
                                               showDialog(context: context,builder: (context){
                                                 return AlertDialog(
                                                   content: Text('是否确认删除该帖子?'),
@@ -239,7 +225,7 @@ class _TweetsState extends State<Tweets> {
                     ),
                     Container(
                       margin: EdgeInsets.only(top: 8,bottom: 5),
-                      child: image(_item.photos, context),
+                      child: FourSquareGridImage.buildImage(context, _item.photos)/*image(_item.photos, context),*/
                     ),
                     if(_item.postId != null) _buildRetweet(_item.rPostItem),
                     Container(
@@ -323,10 +309,7 @@ class _TweetsState extends State<Tweets> {
                 children: <Widget>[
                   Container(
                     child: ClipOval(
-                      child: Image(
-                        fit: BoxFit.cover,
-                        image: OptimizedCacheImageProvider(postItem.user.avatar),
-                      ),
+                      child: ImageProcessTools.CachedNetworkProcessImage(postItem.user.avatar,memCacheHeight: 250,memCacheWidth: 250),
                     ),
                     width: AdaptiveTools.setRpx(50),
                     height:  AdaptiveTools.setRpx(50),
@@ -360,7 +343,7 @@ class _TweetsState extends State<Tweets> {
               child: Text("${postItem.content}"),
             ),
             postItem.photos != null && postItem.photos.length != 0
-                ? _buildRetweetImage(postItem.photos)
+                ? FourSquareGridImage.buildRetweetImage(postItem.photos)
                 : Container()
           ],
         ),
@@ -369,428 +352,10 @@ class _TweetsState extends State<Tweets> {
         Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => HomeDetailPage(new PostItem(),postId: postItem.id,)));
       },
-    )
-        : retweetWidget = Container(
+    ) : retweetWidget = Container(
       width: 0,
       height: 0,
     );
     return retweetWidget;
-  }
-
-  _buildRetweetImage(List<String> photosList) {
-    Widget widgets;
-    switch (photosList.length) {
-      case 1:
-        widgets = Container(
-            height: 150,
-            margin: EdgeInsets.only(top: 5),
-            width: double.infinity,
-            child: ClipRRect(
-              child: CacheImage.cachedImage(photosList[0]),
-              borderRadius: BorderRadius.only(
-                  bottomRight: Radius.circular(10),
-                  bottomLeft: Radius.circular(10)),
-            ));
-        break;
-      case 2:
-        widgets = Container(
-          height: 150,
-          margin: EdgeInsets.only(top: 5),
-          width: double.infinity,
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Container(
-                  child: ClipRRect(
-                    child: CacheImage.cachedImage(photosList[0]),
-                    borderRadius:
-                    BorderRadius.only(bottomLeft: Radius.circular(10)),
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 5,
-              ),
-              Expanded(
-                child: Container(
-                  child: ClipRRect(
-                    child: CacheImage.cachedImage(photosList[1]),
-                    borderRadius:
-                    BorderRadius.only(bottomLeft: Radius.circular(10)),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-      case 3:
-        widgets = Container(
-          height: 150,
-          margin: EdgeInsets.only(top: 5),
-          width: double.infinity,
-          child: Column(
-            children: <Widget>[
-              Expanded(
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        child: ClipRRect(
-                          child: CacheImage.cachedImage(photosList[0]),
-                          borderRadius: BorderRadius.only(
-                              bottomLeft: Radius.circular(10)),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Expanded(
-                      child: Column(
-                        children: <Widget>[
-                          Expanded(
-                            child: Container(
-                              width: double.infinity,
-                              child: ClipRRect(
-                                child: CacheImage.cachedImage(photosList[1]),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 5,
-                          ),
-                          Expanded(
-                            child: Container(
-                              width: double.infinity,
-                              child: ClipRRect(
-                                child: CacheImage.cachedImage(photosList[2]),
-                                borderRadius: BorderRadius.only(
-                                    bottomRight: Radius.circular(10)),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-      case 4:
-        widgets = Container(
-          height: 150,
-          margin: EdgeInsets.only(top: 5),
-          width: double.infinity,
-          child: Column(
-            children: <Widget>[
-              Expanded(
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        child: ClipRRect(
-                          child: CacheImage.cachedImage(photosList[0]),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Expanded(
-                      child: Container(
-                        child: ClipRRect(
-                          child: CacheImage.cachedImage(photosList[1]),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 5,
-              ),
-              Expanded(
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        child: ClipRRect(
-                          child: CacheImage.cachedImage(photosList[2]),
-                          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10)),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Expanded(
-                      child: Container(
-                        child: ClipRRect(
-                          child: CacheImage.cachedImage(photosList[3]),
-                          borderRadius: BorderRadius.only(bottomRight: Radius.circular(10)),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            ],
-          ),
-        );
-        break;
-    }
-    return widgets;
-  }
-
-  _showImage(BuildContext context, List<String> images, int index) {
-    Navigator.of(context).push(FadeRoute(
-        page: ImageAllScreenLook(
-          imgDataArr: images,
-          index: index,
-        )));
-  }
-
-  Widget image(List<String> images, BuildContext context) {
-    Widget imageWidget;
-    switch (images.length) {
-      case 1:
-        imageWidget = GestureDetector(
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            height: AdaptiveTools.setPx(165),
-            width: double.infinity,
-            margin: EdgeInsets.only(top: 3),
-            child: ClipRRect(
-              child: CacheImage.cachedImage(images[0]),
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          onTap: () => _showImage(context,images, 0),
-        );
-        break;
-      case 2:
-        imageWidget = Container(
-          decoration:
-          BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(8))),
-          height: AdaptiveTools.setPx(165),
-          width: double.infinity,
-          margin: EdgeInsets.only(top: 3),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: GestureDetector(
-                  child: Container(
-                    height: double.infinity,
-                    child: ClipRRect(
-                      child: CacheImage.cachedImage(images[0]),
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(8),
-                          bottomLeft: Radius.circular(8)),
-                    ),
-                  ),
-                  onTap: () => _showImage(context,images, 0),
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: GestureDetector(
-                  child: Container(
-                    height: double.infinity,
-                    child: ClipRRect(
-                      child: CacheImage.cachedImage(images[1]),
-                      borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(8),
-                          bottomRight: Radius.circular(8)),
-                    ),
-                  ),
-                  onTap: () => _showImage(context,images, 1),
-                ),
-              )
-            ],
-          ),
-        );
-        break;
-      case 3:
-        imageWidget = Container(
-          height: AdaptiveTools.setPx(165),
-          width: double.infinity,
-          margin: EdgeInsets.only(top: 3),
-          child: Column(
-            children: <Widget>[
-              Expanded(
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: GestureDetector(
-                        child: Container(
-                          child: ClipRRect(
-                            child: CacheImage.cachedImage(images[0]),
-                            borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(8),
-                                bottomLeft: Radius.circular(8)),
-                          ),
-                          width: double.infinity,
-                          height: double.infinity,
-                        ),
-                        onTap: () => _showImage(context,images, 0),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 3,
-                    ),
-                    Expanded(
-                      child: Column(
-                        children: <Widget>[
-                          Expanded(
-                            child: GestureDetector(
-                              child: Container(
-                                child: ClipRRect(
-                                  child: CacheImage.cachedImage(images[1]),
-                                  borderRadius: BorderRadius.only(
-                                      topRight: Radius.circular(8)),
-                                ),
-                                width: double.infinity,
-                                height: double.infinity,
-                              ),
-                              onTap: () => _showImage(context,images, 1),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 3,
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              child: Container(
-                                child: ClipRRect(
-                                  child: CacheImage.cachedImage(images[2]),
-                                  borderRadius: BorderRadius.only(
-                                      bottomRight: Radius.circular(8)),
-                                ),
-                                width: double.infinity,
-                                height: double.infinity,
-                              ),
-                              onTap: () => _showImage(context,images, 2),
-                            ),
-                          )
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-      case 4:
-        imageWidget = Container(
-          height: AdaptiveTools.setPx(165),
-          width: double.infinity,
-          margin: EdgeInsets.only(top: 3),
-          child: Column(
-            children: <Widget>[
-              Expanded(
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Column(
-                        children: <Widget>[
-                          Expanded(
-                            child: GestureDetector(
-                              child: Container(
-                                child: ClipRRect(
-                                  child: CacheImage.cachedImage(images[0]),
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(8)),
-                                ),
-                                width: double.infinity,
-                                height: double.infinity,
-                              ),
-                              onTap: () => _showImage(context,images, 0),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 3,
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              child: Container(
-                                child: ClipRRect(
-                                  child: CacheImage.cachedImage(images[1]),
-                                  borderRadius: BorderRadius.only(
-                                      bottomLeft: Radius.circular(8)),
-                                ),
-                                width: double.infinity,
-                                height: double.infinity,
-                              ),
-                              onTap: () => _showImage(context,images, 1),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      width: 3,
-                    ),
-                    Expanded(
-                      child: Column(
-                        children: <Widget>[
-                          Expanded(
-                            child: GestureDetector(
-                              child: Container(
-                                child: ClipRRect(
-                                  child: CacheImage.cachedImage(images[2]),
-                                  borderRadius: BorderRadius.only(
-                                      topRight: Radius.circular(8)),
-                                ),
-                                width: double.infinity,
-                                height: double.infinity,
-                              ),
-                              onTap: () => _showImage(context,images, 2),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 3,
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              child: Container(
-                                child: ClipRRect(
-                                  child: CacheImage.cachedImage(images[3]),
-                                  borderRadius: BorderRadius.only(
-                                      bottomRight: Radius.circular(8)),
-                                ),
-                                width: double.infinity,
-                                height: double.infinity,
-                              ),
-                              onTap: () => _showImage(context,images, 3),
-                            ),
-                          )
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-      default:
-        imageWidget = Container(
-          height: 0,
-          width: 0,
-        );
-        break;
-    }
-    return imageWidget;
   }
 }

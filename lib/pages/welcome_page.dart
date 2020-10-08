@@ -14,21 +14,6 @@ class WelcomePage extends StatefulWidget {
 }
 
 class _WelcomePageState extends State<WelcomePage> {
-
-  @override
-  void initState() {
-    isLogin();
-  }
-
-  isLogin() {
-    print("获取Token");
-    Shared_pre.Shared_getToken().then((token) {
-      if (token != null) {
-        Oauth_2.ResToken(context, isLogin: false);
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -37,32 +22,35 @@ class _WelcomePageState extends State<WelcomePage> {
           alignment: Alignment.center,
           child: Column(
             children: <Widget>[
-              Container(
-                margin: EdgeInsets.only(bottom: AdaptiveTools.setPx(100)),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.only(bottom: 10),
-                      child: Text("查看学校正在发生的新鲜事",style: TextStyle(fontSize: AdaptiveTools.setPx(18),fontWeight: FontWeight.bold),),
-                    ),
-                    Container(
-                      child: FlatButton(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(20))
-                        ),
-                        color: Colors.blue,
-                        child: Center(
-                          child: Text("创建账号",style: TextStyle(fontWeight: FontWeight.w800,color: Colors.white),),
-                        ),
-                        onPressed: (){
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterPage()));
-                        },
+              Flexible(
+                flex: 2,
+                child: Container(
+                  margin: EdgeInsets.only(bottom: AdaptiveTools.setPx(100)),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.only(bottom: 10),
+                        child: Text("查看学校正在发生的新鲜事",style: TextStyle(fontSize: AdaptiveTools.setPx(18),fontWeight: FontWeight.bold),),
                       ),
-                      width: AdaptiveTools.setPx(300),
-                      height: AdaptiveTools.setPx(35),
-                    ),
-                  ],
+                      Container(
+                        child: FlatButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(20))
+                          ),
+                          color: Colors.blue,
+                          child: Center(
+                            child: Text("创建账号",style: TextStyle(fontWeight: FontWeight.w800,color: Colors.white),),
+                          ),
+                          onPressed: (){
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterPage()));
+                          },
+                        ),
+                        width: AdaptiveTools.setPx(300),
+                        height: AdaptiveTools.setPx(35),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               Spacer(),

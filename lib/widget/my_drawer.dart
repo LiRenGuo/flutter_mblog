@@ -3,13 +3,11 @@ import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/following_page.dart';
 import 'package:flutter_mblog/pages/followme_page.dart';
-import 'package:flutter_mblog/pages/login_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/settings/settings_page.dart';
-import 'package:flutter_mblog/pages/welcome_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/CacheImage.dart';
-import 'package:flutter_mblog/util/shared_pre.dart';
+import 'package:flutter_mblog/util/image_process_tools.dart';
 
 class MyDrawer extends StatelessWidget {
   final UserModel userModel;
@@ -50,7 +48,7 @@ class MyDrawer extends StatelessWidget {
               padding: EdgeInsets.only(bottom: 5),
               child: Container(
                 child: ClipOval(
-                  child: CacheImage.cachedImage(userModel.avatar,height: AdaptiveTools.setRpx(100)),
+                  child: ImageProcessTools.CachedNetworkProcessImage(userModel.avatar,memCacheWidth: 400,memCacheHeight: 400) /*CacheImage.cachedImage(userModel.avatar,height: AdaptiveTools.setRpx(100)),*/
                 ),
                 height:100,
                 width: 100,
@@ -83,7 +81,7 @@ class MyDrawer extends StatelessWidget {
                     padding: EdgeInsets.only(left: 2, right: 15),
                     child: Text('正在关注', style: TextStyle(color: Colors.grey))),
                     onTap: (){
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => FollowingPage(userId: userModel.id,followModel: followModel,)));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => FollowingPage(userId: userModel.id,wLoginId: userModel.id,followModel: followModel,)));
                     },
               ),
               Text(followersModel != null ?followersModel.followList.length.toString(): "0",

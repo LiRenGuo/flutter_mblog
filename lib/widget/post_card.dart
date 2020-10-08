@@ -1,25 +1,19 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/follow_dao.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
-import 'package:flutter_mblog/main.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
-import 'package:flutter_mblog/util/CacheImage.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
-import 'package:flutter_mblog/widget/image_all_screen_look.dart';
+import 'package:flutter_mblog/widget/four_square_grid_image.dart';
 import 'package:like_button/like_button.dart';
-import 'package:optimized_cached_image/image_cache_manager.dart';
-import 'package:optimized_cached_image/optimized_cached_image.dart';
-import 'fade_route.dart';
 
 class PostCard extends StatefulWidget {
   final String avatar;
@@ -59,13 +53,13 @@ class _PostCardState extends State<PostCard> {
           InkWell(
             child: Container(
               child: ClipOval(
-                child: Image(
+                child: Image.network(item.user.avatar,cacheWidth: 450,cacheHeight: 450,)/*Image(
                   fit: BoxFit.cover,
                   image: OptimizedCacheImageProvider(item.user.avatar),
-                ),
+                )*/,
               ),
-              width: 60,
-              height: 60,
+              width: AdaptiveTools.setRpx(90),
+              height: AdaptiveTools.setRpx(90),
             ),
             onTap: () {
               Navigator.of(context).push(MaterialPageRoute(
@@ -92,13 +86,13 @@ class _PostCardState extends State<PostCard> {
                                 Container(
                                   child: Text(item.user.name,
                                       style: TextStyle(
-                                          fontSize: 15,
+                                          fontSize: 18,
                                           fontFamily: "sans-serif",
                                           fontWeight: FontWeight.w800)),
                                 ),
                                 Container(
                                   width: AdaptiveTools.setRpx(250),
-                                  margin: EdgeInsets.only(left: 4, bottom: 2),
+                                  margin: EdgeInsets.only(left: 4),
                                   child: Text("@${item.user.username}",
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
@@ -185,12 +179,11 @@ class _PostCardState extends State<PostCard> {
                       },
                     ),
                     Container(
-                      margin: EdgeInsets.only(top: 1, bottom: 4),
+                      margin: EdgeInsets.only(top: 4, bottom: 4),
                       child: _content(context),
                     ),
-                    //TODO
                     item.photos != null && item.photos.length != 0
-                        ? _buildImage(item.photos)
+                        ? FourSquareGridImage.buildImage(context, item.photos)
                         : Container(),
                     _buildRetweet(item.forwardPost),
                     Container(
@@ -289,13 +282,9 @@ class _PostCardState extends State<PostCard> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        //TODO/*NetworkImage(postItem.user.avatar)*/
                         Container(
                           child: ClipOval(
-                            child: Image(
-                              fit: BoxFit.cover,
-                              image: OptimizedCacheImageProvider(item.user.avatar),
-                            ),
+                            child: Image.network(item.user.avatar,cacheHeight: 250,cacheWidth: 250,),
                           ),
                           width: 30,
                           height: 30,
@@ -333,7 +322,7 @@ class _PostCardState extends State<PostCard> {
                   ),
                   // TODO
                   postItem.photos != null && postItem.photos.length != 0
-                      ? _buildRetweetImage(postItem.photos)
+                      ? FourSquareGridImage.buildRetweetImage(postItem.photos)
                       : Container()
                 ],
               ),
@@ -351,175 +340,6 @@ class _PostCardState extends State<PostCard> {
             height: 0,
           );
     return retweetWidget;
-  }
-
-  _buildRetweetImage(List<String> photosList) {
-    Widget widgets;
-    switch (photosList.length) {
-      case 1:
-        widgets = Container(
-            height: 150,
-            margin: EdgeInsets.only(top: 5),
-            width: double.infinity,
-            child: ClipRRect(
-              child: CacheImage.cachedImage(photosList[0]),
-              borderRadius: BorderRadius.only(
-                  bottomRight: Radius.circular(10),
-                  bottomLeft: Radius.circular(10)),
-            ));
-        break;
-      case 2:
-        widgets = Container(
-          height: 150,
-          margin: EdgeInsets.only(top: 5),
-          width: double.infinity,
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Container(
-                  child: ClipRRect(
-                    child: CacheImage.cachedImage(photosList[0]),
-                    borderRadius:
-                        BorderRadius.only(bottomLeft: Radius.circular(10)),
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 5,
-              ),
-              Expanded(
-                child: Container(
-                  child: ClipRRect(
-                    child: CacheImage.cachedImage(photosList[1]),
-                    borderRadius:
-                        BorderRadius.only(bottomLeft: Radius.circular(10)),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-      case 3:
-        widgets = Container(
-          height: 150,
-          margin: EdgeInsets.only(top: 5),
-          width: double.infinity,
-          child: Column(
-            children: <Widget>[
-              Expanded(
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        child: ClipRRect(
-                          child: CacheImage.cachedImage(photosList[0]),
-                          borderRadius: BorderRadius.only(
-                              bottomLeft: Radius.circular(10)),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Expanded(
-                      child: Column(
-                        children: <Widget>[
-                          Expanded(
-                            child: Container(
-                              width: double.infinity,
-                              child: ClipRRect(
-                                child: CacheImage.cachedImage(photosList[1]),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 5,
-                          ),
-                          Expanded(
-                            child: Container(
-                              width: double.infinity,
-                              child: ClipRRect(
-                                child: CacheImage.cachedImage(photosList[2]),
-                                borderRadius: BorderRadius.only(
-                                    bottomRight: Radius.circular(10)),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-      case 4:
-        widgets = Container(
-          height: 150,
-          margin: EdgeInsets.only(top: 5),
-          width: double.infinity,
-          child: Column(
-            children: <Widget>[
-              Expanded(
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        child: ClipRRect(
-                          child: CacheImage.cachedImage(photosList[0]),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Expanded(
-                      child: Container(
-                        child: ClipRRect(
-                          child: CacheImage.cachedImage(photosList[1]),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 5,
-              ),
-              Expanded(
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        child: ClipRRect(
-                          child: CacheImage.cachedImage(photosList[2]),
-                          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10)),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Expanded(
-                      child: Container(
-                        child: ClipRRect(
-                          child: CacheImage.cachedImage(photosList[3]),
-                          borderRadius: BorderRadius.only(bottomRight: Radius.circular(10)),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            ],
-          ),
-        );
-        break;
-    }
-    return widgets;
   }
 
   _followYou(String userId) {
@@ -540,320 +360,6 @@ class _PostCardState extends State<PostCard> {
         item.user.isfollow = false;
       });
     }
-  }
-
-  Widget _buildImage(List<String> photos) {
-    Widget imageWidget;
-    switch (photos.length) {
-      case 1:
-        imageWidget = GestureDetector(
-          child: Container(
-              /*decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              image: DecorationImage(
-                fit: BoxFit.cover,
-                image: CacheImage(photos[0])
-              )
-            ),*/
-              height: 150,
-              width: double.infinity,
-              margin: EdgeInsets.only(top: 3),
-              child: ClipRRect(
-                child: CacheImage.cachedImage(photos[0]),
-                borderRadius: BorderRadius.circular(8),
-              )),
-          onTap: () => _showImage(context, 0),
-        );
-        break;
-      case 2:
-        imageWidget = Container(
-          decoration:
-              BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(8))),
-          height: 150,
-          width: double.infinity,
-          margin: EdgeInsets.only(top: 3),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: GestureDetector(
-                  child: Container(
-                      height: double.infinity,
-                      /*decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(8),
-                            bottomLeft: Radius.circular(8)),
-                      image: DecorationImage(
-                          fit: BoxFit.cover,
-                          image: CacheImage(photos[0])
-                      )
-                    ),*/
-                      child: ClipRRect(
-                        child: CacheImage.cachedImage(photos[0]),
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(8),
-                            bottomLeft: Radius.circular(8)),
-                      )),
-                  onTap: () => _showImage(context, 0),
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Expanded(
-                child: GestureDetector(
-                  child: Container(
-                    height: double.infinity,
-                    /*decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(8),
-                            bottomRight: Radius.circular(8)),
-                        image: DecorationImage(
-                            fit: BoxFit.cover,
-                            image: CacheImage(photos[1])
-                        )
-                    ),*/
-                    child: ClipRRect(
-                      child: CacheImage.cachedImage(photos[1]),
-                      borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(8),
-                          bottomRight: Radius.circular(8)),
-                    ),
-                  ),
-                  onTap: () => _showImage(context, 1),
-                ),
-              )
-            ],
-          ),
-        );
-        break;
-      case 3:
-        imageWidget = Container(
-          height: 150,
-          width: double.infinity,
-          margin: EdgeInsets.only(top: 3),
-          child: Column(
-            children: <Widget>[
-              Expanded(
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: GestureDetector(
-                        child: Container(
-                          /*decoration: BoxDecoration(
-                              borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(8),
-                                  bottomLeft: Radius.circular(8)),
-                              image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: CacheImage(photos[0])
-                              )
-                          ),*/
-                          child: ClipRRect(
-                            child: CacheImage.cachedImage(photos[0]),
-                            borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(8),
-                                bottomLeft: Radius.circular(8)),
-                          ),
-                          width: double.infinity,
-                          height: double.infinity,
-                        ),
-                        onTap: () => _showImage(context, 0),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 3,
-                    ),
-                    Expanded(
-                      child: Column(
-                        children: <Widget>[
-                          Expanded(
-                            child: GestureDetector(
-                              child: Container(
-                                /*decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.only(
-                                        topRight: Radius.circular(8)),
-                                    image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: CacheImage(photos[1])
-                                    )
-                                ),*/
-                                child: ClipRRect(
-                                  child: CacheImage.cachedImage(photos[1]),
-                                  borderRadius: BorderRadius.only(
-                                      topRight: Radius.circular(8)),
-                                ),
-                                width: double.infinity,
-                                height: double.infinity,
-                              ),
-                              onTap: () => _showImage(context, 1),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 3,
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              child: Container(
-                                /*decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.only(
-                                        bottomRight: Radius.circular(8)),
-                                    image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: CacheImage(photos[2])
-                                    )
-                                ),*/
-                                child: ClipRRect(
-                                  child: CacheImage.cachedImage(photos[2]),
-                                  borderRadius: BorderRadius.only(
-                                      bottomRight: Radius.circular(8)),
-                                ),
-                                width: double.infinity,
-                                height: double.infinity,
-                              ),
-                              onTap: () => _showImage(context, 2),
-                            ),
-                          )
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-      case 4:
-        imageWidget = Container(
-          height: 150,
-          width: double.infinity,
-          margin: EdgeInsets.only(top: 3),
-          child: Column(
-            children: <Widget>[
-              Expanded(
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Column(
-                        children: <Widget>[
-                          Expanded(
-                            child: GestureDetector(
-                              child: Container(
-                                /*decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(8)),
-                                    image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: CacheImage(photos[0])
-                                    )
-                                ),*/
-                                child: ClipRRect(
-                                  child: CacheImage.cachedImage(photos[0]),
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(8)),
-                                ),
-                                width: double.infinity,
-                                height: double.infinity,
-                              ),
-                              onTap: () => _showImage(context, 0),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 3,
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              child: Container(
-                                /*decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.only(
-                                        bottomLeft: Radius.circular(8)),
-                                    image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: CacheImage(photos[1])
-                                    )
-                                ),*/
-                                child: ClipRRect(
-                                  child: CacheImage.cachedImage(photos[1]),
-                                  borderRadius: BorderRadius.only(
-                                      bottomLeft: Radius.circular(8)),
-                                ),
-                                width: double.infinity,
-                                height: double.infinity,
-                              ),
-                              onTap: () => _showImage(context, 1),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      width: 3,
-                    ),
-                    Expanded(
-                      child: Column(
-                        children: <Widget>[
-                          Expanded(
-                            child: GestureDetector(
-                              child: Container(
-                                /*decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.only(
-                                        topRight: Radius.circular(8)),
-                                    image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: CacheImage(photos[2])
-                                    )
-                                ),*/
-                                child: ClipRRect(
-                                  child: CacheImage.cachedImage(photos[2]),
-                                  borderRadius: BorderRadius.only(
-                                      topRight: Radius.circular(8)),
-                                ),
-                                width: double.infinity,
-                                height: double.infinity,
-                              ),
-                              onTap: () => _showImage(context, 2),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 3,
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              child: Container(
-                                /*decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.only(
-                                        bottomRight: Radius.circular(8)),
-                                    image: DecorationImage(
-                                        fit: BoxFit.cover,
-                                        image: CacheImage(photos[3])
-                                    )
-                                ),*/
-                                child: ClipRRect(
-                                  child: CacheImage.cachedImage(photos[3]),
-                                  borderRadius: BorderRadius.only(
-                                      bottomRight: Radius.circular(8)),
-                                ),
-                                width: double.infinity,
-                                height: double.infinity,
-                              ),
-                              onTap: () => _showImage(context, 3),
-                            ),
-                          )
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-      default:
-        imageWidget = Container();
-        break;
-    }
-    return imageWidget;
   }
 
   _buildLikeButton() {
@@ -915,7 +421,7 @@ class _PostCardState extends State<PostCard> {
 
   _content(BuildContext context) {
     String content = item.content;
-    TextStyle contentStyle = TextStyle(color: Colors.black, fontSize: 15);
+    TextStyle contentStyle = TextStyle(color: Colors.black, fontSize: 16);
     if (content.length > 150) {
       content = content.substring(0, 148) + ' ... ';
       return RichText(
@@ -941,13 +447,5 @@ class _PostCardState extends State<PostCard> {
   _tapRecognizer(BuildContext context) {
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => HomeDetailPage(item)));
-  }
-
-  _showImage(BuildContext context, int index) {
-    Navigator.of(context).push(FadeRoute(
-        page: ImageAllScreenLook(
-      imgDataArr: item.photos,
-      index: index,
-    )));
   }
 }

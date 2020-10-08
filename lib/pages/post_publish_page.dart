@@ -10,8 +10,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/navigator/tab_navigator.dart';
+import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
+import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
+import 'package:flutter_mblog/widget/four_square_grid_image.dart';
 import 'package:flutter_mblog/widget/loading_container.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 
@@ -66,7 +69,6 @@ class _PostPublishPageState extends State<PostPublishPage> {
 
   @override
   Widget build(BuildContext context) {
-    print("postItem >>> ${postItem}");
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -152,9 +154,13 @@ class _PostPublishPageState extends State<PostPublishPage> {
             Container(
               child: Row(
                 children: <Widget>[
-                  CircleAvatar(
-                    backgroundImage: NetworkImage(postItem.user.avatar),
-                    radius: 10,
+                  Container(
+                    child: ClipRRect(
+                      child: ImageProcessTools.CachedNetworkProcessImage(widget.avatar,memCacheHeight: 250,memCacheWidth: 250),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    width: AdaptiveTools.setRpx(60),
+                    height: AdaptiveTools.setRpx(60),
                   ),
                   Container(
                     child: Text(postItem.user.name),
@@ -183,192 +189,13 @@ class _PostPublishPageState extends State<PostPublishPage> {
               padding: EdgeInsets.fromLTRB(15, 5, 5, 5),
             ),
             postItem.photos != null && postItem.photos.length != 0
-                ? _buildImage(postItem.photos)
+                ? FourSquareGridImage.buildRetweetImage(postItem.photos)
                 : Container(),
           ],
         ),
       ),
       padding: EdgeInsets.fromLTRB(20, 5, 20, 20),
     );
-  }
-
-  _buildImage(List<String> photosList) {
-    Widget widgets;
-    switch (photosList.length) {
-      case 1:
-        widgets = Container(
-          height: 150,
-          margin: EdgeInsets.only(top: 5),
-          width: double.infinity,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(10),
-                  bottomRight: Radius.circular(10)),
-              image: DecorationImage(
-                  image: NetworkImage(photosList[0]), fit: BoxFit.cover)),
-        );
-        break;
-      case 2:
-        widgets = Container(
-          height: 150,
-          margin: EdgeInsets.only(top: 5),
-          width: double.infinity,
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                      borderRadius:
-                          BorderRadius.only(bottomLeft: Radius.circular(10)),
-                      image: DecorationImage(
-                          image: NetworkImage(photosList[0]),
-                          fit: BoxFit.cover)),
-                ),
-              ),
-              SizedBox(
-                width: 5,
-              ),
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                      borderRadius:
-                          BorderRadius.only(bottomRight: Radius.circular(10)),
-                      image: DecorationImage(
-                          image: NetworkImage(photosList[1]),
-                          fit: BoxFit.cover)),
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-      case 3:
-        widgets = Container(
-          height: 150,
-          margin: EdgeInsets.only(top: 5),
-          width: double.infinity,
-          child: Column(
-            children: <Widget>[
-              Expanded(
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(10)),
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[0]),
-                                fit: BoxFit.cover)),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Expanded(
-                      child: Column(
-                        children: <Widget>[
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                      image: NetworkImage(photosList[1]),
-                                      fit: BoxFit.cover)),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 5,
-                          ),
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.only(
-                                      bottomRight: Radius.circular(10)),
-                                  image: DecorationImage(
-                                      image: NetworkImage(photosList[2]),
-                                      fit: BoxFit.cover)),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-        break;
-      case 4:
-        widgets = Container(
-          height: 150,
-          margin: EdgeInsets.only(top: 5),
-          width: double.infinity,
-          child: Column(
-            children: <Widget>[
-              Expanded(
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[0]),
-                                fit: BoxFit.cover)),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[1]),
-                                fit: BoxFit.cover)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 5,
-              ),
-              Expanded(
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(10)),
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[2]),
-                                fit: BoxFit.cover)),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                                bottomRight: Radius.circular(10)),
-                            image: DecorationImage(
-                                image: NetworkImage(photosList[3]),
-                                fit: BoxFit.cover)),
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            ],
-          ),
-        );
-        break;
-    }
-    return widgets;
   }
 
   //底部操作栏布局
@@ -507,8 +334,9 @@ class _PostPublishPageState extends State<PostPublishPage> {
   //发送的文本内容
   _buildTextContent() {
     return ListTile(
-      leading: CircleAvatar(
-        backgroundImage: NetworkImage(widget.avatar),
+      leading: ClipRRect(
+        child: ImageProcessTools.CachedNetworkProcessImage(widget.avatar,memCacheHeight: 250,memCacheWidth: 250),
+        borderRadius: BorderRadius.circular(50),
       ),
       title: Row(
         children: <Widget>[
@@ -545,7 +373,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
   }
 
   _onPublish(BuildContext context) {
-    final content = _contentController.text;
+    final String content = _contentController.text.trim();
     if (content.length <= 0) {
       MyToast.show('请输入您的新鲜事~');
       return;

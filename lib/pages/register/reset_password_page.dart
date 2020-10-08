@@ -104,12 +104,11 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         Navigator.pop(context);
         MyToast.show("获取验证码失败");
       }
-    }); // TODO 发送验证码
+    });
   }
 
   Future<bool> _sendCode() async {
     try {
-      print(_phoneController.text);
       final response = await dio.post(
         "http://mblog.yunep.com/api/forget/password/code/send?username=${_phoneController.text}",
       );
@@ -124,6 +123,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           FocusScope.of(context).requestFocus(FocusNode());
           MyToast.show("网络未连接");
         }else{
+          print("-----"+e.toString());
           MyToast.show(e.response.data["result"]);
         }
       });

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/follow_dao.dart';
@@ -12,16 +11,16 @@ import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
-import 'package:flutter_mblog/util/CacheImage.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/common_util.dart';
+import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:flutter_mblog/widget/fade_route.dart';
+import 'package:flutter_mblog/widget/four_square_grid_image.dart';
 import 'package:flutter_mblog/widget/image_all_screen_look.dart';
 import 'package:flutter_mblog/widget/post_detail_card.dart';
 import 'package:like_button/like_button.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
-import 'package:optimized_cached_image/image_provider/_image_provider_io.dart';
 
 // ignore: must_be_immutable
 class HomeDetailPage extends StatefulWidget {
@@ -201,105 +200,101 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Column(
-                        children: <Widget>[
-                          CircleAvatar(
-                            backgroundImage: OptimizedCacheImageProvider(e.user.avatar),
-                            radius: 25
-                          )
-                        ],
-                      ),
+                     Container(
+                       child: ClipRRect(
+                         child: ImageProcessTools.CachedNetworkProcessImage(e.user.avatar,memCacheHeight: 250,memCacheWidth: 250),
+                         borderRadius: BorderRadius.circular(50),
+                       ),
+                       width: AdaptiveTools.setRpx(90),
+                       height: AdaptiveTools.setRpx(90),
+                     ),
                       SizedBox(
                         width: AdaptiveTools.setPx(10),
                       ),
-                      Container(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Container(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  Row(
-                                    children: <Widget>[
-                                      Container(
-                                        child: Text("${e.user.name}"),
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.only(left: 5,bottom: 1),
-                                        child: Text("@${e.user.username}"),
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.only(bottom: 4),
-                                        child: Text(
-                                            " · ${TimeUtil.parse(e.ctime.toString())}"),
-                                      )
-                                    ],
-                                  ),
-                                  InkWell(
-                                    child: Container(child: Icon(Icons.keyboard_arrow_down),),
-                                    onTap: (){
-                                      print("关注");
-                                      showModalBottomSheet(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return Stack(
-                                            children: <Widget>[
-                                              Container(
-                                                height: 25,
-                                                width: double.infinity,
-                                                color: Colors.black54,
-                                              ),
-                                              Container(
-                                                height: 60,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius: BorderRadius.only(
-                                                    topLeft: Radius.circular(20),
-                                                    topRight: Radius.circular(20),
+                      Flexible(
+                        child: Container(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Container(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Row(
+                                      children: <Widget>[
+                                        Container(
+                                          child: Text("${e.user.name}"),
+                                        ),
+                                        Container(
+                                          padding: EdgeInsets.only(left: 5),
+                                          child: Text("@${e.user.username}"),
+                                        ),
+                                        Container(
+                                          child: Text(
+                                              " · ${TimeUtil.parse(e.ctime.toString())}"),
+                                        )
+                                      ],
+                                    ),
+                                    InkWell(
+                                      child: Container(child: Icon(Icons.keyboard_arrow_down),),
+                                      onTap: (){
+                                        print("关注");
+                                        showModalBottomSheet(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return Stack(
+                                              children: <Widget>[
+                                                Container(
+                                                  height: 25,
+                                                  width: double.infinity,
+                                                  color: Colors.black54,
+                                                ),
+                                                Container(
+                                                  height: 60,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius: BorderRadius.only(
+                                                      topLeft: Radius.circular(20),
+                                                      topRight: Radius.circular(20),
+                                                    ),
                                                   ),
-                                                ),
-                                                child: ListView(
-                                                  children: <Widget>[
-                                                    isOkAttention ?
-                                                    ListTile(
-                                                      leading: Container(
-                                                        child: isAttention.contains(e.user.id)?Image.asset("images/unattention.png"):Image.asset("images/attention.png"),
-                                                        padding: EdgeInsets.all(14),
-                                                      ),
-                                                      title: isAttention.contains(e.user.id) ?Text("取消关注 @${e.user.name}",style: TextStyle(fontSize: 15),):Text("关注 @${e.user.name}",style: TextStyle(fontSize: 15),),
-                                                      onTap: (){
-                                                        isAttention.contains(e.id)?_unfollowYou(e.user.id):_followYou(e.user.id);
-                                                      },
-                                                    ):Container()
-                                                  ],
-                                                ),
-                                              )
-                                            ],
-                                          );
-                                        },
-                                      );
-                                    },
-                                  )
-                                ],
+                                                  child: ListView(
+                                                    children: <Widget>[
+                                                      isOkAttention ?
+                                                      ListTile(
+                                                        leading: Container(
+                                                          child: isAttention.contains(e.user.id)?Image.asset("images/unattention.png"):Image.asset("images/attention.png"),
+                                                          padding: EdgeInsets.all(14),
+                                                        ),
+                                                        title: isAttention.contains(e.user.id) ?Text("取消关注 @${e.user.name}",style: TextStyle(fontSize: 15),):Text("关注 @${e.user.name}",style: TextStyle(fontSize: 15),),
+                                                        onTap: (){
+                                                          isAttention.contains(e.id)?_unfollowYou(e.user.id):_followYou(e.user.id);
+                                                        },
+                                                      ):Container()
+                                                    ],
+                                                  ),
+                                                )
+                                              ],
+                                            );
+                                          },
+                                        );
+                                      },
+                                    )
+                                  ],
+                                ),
+                                width:AdaptiveTools.setRpx(575),
                               ),
-                              width:AdaptiveTools.setRpx(575),
-                            ),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            Container(
-                              child: Text(e.content),
-                            ),
-                            e.photos != null && e.photos.isNotEmpty
-                                ? image(e.photos)
-                                : Container(
-                              width: 0,
-                              height: 0,
-                            ),
-                          ],
+                              SizedBox(
+                                height: 5,
+                              ),
+                              Container(
+                                child: Text(e.content),
+                              ),
+                              if(e.photos != null && e.photos.isNotEmpty) FourSquareGridImage.buildImage(context, e.photos)
+                            ],
+                          ),
+                          margin: EdgeInsets.only(top: 1),
                         ),
-                        margin: EdgeInsets.only(top: 1),
                       )
                     ],
                   ),
@@ -366,86 +361,6 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
         ],
       );
     }
-  }
-
-  _showImage(BuildContext context, List<String> images, int index) {
-    Navigator.of(context).push(FadeRoute(
-        page: ImageAllScreenLook(
-      imgDataArr: images,
-      index: index,
-    )));
-  }
-
-  Widget image(List<String> images) {
-    Widget imageWidget;
-    switch (images.length) {
-      case 1:
-        imageWidget = GestureDetector(
-          child: Container(
-            height: AdaptiveTools.setPx(165),
-            width: AdaptiveTools.setRpx(575),
-            margin: EdgeInsets.only(top: 10),
-            child: ClipRRect(
-              child: CacheImage.cachedImage(images[0]),
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          onTap: () => _showImage(context,images, 0),
-        );
-        break;
-      case 2:
-        imageWidget = Container(
-          height: AdaptiveTools.setPx(165),
-          width: AdaptiveTools.setRpx(575),
-          margin: EdgeInsets.only(top: 10),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Flexible(
-                child: GestureDetector(
-                  child: Container(
-                    height: double.infinity,
-                    width: double.infinity,
-                    child: ClipRRect(
-                      child: CacheImage.cachedImage(images[0]),
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(8),
-                          bottomLeft: Radius.circular(8)),
-                    ),
-                  ),
-                  onTap: () => _showImage(context,images, 0),
-                ),
-              ),
-              SizedBox(
-                width: 3,
-              ),
-              Flexible(
-                child: GestureDetector(
-                  child: Container(
-                    height: double.infinity,
-                    width: double.infinity,
-                    child: ClipRRect(
-                      child: CacheImage.cachedImage(images[1]),
-                      borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(8),
-                          bottomRight: Radius.circular(8)),
-                    ),
-                  ),
-                  onTap: () => _showImage(context,images, 1),
-                ),
-              )
-            ],
-          ),
-        );
-        break;
-      default:
-        imageWidget = Container(
-          height: 0,
-          width: 0,
-        );
-        break;
-    }
-    return imageWidget;
   }
 
   Future<void> sendComeent(PostItem item) async {

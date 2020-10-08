@@ -1,10 +1,7 @@
 import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
-import 'package:flutter_mblog/main.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/pages/home_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
@@ -13,7 +10,6 @@ import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/oauth.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:flutter_mblog/widget/share_twitter_data_widget.dart';
-import 'package:optimized_cached_image/image_cache_manager.dart';
 import 'package:path_provider/path_provider.dart';
 
 class TabNavigator extends StatefulWidget {
@@ -40,12 +36,10 @@ class _TabNavigatorState extends State<TabNavigator> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    /*isLogin();*/
-    _loadUser();
-    _getCachePostList();
+    isLogin();
   }
 
-  /*isLogin() {
+  isLogin() {
     print("获取Token");
     Shared_pre.Shared_getToken().then((token) {
       if (token == null) {
@@ -53,14 +47,11 @@ class _TabNavigatorState extends State<TabNavigator> {
         Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => WelcomePage()), (route) => false);
       }else{
         Oauth_2.ResToken(context, isLogin: false);
-        if (mounted) {
-          setState(() {
-            isLoginOk = true;
-          });
-        }
+        _loadUser();
+        _getCachePostList();
       }
     });
-  }*/
+  }
 
   _loadUser() {
     Shared_pre.Shared_getUser().then((userModel) {

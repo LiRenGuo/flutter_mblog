@@ -3,6 +3,7 @@ import 'package:flutter_mblog/dao/follow_dao.dart';
 import 'package:flutter_mblog/dao/user_dao.dart';
 import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/image_process_tools.dart';
 
 class FollowMePage extends StatefulWidget {
   String userId;
@@ -120,9 +121,13 @@ class _FollowMePageState extends State<FollowMePage> {
         children: <Widget>[
           Container(
             child: follow.avatar != null && follow.avatar.isNotEmpty
-                ? CircleAvatar(
-              radius: 30,
-              backgroundImage: NetworkImage(follow.avatar),
+                ? Container(
+              child: ClipRRect(
+                child: ImageProcessTools.CachedNetworkProcessImage(follow.avatar,memCacheHeight: 250,memCacheWidth: 250),
+                borderRadius: BorderRadius.circular(50),
+              ),
+              width: AdaptiveTools.setRpx(100),
+              height: AdaptiveTools.setRpx(100),
             )
                 : CircleAvatar(
               radius: 30,
@@ -179,7 +184,7 @@ class _FollowMePageState extends State<FollowMePage> {
                       )
                     ],
                   ),
-                  height:  AdaptiveTools.setRpx(80),
+                  margin: EdgeInsets.only(bottom: 5),
                 ),
                 Container(
                   child: Text(

@@ -185,7 +185,7 @@ class _PostCardState extends State<PostCard> {
                     item.photos != null && item.photos.length != 0
                         ? FourSquareGridImage.buildImage(context, item.photos)
                         : Container(),
-                    _buildRetweet(item.forwardPost),
+                    if (item.postId != null) item.postId == "*" ? _buildRemoteRetweet():_buildRetweet(item.forwardPost),
                     Container(
                       margin: EdgeInsets.only(top: 10),
                       child: Row(
@@ -447,5 +447,17 @@ class _PostCardState extends State<PostCard> {
   _tapRecognizer(BuildContext context) {
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => HomeDetailPage(item)));
+  }
+
+  Widget _buildRemoteRetweet() {
+    return Container(
+      margin: EdgeInsets.only(bottom: 5),
+      child: Row(
+        children: [
+          Icon(Icons.error,size: 14,color: Colors.red,),
+          Text("原帖已删除",)
+        ],
+      ),
+    );
   }
 }

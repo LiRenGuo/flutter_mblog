@@ -17,6 +17,12 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   TextEditingController _phoneController = new TextEditingController();
   @override
+  void dispose() {
+    // TODO: implement dispose
+    _phoneController.dispose();
+    super.dispose();
+  }
+  @override
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(

@@ -5,8 +5,6 @@ import 'package:flutter_mblog/pages/following_page.dart';
 import 'package:flutter_mblog/pages/followme_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/settings/settings_page.dart';
-import 'package:flutter_mblog/util/AdaptiveTools.dart';
-import 'package:flutter_mblog/util/CacheImage.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 
 class MyDrawer extends StatelessWidget {
@@ -52,10 +50,7 @@ class MyDrawer extends StatelessWidget {
                 ),
                 height:100,
                 width: 100,
-              )/*CircleAvatar(
-                radius: 40,
-                backgroundImage: NetworkImage(userModel.avatar),
-              )*/,
+              ),
             ),
             Text(
               userModel.name,
@@ -114,10 +109,6 @@ class MyDrawer extends StatelessWidget {
               title: Text('个人资料'),
               onTap: () => Navigator.of(context)
                   .push(MaterialPageRoute(builder: (context) => MinePage(userid: userModel.id,wLoginUserId: userModel.id,)))),
-          /*ListTile(
-              leading: Icon(Icons.message),
-              title: Text('关注请求'),
-              onTap: () => print('关注请求')),*/
           ListTile(
               leading: Icon(Icons.settings),
               title: Text('隐私设置'),
@@ -127,18 +118,6 @@ class MyDrawer extends StatelessWidget {
               leading: Icon(Icons.help_outline),
               title: Text('关于我们'),
               onTap: () => print('关于我们')),
-          /*ListTile(
-              leading: Icon(Icons.color_lens),
-              title: Text('换肤'),
-              onTap: () => print('换肤')),*/
-          /*ListTile(
-              leading: Icon(Icons.language),
-              title: Text('语言'),
-              onTap: () => print('语言')),*/
-          /*ListTile(
-              leading: Icon(Icons.power_settings_new),
-              title: Text('登出'),
-              )*/
         ],
       ),
     );

@@ -179,7 +179,6 @@ class _LoginPageState extends State<LoginPage> {
               FocusScope.of(context).requestFocus(FocusNode());
               MyToast.show("网络未连接");
             }else{
-              Navigator.pop(context);
               MyToast.show("用户名或密码错误");
             }
           });

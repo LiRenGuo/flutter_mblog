@@ -12,8 +12,6 @@ import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/widget/four_square_grid_image.dart';
 import 'package:like_button/like_button.dart';
 
-import 'fade_route.dart';
-
 class LikePage extends StatefulWidget {
   List<PostLikeItem> _item;
   String userId;
@@ -75,7 +73,7 @@ class _LikePageState extends State<LikePage> {
         if (count == 0) {
           result = Text(
             '赞',
-            style: TextStyle(color: color, fontSize: AdaptiveTools.setRpx(10)),
+            style: TextStyle(color: color, fontSize: AdaptiveTools.setRpx(25)),
           );
         } else
           result = Text(
@@ -188,35 +186,45 @@ class _LikePageState extends State<LikePage> {
                       margin: EdgeInsets.only(top: 8, bottom: 5),
                       child: FourSquareGridImage.buildImage(context, _item.photos)/*image(_item.photos, context),*/
                     ),
-                    if (_item.postId != null)
-                      _buildRetweet(_item.rPostLikeItem),
+                    if (_item.postId != null) _item.postId == "*" ?_buildRemoteRetweet():_buildRetweet(_item.rPostLikeItem),
                     Container(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
-                          Container(
-                            child: Row(
-                              children: <Widget>[
-                                Image.asset("images/ic_home_comment.webp"),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Text("${_item.commentCount.toString()}")
-                              ],
+                          InkWell(
+                            child: Container(
+                              child: Row(
+                                children: <Widget>[
+                                  Image.asset("images/ic_home_comment.webp"),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text("${_item.commentCount.toString()}")
+                                ],
+                              ),
+                              height: AdaptiveTools.setPx(20),
                             ),
-                            height: AdaptiveTools.setPx(20),
+                            onTap: (){
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => HomeDetailPage(
+                                        null,
+                                        postId: _item.id,
+                                      )));
+                            },
                           ),
                           Container(
                             child: _buildLikeButton(_item),
                             height: AdaptiveTools.setPx(20),
                           ),
-                          Container(
+                          /*Container(
                             child: Image.asset(
                               "images/retweet_stroke.png",
                               color: Colors.black54,
                             ),
                             height: AdaptiveTools.setPx(17),
-                          ),
+                          ),*/
                           InkWell(
                             child: Container(
                               child: Image.asset("images/ic_home_forward.png"),
@@ -329,5 +337,16 @@ class _LikePageState extends State<LikePage> {
     return retweetWidget;
   }
 
+  Widget _buildRemoteRetweet() {
+    return Container(
+      margin: EdgeInsets.only(bottom: 5),
+      child: Row(
+        children: [
+          Icon(Icons.error,size: 14,color: Colors.red,),
+          Text("原帖已删除",)
+        ],
+      ),
+    );
+  }
 
 }

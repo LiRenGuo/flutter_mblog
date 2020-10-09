@@ -19,6 +19,12 @@ class _SettingsEditMobilePasswordPageState extends State<SettingsEditMobilePassw
   bool pwdShow = false; //密码是否显示明文
   TextEditingController _passwordController = new TextEditingController();
   @override
+  void dispose() {
+    // TODO: implement dispose
+    _passwordController.dispose();
+    super.dispose();
+  }
+  @override
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(

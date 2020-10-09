@@ -25,7 +25,6 @@ class ImageProcessTools {
         );
       },
       errorWidget: (context, url, error) => Icon(Icons.error,color: Colors.red,),
-//      Image.asset("images/image_loading_error.png")
     );
   }
 }

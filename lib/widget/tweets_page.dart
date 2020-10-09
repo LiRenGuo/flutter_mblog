@@ -17,8 +17,10 @@ class Tweets extends StatefulWidget {
   String userId;
   String loginUserId;
   String avatar;
+  bool isTabNav;
+  final refreshPage;
 
-  Tweets(this._item,this.userId,this.loginUserId,this.avatar);
+  Tweets(this._item,this.userId,this.loginUserId,this.avatar,this.isTabNav,this.refreshPage);
   @override
   _TweetsState createState() => _TweetsState();
 }
@@ -29,8 +31,7 @@ class _TweetsState extends State<Tweets> {
       if (value == "success") {
         Navigator.pop(context);
         Navigator.pop(context);
-        Navigator.pop(context);
-        Navigator.push(context, MaterialPageRoute(builder: (context) => MinePage(userid: widget.userId,wLoginUserId: widget.loginUserId,)));
+        widget.refreshPage(true);
       }
     });
   }
@@ -227,7 +228,7 @@ class _TweetsState extends State<Tweets> {
                       margin: EdgeInsets.only(top: 8,bottom: 5),
                       child: FourSquareGridImage.buildImage(context, _item.photos)/*image(_item.photos, context),*/
                     ),
-                    if(_item.postId != null) _buildRetweet(_item.rPostItem),
+                    if(_item.postId != null) _item.postId == "*" ?_buildRemoteRetweet():_buildRetweet(_item.rPostItem),
                     Container(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -253,13 +254,13 @@ class _TweetsState extends State<Tweets> {
                             child: _buildLikeButton(_item),
                             height: AdaptiveTools.setPx(20),
                           ),
-                          Container(
+                          /*Container(
                             child: Image.asset(
                               "images/retweet_stroke.png",
                               color: Colors.black54,
                             ),
                             height: AdaptiveTools.setPx(17),
-                          ),
+                          ),*/
                           InkWell(
                             child: Container(
                               child: Image.asset("images/ic_home_forward.png"),
@@ -357,5 +358,17 @@ class _TweetsState extends State<Tweets> {
       height: 0,
     );
     return retweetWidget;
+  }
+
+  Widget _buildRemoteRetweet() {
+    return Container(
+      margin: EdgeInsets.only(bottom: 5),
+      child: Row(
+        children: [
+          Icon(Icons.error,size: 14,color: Colors.red,),
+          Text("原帖已删除",)
+        ],
+      ),
+    );
   }
 }

@@ -53,11 +53,8 @@ class TimeMachineUtil{
     } else {
       newHours = formattedDate + ' 23:59:59';
     }
-
     DateTime newDate = DateTime.parse(newHours);
-    String newFormattedDate = DateUtil.formatDate(newDate, format: 'yyyy-MM-dd HH:mm:ss');
     int timeStamp = newDate.millisecondsSinceEpoch ;
-    // print('时间' + newFormattedDate);
     return timeStamp;
   }
 }

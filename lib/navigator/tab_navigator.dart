@@ -60,6 +60,7 @@ class _TabNavigatorState extends State<TabNavigator> {
         MinePage(
           userid: userModel.id,
           wLoginUserId: userModel.id,
+          isTabNav: true,
         )
       ];
       setState(() {

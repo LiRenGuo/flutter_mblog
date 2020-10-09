@@ -24,6 +24,14 @@ class _RestPasswordEndPageState extends State<RestPasswordEndPage> {
   bool rpwdShow = false;
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    _passwordController.dispose();
+    _rpasswordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(

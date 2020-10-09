@@ -16,6 +16,14 @@ class _SettingsEditPasswordPageState extends State<SettingsEditPasswordPage> {
   TextEditingController rnewPassword = new TextEditingController();
   GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   @override
+  void dispose() {
+    // TODO: implement dispose
+    oldPassword.dispose();
+    newPassword.dispose();
+    rnewPassword.dispose();
+    super.dispose();
+  }
+  @override
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(

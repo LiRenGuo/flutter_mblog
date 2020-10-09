@@ -25,8 +25,8 @@ import 'package:flutter_mblog/widget/tweets_page.dart';
 class MinePage extends StatefulWidget {
   String userid;
   String wLoginUserId;
-
-  MinePage({this.userid, this.wLoginUserId});
+  bool isTabNav;
+  MinePage({this.userid, this.wLoginUserId,this.isTabNav = false});
 
   @override
   _MinePageState createState() => _MinePageState();
@@ -58,6 +58,13 @@ class _MinePageState extends State<MinePage>
   ScrollController _controller = new ScrollController();
   EasyRefreshController _easyRefreshController = EasyRefreshController();
 
+  _refreshPage(bool isRefresh) {
+    if (isRefresh) {
+      print("子级叫我刷新页面");
+      _easyRefreshController.callRefresh();
+    }
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -67,15 +74,18 @@ class _MinePageState extends State<MinePage>
   @override
   void dispose() {
     MyApp.routeObserver.unsubscribe(this);
+    tabController.dispose();
+    _controller.dispose();
+    _easyRefreshController.dispose();
     super.dispose();
   }
 
-  @override
+  /*@override
   void didPopNext() {
     // Covering route was popped off the navigator.
     print('返回NewView');
     _easyRefreshController.callRefresh();
-  }
+  }*/
 
 
   @override
@@ -233,7 +243,7 @@ class _MinePageState extends State<MinePage>
   @override
   Widget build(BuildContext context) {
     List<Widget> pageWidget = [
-      Tweets(_myPostModel, widget.userid, loginUserId, _userModel.avatar),
+      Tweets(_myPostModel, widget.userid, loginUserId, _userModel.avatar,widget.isTabNav,(isRefresh) => _refreshPage(isRefresh)),
       LikePage(_myLikePostModel, widget.userid, loginUserId, _userModel.avatar)
     ];
     return Scaffold(
@@ -329,7 +339,7 @@ class _MinePageState extends State<MinePage>
                                             Navigator.of(context).push(
                                                 MaterialPageRoute(
                                                     builder: (context) =>
-                                                        EditMinePage()));
+                                                        EditMinePage((isRefresh) => _refreshPage(isRefresh))));
                                           },
                                         )
                                             : RaisedButton(

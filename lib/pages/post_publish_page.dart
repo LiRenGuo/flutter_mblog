@@ -1,7 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-
-import 'package:date_format/date_format.dart';
 import 'package:device_info/device_info.dart';
 import 'package:dio/dio.dart';
 import 'package:emoji_picker/emoji_picker.dart';
@@ -378,8 +376,8 @@ class _PostPublishPageState extends State<PostPublishPage> {
       MyToast.show('请输入您的新鲜事~');
       return;
     }
-    if (content.length <= 2) {
-      MyToast.show('新鲜事不能少于2个字');
+    if (content.length <= 3) {
+      MyToast.show('新鲜事不能少于3个字');
       return;
     }
     try {

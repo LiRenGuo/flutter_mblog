@@ -20,6 +20,13 @@ class _SettingsEditUserNamePageState extends State<SettingsEditUserNamePage> {
   TextEditingController _oldUserNameController = new TextEditingController();
   TextEditingController _newUserNameController = new TextEditingController();
   @override
+  void dispose() {
+    // TODO: implement dispose
+    _oldUserNameController.dispose();
+    _newUserNameController.dispose();
+    super.dispose();
+  }
+  @override
   void initState() {
     // TODO: implement initState
     super.initState();

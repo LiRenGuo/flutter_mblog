@@ -20,6 +20,12 @@ class _SettingEditPasswordPageState extends State<SettingEditPasswordPage> {
   GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   TextEditingController _mobilePassword = new TextEditingController();
   @override
+  void dispose() {
+    // TODO: implement dispose
+    _mobilePassword.dispose();
+    super.dispose();
+  }
+  @override
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(

@@ -102,6 +102,7 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
   }
+
   _confirmLogout(BuildContext context) {
     return AlertDialog(
       title: Text("登出"),
@@ -125,6 +126,5 @@ class _SettingsPageState extends State<SettingsPage> {
     Shared_pre.Shared_deleteResToken();
     Shared_pre.Shared_deleteUser();
     Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => WelcomePage()), (route) => false);
-
   }
 }

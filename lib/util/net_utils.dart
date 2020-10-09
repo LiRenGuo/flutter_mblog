@@ -6,7 +6,6 @@ import 'dart:async';
 var dio = new Dio();
 
 class NetUtils {
-
   static Future get(String url, {Map<String, dynamic> params}) async {
     var response;
     response = await Shared_pre.Shared_getToken().then((token) async {

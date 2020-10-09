@@ -14,7 +14,6 @@ class RestPasswordPage extends StatefulWidget {
 }
 
 class _RestPasswordPageState extends State<RestPasswordPage> {
-  String _phone;
   String _code;
   @override
   Widget build(BuildContext context) {

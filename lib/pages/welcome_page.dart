@@ -1,12 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_mblog/pages/login_page.dart';
 import 'package:flutter_mblog/pages/register/register_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
-import 'package:flutter_mblog/util/oauth.dart';
-import 'package:flutter_mblog/util/shared_pre.dart';
 
 class WelcomePage extends StatefulWidget {
   @override

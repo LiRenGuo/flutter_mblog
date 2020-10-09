@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/follow_dao.dart';
@@ -15,9 +14,7 @@ import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/common_util.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
-import 'package:flutter_mblog/widget/fade_route.dart';
 import 'package:flutter_mblog/widget/four_square_grid_image.dart';
-import 'package:flutter_mblog/widget/image_all_screen_look.dart';
 import 'package:flutter_mblog/widget/post_detail_card.dart';
 import 'package:like_button/like_button.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
@@ -74,6 +71,13 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
       _postCommentModel = postCommentModel;
       isok = true;
     });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _commentEditingController.dispose();
   }
 
   @override
@@ -218,23 +222,19 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                             children: <Widget>[
                               Container(
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
-                                    Row(
-                                      children: <Widget>[
-                                        Container(
-                                          child: Text("${e.user.name}"),
-                                        ),
-                                        Container(
-                                          padding: EdgeInsets.only(left: 5),
-                                          child: Text("@${e.user.username}"),
-                                        ),
-                                        Container(
-                                          child: Text(
-                                              " · ${TimeUtil.parse(e.ctime.toString())}"),
-                                        )
-                                      ],
+                                    Container(
+                                      child: Text("${e.user.name}"),
                                     ),
+                                    Container(
+                                      padding: EdgeInsets.only(left: 5),
+                                      child: Text("@${e.user.username}"),
+                                    ),
+                                    Container(
+                                      child: Text(
+                                          " · ${TimeUtil.parse(e.ctime.toString())}"),
+                                    ),
+                                    Spacer(),
                                     InkWell(
                                       child: Container(child: Icon(Icons.keyboard_arrow_down),),
                                       onTap: (){
@@ -282,7 +282,6 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                                     )
                                   ],
                                 ),
-                                width:AdaptiveTools.setRpx(575),
                               ),
                               SizedBox(
                                 height: 5,

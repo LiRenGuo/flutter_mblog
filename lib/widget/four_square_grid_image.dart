@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
-import 'package:flutter_mblog/util/CacheImage.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/widget/fade_route.dart';
 import 'package:flutter_mblog/widget/image_all_screen_look.dart';
@@ -304,6 +303,7 @@ class FourSquareGridImage{
                   children: <Widget>[
                     Expanded(
                       child: Container(
+                        height: double.infinity,
                         child: ClipRRect(
                           child: ImageProcessTools.CachedNetworkProcessImage(photos[0],memCacheHeight: memCacheHeight,memCacheWidth: memCacheWidth),/*CacheImage.cachedImage(photos[0]),*/
                           borderRadius: BorderRadius.only(

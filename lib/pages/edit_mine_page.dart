@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,11 +7,12 @@ import 'package:flutter_mblog/dao/user_dao.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/common_util.dart';
-import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:image_picker/image_picker.dart';
 
 class EditMinePage extends StatefulWidget {
+  final refreshPage;
+  EditMinePage(this.refreshPage);
   @override
   _EditMinePageState createState() => _EditMinePageState();
 }
@@ -38,6 +38,16 @@ class _EditMinePageState extends State<EditMinePage> {
 
   getUserInfo() {
     return UserDao.getUserInfo(context);
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _nameEtController.dispose();
+    _introductionEtController.dispose();
+    _positionEtController.dispose();
+    _urlEtController.dispose();
   }
 
   @override
@@ -68,8 +78,8 @@ class _EditMinePageState extends State<EditMinePage> {
                     "avatar": avatar ?? _userModel.avatar,
                     "intro": _introductionEtController.text,
                     "homepage": _urlEtController.text,
+                    "address":_positionEtController.text
                   });
-                  print("avatar ?? _userModel.avatar >> ${avatar ?? _userModel.avatar}");
                   Shared_pre.Shared_deleteUser();
                   UserModel editUserModel = new UserModel(
                     email: _userModel.email,
@@ -80,6 +90,7 @@ class _EditMinePageState extends State<EditMinePage> {
                     id: _userModel.id,following: _userModel.following,followers: _userModel.followers);
                   Shared_pre.Shared_setUser(editUserModel);
                   UserDao.saveUserInfo(formDate);
+                  widget.refreshPage(true);
                   Navigator.pop(context,_userModel.hobby ?? "");
                 },
                 child: Text(
@@ -171,7 +182,7 @@ class _EditMinePageState extends State<EditMinePage> {
                                                   topRight: Radius.circular(20),
                                                 ),
                                               ),
-                                              height: AdaptiveTools.setRpx(240),
+                                              height: AdaptiveTools.setRpx(280),
                                               child: Column(
                                                 crossAxisAlignment:
                                                 CrossAxisAlignment.center,
@@ -182,8 +193,8 @@ class _EditMinePageState extends State<EditMinePage> {
                                                         "拍照",
                                                         style: TextStyle(
                                                             fontSize:
-                                                            AdaptiveTools.setPx(
-                                                                17)),
+                                                            AdaptiveTools.setRpx(
+                                                                28)),
                                                       ),
                                                       margin: EdgeInsets.all(10),
                                                       width: double.infinity,
@@ -205,7 +216,7 @@ class _EditMinePageState extends State<EditMinePage> {
                                                           style: TextStyle(
                                                               fontSize:
                                                               AdaptiveTools
-                                                                  .setPx(17))),
+                                                                  .setRpx(28))),
                                                       width: double.infinity,
                                                       alignment: Alignment.center,
                                                     ),
@@ -225,7 +236,7 @@ class _EditMinePageState extends State<EditMinePage> {
                                                           style: TextStyle(
                                                               fontSize:
                                                               AdaptiveTools
-                                                                  .setPx(17))),
+                                                                  .setRpx(28))),
                                                       width: double.infinity,
                                                       alignment: Alignment.center,
                                                     ),
@@ -299,7 +310,7 @@ class _EditMinePageState extends State<EditMinePage> {
                                                 topRight: Radius.circular(20),
                                               ),
                                             ),
-                                            height: AdaptiveTools.setRpx(240),
+                                            height: AdaptiveTools.setRpx(280),
                                             child: Column(
                                               crossAxisAlignment:
                                               CrossAxisAlignment.center,
@@ -310,8 +321,8 @@ class _EditMinePageState extends State<EditMinePage> {
                                                       "拍照",
                                                       style: TextStyle(
                                                           fontSize:
-                                                          AdaptiveTools.setPx(
-                                                              17)),
+                                                          AdaptiveTools.setRpx(
+                                                              28)),
                                                     ),
                                                     margin: EdgeInsets.all(10),
                                                     alignment: Alignment.center,
@@ -333,7 +344,7 @@ class _EditMinePageState extends State<EditMinePage> {
                                                         style: TextStyle(
                                                             fontSize:
                                                             AdaptiveTools
-                                                                .setPx(17))),
+                                                                .setRpx(28))),
                                                     alignment: Alignment.center,
                                                     width: double.infinity,
                                                   ),
@@ -353,7 +364,7 @@ class _EditMinePageState extends State<EditMinePage> {
                                                         style: TextStyle(
                                                             fontSize:
                                                             AdaptiveTools
-                                                                .setPx(17))),
+                                                                .setRpx(28))),
                                                     alignment: Alignment.center,
                                                     width: double.infinity,
                                                   ),

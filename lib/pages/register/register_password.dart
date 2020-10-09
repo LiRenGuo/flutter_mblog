@@ -23,6 +23,14 @@ class _RegisterPasswordPageState extends State<RegisterPasswordPage> {
   bool rpwdShow = false;
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    _passwordController.dispose();
+    _rpasswordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(

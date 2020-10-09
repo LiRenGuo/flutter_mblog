@@ -9,10 +9,7 @@ import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
-import 'package:flutter_mblog/widget/fade_route.dart';
 import 'package:flutter_mblog/widget/four_square_grid_image.dart';
-import 'package:flutter_mblog/widget/image_all_screen_look.dart';
-import 'package:octo_image/octo_image.dart';
 
 class PostDetailCard extends StatefulWidget {
   final PostItem item;

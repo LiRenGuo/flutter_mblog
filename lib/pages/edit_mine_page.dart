@@ -89,7 +89,7 @@ class _EditMinePageState extends State<EditMinePage> {
                     avatar: avatar ?? _userModel.avatar,
                     id: _userModel.id,following: _userModel.following,followers: _userModel.followers);
                   Shared_pre.Shared_setUser(editUserModel);
-                  UserDao.saveUserInfo(formDate);
+                  UserDao.saveUserInfo(context,formDate);
                   widget.refreshPage(true);
                   Navigator.pop(context,_userModel.hobby ?? "");
                 },

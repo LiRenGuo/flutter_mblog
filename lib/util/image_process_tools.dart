@@ -10,6 +10,7 @@ class ImageProcessTools {
 
   static Widget CachedNetworkProcessImage(String img,
       {BoxFit fit = BoxFit.cover,double height = 40 , int memCacheWidth,int memCacheHeight}) {
+    print("重新加载图片");
     return CachedNetworkImage(
       imageUrl: img,
       fit: fit,
@@ -24,7 +25,8 @@ class ImageProcessTools {
               )),
         );
       },
-      errorWidget: (context, url, error) => Icon(Icons.error,color: Colors.red,),
+      errorWidget: (context, url, error) => Image.asset("images/image_loading_error.png")/*Icon(Icons.error,color: Colors.red,)*/,
+      /*errorWidget: (context, url, error) => Icon(Icons.error,color: Colors.red,),*/
     );
   }
 }

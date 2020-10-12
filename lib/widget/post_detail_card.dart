@@ -89,7 +89,8 @@ class _PostDetailCardState extends State<PostDetailCard> {
                     children: <Widget>[
                       Container(
                         child: ClipOval(
-                          child: Image.network(widget.item.user.avatar,cacheWidth: 450,cacheHeight: 450,),
+                          child: ImageProcessTools.CachedNetworkProcessImage(widget.item.user.avatar,memCacheWidth: 450,memCacheHeight: 450),
+                          /*child: Image.network(widget.item.user.avatar,cacheWidth: 450,cacheHeight: 450,),*/
                         ),
                         width: AdaptiveTools.setRpx(90),
                         height: AdaptiveTools.setRpx(90),

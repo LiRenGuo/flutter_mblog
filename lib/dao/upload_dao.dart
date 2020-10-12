@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_mblog/util/dio_error_process.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
@@ -26,6 +27,7 @@ class UploadDao{
     }on DioError catch(e) {
       Navigator.pop(context);
       MyToast.show("上传失败");
+      DioErrorProcess.dioError(context, e);
     }
   }
 }

@@ -166,7 +166,6 @@ class _LoginPageState extends State<LoginPage> {
       CommonUtil.showLoadingDialog(context);
       Oauth_2.Login_oauth2(_unameController.text, _pwdController.text, context).then((boola) {
         if (boola == 'success') {
-          Shared_pre.Shared_getUser().then((value) => print(value.id));
           print("success");
           Navigator.pop(context);
           Navigator.pushAndRemoveUntil(context, MaterialPageRoute(

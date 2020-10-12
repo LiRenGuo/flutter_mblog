@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
@@ -18,6 +19,7 @@ import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
+import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:flutter_mblog/widget/like_page.dart';
 import 'package:flutter_mblog/widget/tweets_page.dart';
@@ -33,7 +35,7 @@ class MinePage extends StatefulWidget {
 }
 
 class _MinePageState extends State<MinePage>
-    with SingleTickerProviderStateMixin, RouteAware {
+    with SingleTickerProviderStateMixin {
   UserModel _userModel = new UserModel();
   int totalElements;
   List<MyPostItem> _myPostModel = [];
@@ -66,36 +68,30 @@ class _MinePageState extends State<MinePage>
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    MyApp.routeObserver.subscribe(this, ModalRoute.of(context));
-  }
-
-  @override
   void dispose() {
-    MyApp.routeObserver.unsubscribe(this);
     tabController.dispose();
     _controller.dispose();
     _easyRefreshController.dispose();
     super.dispose();
   }
 
-  /*@override
-  void didPopNext() {
-    // Covering route was popped off the navigator.
-    print('返回NewView');
-    _easyRefreshController.callRefresh();
-  }*/
-
 
   @override
   void initState() {
     super.initState();
     loginUserId = widget.wLoginUserId;
-    initAttention();
-    _getMyPostList();
-    _getLikePostList(1);
     _getUserInfo();
+    (Connectivity().checkConnectivity()).then((onConnectivtiry){
+      if (onConnectivtiry == ConnectivityResult.none) {
+        print("网络未连接");
+        isOkAttention = true;
+        MyToast.show("网络未连接");
+      }else{
+        initAttention();
+        _getMyPostList();
+        _getLikePostList(1);
+      }
+    });
     tabController = TabController(vsync: this, length: 2, initialIndex: 0);
     _controller.addListener(() {
       var maxScroll = _controller.position.maxScrollExtent;
@@ -110,16 +106,15 @@ class _MinePageState extends State<MinePage>
   }
 
   initAttention() async {
+    UserModel userModel = await Shared_pre.Shared_getUser();
     if (widget.userid != null && widget.userid != "") {
       followersModel = await UserDao.getFollowersList(widget.userid, context);
       followModel = await UserDao.getFollowingList(widget.userid, context);
     } else {
-      UserModel userModel = await Shared_pre.Shared_getUser();
       followersModel = await UserDao.getFollowersList(userModel.id, context);
       followModel = await UserDao.getFollowingList(userModel.id, context);
     }
-    UserModel userModel = await Shared_pre.Shared_getUser();
-    FollowModel myFollowModel = await UserDao.getFollowingList(userModel.id, context);
+    /*FollowModel myFollowModel = await UserDao.getFollowingList(userModel.id, context);
     bool isAtt = false;
     if (myFollowModel != null && myFollowModel.followList.length != 0) {
       myFollowModel.followList.forEach((element) {
@@ -127,7 +122,11 @@ class _MinePageState extends State<MinePage>
           isAtt = true;
         }
       });
-    }
+    }*/
+    bool isAtt = false;
+    UserDao.isFollowMy(context, widget.userid).then((isFollow) {
+      isAtt = isFollow;
+    });
     if (mounted) {
       setState(() {
         isOkAttention = true;
@@ -139,10 +138,14 @@ class _MinePageState extends State<MinePage>
   _getUserInfo() async {
     UserModel info;
     if (widget.userid != null) {
-      info = await UserDao.getUserInfoByUserId(widget.userid, context);
-    } else {
+      if (widget.userid == widget.wLoginUserId) {
+        info = await Shared_pre.Shared_getUser();
+      }else{
+        info = await UserDao.getUserInfoByUserId(widget.userid, context);
+      }
+    }/* else {
       info = await UserDao.getUserInfo(context);
-    }
+    }*/
     if (info != null) {
       setState(() {
         _userModel = info;
@@ -186,8 +189,7 @@ class _MinePageState extends State<MinePage>
   }
 
   _getLikePostListNo(int likePostPage) async {
-    PostLikeModel myPostLikeModel =
-        await PostDao.getMyLikePost(widget.userid, likePostPage, context);
+    PostLikeModel myPostLikeModel = await PostDao.getMyLikePost(widget.userid, likePostPage, context);
     if (myPostLikeModel != null) {
       setState(() {
         _myLikePostModel.addAll(myPostLikeModel.postLikeItemList);
@@ -280,7 +282,7 @@ class _MinePageState extends State<MinePage>
           ],
         ),
       ),
-      body: isok && isLoadingMyPost
+      body: isok
           ? Container(
               child: EasyRefresh(
                 controller: _easyRefreshController,
@@ -299,7 +301,7 @@ class _MinePageState extends State<MinePage>
                                         ? Container(
                                       color: Colors.black54,
                                     )
-                                        : ImageProcessTools.CachedNetworkProcessImage(_userModel.banner,memCacheWidth: 600,memCacheHeight: 450)/*CacheImage.cachedImage(_userModel.banner)*/
+                                        : ImageProcessTools.CachedNetworkProcessImage(_userModel.banner,memCacheWidth: 650,memCacheHeight: 350)/*CacheImage.cachedImage(_userModel.banner)*/
                                 ),
                                 Container(
                                   margin: EdgeInsets.only(
@@ -475,9 +477,8 @@ class _MinePageState extends State<MinePage>
                                           children: <Widget>[
                                             Text(
                                               isOkAttention
-                                                  ? followModel
-                                                  .followList.length
-                                                  .toString()
+                                                  ? followModel != null ? followModel.followList.length
+                                                  .toString(): _userModel.following.toString()
                                                   : "0",
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w800,
@@ -510,9 +511,8 @@ class _MinePageState extends State<MinePage>
                                           children: <Widget>[
                                             Text(
                                               isOkAttention
-                                                  ? followersModel
-                                                  .followList.length
-                                                  .toString()
+                                                  ? followersModel != null ?followersModel
+                                                  .followList.length.toString() : _userModel.followers.toString()
                                                   : "0",
                                               style: TextStyle(
                                                   fontWeight: FontWeight.w800,

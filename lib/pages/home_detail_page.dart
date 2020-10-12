@@ -63,9 +63,9 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
     PostCommentModel postCommentModel;
     if (widget.postId != null) {
       print("postId : ${widget.postId}");
-      postCommentModel = await PostDao.getCommentList(widget.postId);
+      postCommentModel = await PostDao.getCommentList(context,widget.postId);
     }else{
-      postCommentModel = await PostDao.getCommentList(widget.item.id);
+      postCommentModel = await PostDao.getCommentList(context,widget.item.id);
     }
     setState(() {
       _postCommentModel = postCommentModel;

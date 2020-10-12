@@ -135,7 +135,7 @@ class _SettingsEditUserNamePageState extends State<SettingsEditUserNamePage> {
   _editUserName(){
     FormData formData = FormData.fromMap({"username":_newUserNameController.text});
     CommonUtil.showLoadingDialog(context);
-    UserDao.editUserName(formData).then((value){
+    UserDao.editUserName(context,formData).then((value){
       if (value == "success") {
         Navigator.pop(context);
         Navigator.pop(context);

@@ -6,6 +6,7 @@ import 'package:flutter_mblog/model/mypost_model.dart';
 import 'package:flutter_mblog/model/post_comment_model.dart';
 import 'package:flutter_mblog/model/post_like_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
+import 'package:flutter_mblog/util/dio_error_process.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
 import 'package:flutter_mblog/util/oauth.dart';
@@ -27,7 +28,7 @@ const POST_RANDOM_LIST = "http://mblog.yunep.com/api/post/list";
 
 class PostDao {
 
-  static Future<PostModel> getRandomList()async{
+  static Future<PostModel> getRandomList(BuildContext context)async{
     print("获取首页推特数据");
     try {
       String token = await Shared_pre.Shared_getToken();
@@ -43,41 +44,23 @@ class PostDao {
         throw Exception('loading data error.....');
       }
     }on DioError catch(e) {
-      print("获取数据异常");
+      DioErrorProcess.dioError(context, e);
     }
   }
 
 
-  static Future<PostModel> getList(int page, int pageSize,BuildContext context) async {
+  static Future<PostCommentModel> getCommentList(BuildContext context,String postId) async {
     try {
       String token = await Shared_pre.Shared_getToken();
-      Options options = Options(headers: {"Authorization": "Bearer $token"});
-      dio.options.connectTimeout = 5000;
-      dio.options.receiveTimeout = 10000;
-      final response = await dio
-          .get(POST_LIST_URL, queryParameters: {"page": page, "size": pageSize},options: options);
+      Options options = Options(headers: {'Authorization': 'Bearer $token'});
+      final response = await dio.get(POST_COMMENT_URL + "/$postId",options: options);
       if (response.statusCode == 200) {
         final responseData = response.data;
-        return PostModel.fromJson(responseData);
-      } else {
-        throw Exception('loading data error.....');
+        print("数据" + responseData.toString());
+        return PostCommentModel.fromJson(responseData);
       }
     }on DioError catch(e) {
-      print(e.toString());
-
-    }
-  }
-
-  static Future<PostCommentModel> getCommentList(String postId) async {
-    String token = await Shared_pre.Shared_getToken();
-    Options options = Options(headers: {'Authorization': 'Bearer $token'});
-    final response = await dio.get(POST_COMMENT_URL + "/$postId",options: options);
-    if (response.statusCode == 200) {
-      final responseData = response.data;
-      print("数据" + responseData.toString());
-      return PostCommentModel.fromJson(responseData);
-    } else {
-      throw Exception("loading data error.....");
+      DioErrorProcess.dioError(context, e);
     }
   }
 
@@ -101,8 +84,7 @@ class PostDao {
           if (formData.files.length == fileList.length) {
             formData.fields.add(MapEntry("content", content));
             String token = await Shared_pre.Shared_getToken();
-            Options options =
-            Options(headers: {"Authorization": "Bearer $token"});
+            Options options = Options(headers: {"Authorization": "Bearer $token"});
             final response = await dio.post(SEND_COMMENT + "$postId/comment",
                 data: formData, options: options);
             if (response.statusCode == 200 || response.statusCode == 201) {
@@ -135,6 +117,7 @@ class PostDao {
     } on DioError catch(e) {
       Navigator.pop(context);
       MyToast.show("评论失败");
+      DioErrorProcess.dioError(context, e);
     }
   }
 
@@ -152,12 +135,7 @@ class PostDao {
         throw Exception("loading data error.....");
       }
     } on DioError catch (e) {
-      print(e);
-      if (e.response != null) {
-        if (e.response.statusCode == 401) {
-          Oauth_2.ResToken(context);
-        }
-      }
+      DioErrorProcess.dioError(context, e);
     }
   }
 
@@ -175,9 +153,7 @@ class PostDao {
         throw Exception("loading data error.....");
       }
     } on DioError catch (e) {
-      if (e.response.statusCode == 401) {
-        Oauth_2.ResToken(context);
-      }
+      DioErrorProcess.dioError(context, e);
     }
   }
 
@@ -185,10 +161,8 @@ class PostDao {
     try {
       final response = Shared_pre.Shared_getToken().then((token) async {
         Options options = Options(headers: {'Authorization': 'Bearer $token'});
-        final response =
-        await dio.post(POST_PUBLISH_URL, data: formData, options: options);
+        final response = await dio.post(POST_PUBLISH_URL, data: formData, options: options);
         print("response = $response");
-
         if (response.statusCode == 401) {
           Oauth_2.ResToken(context);
           publish(context, formData);
@@ -197,7 +171,8 @@ class PostDao {
       });
       return response;
     }on DioError catch(e) {
-      print("e.data >> ${e.response.data["result"]}");
+      /*print("e.data >> ${e.response.data["result"]}");*/
+      DioErrorProcess.dioError(context, e);
     }
   }
 
@@ -216,7 +191,8 @@ class PostDao {
       });
       return response;
     }on DioError catch (e) {
-      print("e.data >> ${e.response.data["result"]}");
+/*      print("e.data >> ${e.response.data["result"]}");*/
+      DioErrorProcess.dioError(context, e);
     }
   }
 
@@ -242,10 +218,11 @@ class PostDao {
         throw Exception("loading data error.....");
       }
     } on DioError catch (e) {
-      print(e.toString());
+      /*print(e.toString());
       if (e.response.statusCode == 401) {
         Oauth_2.ResToken(context);
-      }
+      }*/
+      DioErrorProcess.dioError(context, e);
     }
   }
 
@@ -262,9 +239,10 @@ class PostDao {
         throw Exception("loading data error.....");
       }
     } on DioError catch (e) {
-      if (e.response.statusCode == 401) {
+      DioErrorProcess.dioError(context, e);
+     /* if (e.response.statusCode == 401) {
         Oauth_2.ResToken(context);
-      }
+      }*/
     }
   }
 
@@ -274,8 +252,7 @@ class PostDao {
     try {
       String token = await Shared_pre.Shared_getToken();
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
-      final response =
-          await dio.get(POST_LIST_URL + "/$postId", options: options);
+      final response = await dio.get(POST_LIST_URL + "/$postId", options: options);
       print(response);
       if (response.statusCode == 200) {
         final responseData = response.data;
@@ -284,9 +261,10 @@ class PostDao {
         throw Exception("loading data error.....");
       }
     } on DioError catch (e) {
-      if (e.response.statusCode == 401) {
+      DioErrorProcess.dioError(context, e);
+      /*if (e.response.statusCode == 401) {
         Oauth_2.ResToken(context);
-      }
+      }*/
     }
   }
 

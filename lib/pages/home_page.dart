@@ -1,58 +1,79 @@
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyrefresh/easy_refresh.dart';
+import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/dao/user_dao.dart';
 import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
+import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:flutter_mblog/widget/my_drawer.dart';
 import 'package:flutter_mblog/widget/post_card.dart';
 import 'package:flutter_mblog/widget/share_twitter_data_widget.dart';
 
+import '../main.dart';
+
 const PAGE_SIZE = 10;
 const DEFAULT_AVATAR = 'https://zzm888.oss-cn-shenzhen.aliyuncs.com/avatar-default.png';
-
+GlobalKey<_HomePageState> childKey = GlobalKey();
 class HomePage extends StatefulWidget {
+  final loadingCacheData;
+  HomePage(this.loadingCacheData,{Key key}):super(key:key);
+
   @override
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with RouteAware {
+  EasyRefreshController _easyRefreshController = EasyRefreshController();
+
   UserModel userModel;
   int page = 0;
   ScrollController  _scrollController = ScrollController();
   FollowModel followModel;
   FollowModel followersModel;
-  bool isOkAttention = false;
   // 数据队列
   List<PostItem> items = [];
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (mounted) {
-      setState(() {});
-    }
-    if (_scrollController.positions.length != 0) {
-      _scrollController.animateTo(0.0,
-          duration: Duration(milliseconds: 500),
-          curve: Curves.decelerate);
-    }
-  }
+  bool _loading = false;
+  bool isOkAttention = false;
 
-  @override
-  void initState() {
-    initAttention();
-    // 获取缓存数据，一进来为空时显示暂无数据
-    super.initState();
+  void ref(){
+    print("刷新数据");
+    if (items.length != 0) {
+      _easyRefreshController.callRefresh();
+    }else{
+      _handleRefresh();
+    }
   }
 
   @override
   void dispose() {
+    // TODO: implement dispose
+    MyApp.routeObserver.unsubscribe(this);
+    _easyRefreshController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    (Connectivity().checkConnectivity()).then((onConnectivtiry){
+      if (onConnectivtiry == ConnectivityResult.none) {
+        print("网络未连接");
+        isOkAttention = true;
+        MyToast.show("网络未连接");
+      }else{
+        initAttention();
+      }
+    });
+    _getCachePostList();
+    // 获取缓存数据，一进来为空时显示暂无数据
+    super.initState();
   }
 
   initAttention() async {
@@ -67,8 +88,64 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    MyApp.routeObserver.subscribe(this, ModalRoute.of(context));
+  }
+
+  @override
+  void didPopNext() {
+    _getRandomPostList();
+  }
+
+
+  @override
+  void didPush() {
+    _getRandomPostList();
+  }
+
+  _getCachePostList() async {
+    PostModel postModel = await Shared_pre.Shared_getTwitter();
+    if (postModel != null) {
+      // 如果不为空
+      items = postModel.content;
+    } else {
+      // 如果为空，获取数据并加载到缓存中
+      items = [];
+      _getRandomPostList();
+    }
+    if (mounted) {
+      setState(() {
+        _loading = true;
+      });
+    }
+  }
+
+  _getRandomPostList() async {
+    List<PostItem> newPostItemList = [];
+    PostModel randomPostModel = await PostDao.getRandomList(context);
+    if (randomPostModel != null && randomPostModel.content.length != 0) {
+      widget.loadingCacheData(randomPostModel.content.length);
+      PostModel oldPostModel = await Shared_pre.Shared_getTwitter();
+      if (oldPostModel != null) {
+        newPostItemList.addAll(randomPostModel.content);
+        newPostItemList.addAll(oldPostModel.content);
+        PostModel newPostModel = new PostModel(
+            content: newPostItemList, totalPages: newPostItemList.length);
+        await Shared_pre.Shared_setTwitter(newPostModel);
+      } else {
+        newPostItemList.addAll(randomPostModel.content);
+        PostModel newPostModel = new PostModel(
+            content: newPostItemList, totalPages: newPostItemList.length);
+        await Shared_pre.Shared_setTwitter(newPostModel);
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xfff5f5f5),
       floatingActionButton: FloatingActionButton(
         heroTag: "btn2",
         onPressed: () {
@@ -112,29 +189,36 @@ class _HomePageState extends State<HomePage> {
           ),
           margin: EdgeInsets.only(bottom: 1),
         ),
-      ),
-      body: RefreshIndicator(
-        onRefresh: _handleRefresh,
-        child: isOkAttention && ShareTwitterDataWidget
-            .of(context)
-            .data.length != 0 ? Container(
-          // 渲染数据队列
-          child: ListView.builder(
-            cacheExtent: 1.0,
-            controller: _scrollController,
-            physics: new AlwaysScrollableScrollPhysics(),
-            itemCount: ShareTwitterDataWidget
-                .of(context)
-                .data.length >= 100 ? 100 : ShareTwitterDataWidget
-                .of(context)
-                .data.length,
-            itemBuilder: (context, index) => PostCard(item: ShareTwitterDataWidget
-                .of(context)
-                .data[index], index: index, userId: userModel.id,avatar:userModel.avatar),
+        /*actions: [
+          RaisedButton(
+            child: Text("测试"),
+            onPressed: () async{
+               PostModel postModel = await Shared_pre.Shared_getTwitter();
+               print("目标长度 ${items.length}");
+               print("实际长度 ${postModel.content.length}");
+            },
           ),
-        ): ShareTwitterDataWidget
-            .of(context)
-            .data.length == 0 ?Container(
+          RaisedButton(
+            child: Text("测试2"),
+            onPressed: () async{
+              await Shared_pre.SharedDeleteTwitter();
+            },
+          )
+        ],*/
+      ),
+      body: EasyRefresh(
+        controller: _easyRefreshController,
+        header: MaterialHeader(),
+        onRefresh: _handleRefresh,
+        child: isOkAttention && _loading && items.length != 0 ? ListView.builder(
+          cacheExtent: 1.0,
+          shrinkWrap: true,
+          controller: _scrollController,
+          itemCount: items.length >= 100 ? 100 : items.length,
+          itemBuilder: (context, index) {
+            return PostCard(item: items[index], index: index, userId: userModel.id, avatar:userModel.avatar);
+          },
+        ): items.length == 0 ? Container(
           child: Center(
             child: InkWell(
               child: Column(
@@ -146,21 +230,26 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-        ):Container(
+          height: MediaQuery.of(context).size.height * 0.8,
+        ) : Container(
+          height: MediaQuery.of(context).size.height * 0.8,
+          alignment: Alignment.center,
           child: Center(
             child: CircularProgressIndicator(),
           ),
         ),
       ),
-      backgroundColor: Color(0xfff5f5f5),
     );
   }
 
-
   // 上拉刷新
   Future<void> _handleRefresh() async {
+    widget.loadingCacheData(0);
+    _loading = false;
+    isOkAttention = false;
     setState(() {
       initAttention();
+      _getCachePostList();
     });
   }
 

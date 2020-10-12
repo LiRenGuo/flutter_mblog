@@ -99,7 +99,6 @@ class _ImageAllScreenLookState extends State<ImageAllScreenLook> {
               },
             ),
           ),
-
           Align(
               alignment: Alignment.bottomCenter,
               child:

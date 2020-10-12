@@ -12,6 +12,7 @@ import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
+import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/widget/four_square_grid_image.dart';
 import 'package:like_button/like_button.dart';
 
@@ -53,10 +54,7 @@ class _PostCardState extends State<PostCard> {
           InkWell(
             child: Container(
               child: ClipOval(
-                child: Image.network(item.user.avatar,cacheWidth: 450,cacheHeight: 450,)/*Image(
-                  fit: BoxFit.cover,
-                  image: OptimizedCacheImageProvider(item.user.avatar),
-                )*/,
+                child: ImageProcessTools.CachedNetworkProcessImage(item.user.avatar,memCacheHeight: 450,memCacheWidth: 450),
               ),
               width: AdaptiveTools.setRpx(90),
               height: AdaptiveTools.setRpx(90),

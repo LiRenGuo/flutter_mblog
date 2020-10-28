@@ -8,6 +8,7 @@ import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
+import 'package:flutter_mblog/util/build_content.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/widget/four_square_grid_image.dart';
 import 'package:like_button/like_button.dart';
@@ -126,6 +127,7 @@ class _LikePageState extends State<LikePage> {
                 ),
                 flex: 1,
               ),
+              SizedBox(width: 5,),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,26 +135,23 @@ class _LikePageState extends State<LikePage> {
                     InkWell(
                       child: Row(
                         children: <Widget>[
-                          Row(
-                            children: <Widget>[
-                              Container(
-                                child: Text(
-                                  _item.userDto.name,
-                                  style: TextStyle(
-                                    letterSpacing: 2,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                          Container(
+                            child: Text(
+                              _item.userDto.name,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                letterSpacing: 2,
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
                               ),
-                              SizedBox(
-                                width: 4,
-                              ),
-                              Container(
-                                child: Text("@${_item.userDto.username}"),
-                              ),
-                            ],
+                            ),
+                            margin: EdgeInsets.only(right: 5),
                           ),
+                          Expanded(
+                            child: Container(
+                              child: Text("@${_item.userDto.username}",overflow: TextOverflow.ellipsis,),
+                            ),
+                          )
                         ],
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       ),
@@ -170,7 +169,7 @@ class _LikePageState extends State<LikePage> {
                       child: Container(
                         width: double.infinity,
                         margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
-                        child: Text(_item.content),
+                        child: BuildContent.buildContent(_item.content,context),
                       ),
                       onTap: () {
                         Navigator.push(
@@ -191,6 +190,10 @@ class _LikePageState extends State<LikePage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
+                          Container(
+                            child: _buildLikeButton(_item),
+                            height: AdaptiveTools.setPx(20),
+                          ),
                           InkWell(
                             child: Container(
                               child: Row(
@@ -214,17 +217,6 @@ class _LikePageState extends State<LikePage> {
                                       )));
                             },
                           ),
-                          Container(
-                            child: _buildLikeButton(_item),
-                            height: AdaptiveTools.setPx(20),
-                          ),
-                          /*Container(
-                            child: Image.asset(
-                              "images/retweet_stroke.png",
-                              color: Colors.black54,
-                            ),
-                            height: AdaptiveTools.setPx(17),
-                          ),*/
                           InkWell(
                             child: Container(
                               child: Image.asset("images/ic_home_forward.png"),
@@ -282,27 +274,24 @@ class _LikePageState extends State<LikePage> {
                     child: ClipOval(
                       child: ImageProcessTools.CachedNetworkProcessImage(postItem.userDto.avatar,memCacheHeight: 250,memCacheWidth: 250),
                     ),
-                    width: AdaptiveTools.setRpx(50),
-                    height:  AdaptiveTools.setRpx(50),
+                    width: AdaptiveTools.setRpx(60),
+                    height:  AdaptiveTools.setRpx(60),
                   ),
-                  Row(
-                    children: <Widget>[
-                      Container(
-                        padding: EdgeInsets.fromLTRB(10, 8, 0, 10),
-                        child: Text("${postItem.userDto.name}"),
-                      ),
-                      Container(
-                        padding: EdgeInsets.fromLTRB(5, 7, 10, 10),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(10, 8, 0, 10),
+                    child: Text("${postItem.userDto.name}"),
+                  ),
+                  Expanded(
+                      child: Container(
+                        padding: EdgeInsets.fromLTRB(5, 9, 0, 10),
                         child: Text(
                           "@${postItem.userDto.username}",
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(color: Colors.black38),
                         ),
-                      )
-                    ],
-                  ),
-                  Spacer(),
+                      )),
                   Container(
-                    padding: EdgeInsets.fromLTRB(10, 6, 10, 10),
+                    padding: EdgeInsets.fromLTRB(0, 10, 10, 10),
                     child: Text(
                       "${TimeUtil.parse(postItem.ctime.toString())}",
                       style:

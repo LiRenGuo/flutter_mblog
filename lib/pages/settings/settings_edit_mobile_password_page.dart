@@ -15,7 +15,7 @@ class SettingsEditMobilePasswordPage extends StatefulWidget {
 }
 
 class _SettingsEditMobilePasswordPageState extends State<SettingsEditMobilePasswordPage> {
-  GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   bool pwdShow = false; //密码是否显示明文
   TextEditingController _passwordController = new TextEditingController();
   @override
@@ -99,8 +99,8 @@ class _SettingsEditMobilePasswordPageState extends State<SettingsEditMobilePassw
                             Navigator.pop(context);
                           },
                         ),
+                        Spacer(),
                         Container(
-                          padding: EdgeInsets.only(left: AdaptiveTools.setPx(245)),
                           margin: EdgeInsets.only(right: 10),
                           alignment: Alignment.bottomRight,
                           child: FlatButton(

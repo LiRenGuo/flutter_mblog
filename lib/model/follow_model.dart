@@ -1,3 +1,5 @@
+///
+/// 关注实体
 class FollowModel {
   List<Follow> followList;
 
@@ -19,6 +21,11 @@ class FollowModel {
       data['content'] = this.followList.map((v) => v.toJson()).toList();
     }
     return data;
+  }
+
+  @override
+  String toString() {
+    return 'FollowModel{followList: $followList}';
   }
 }
 
@@ -60,5 +67,10 @@ class Follow {
     data['intro'] = this.intro;
     data['isfollow'] = this.isfollow;
     return data;
+  }
+
+  @override
+  String toString() {
+    return 'Follow{id: $id, username: $username, name: $name, banner: $banner, avatar: $avatar, intro: $intro, isfollow: $isfollow}';
   }
 }

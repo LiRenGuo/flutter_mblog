@@ -6,12 +6,14 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/follow_dao.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
+import 'package:flutter_mblog/dao/user_dao.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
+import 'package:flutter_mblog/util/build_content.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/widget/four_square_grid_image.dart';
 import 'package:like_button/like_button.dart';
@@ -40,6 +42,18 @@ class _PostCardState extends State<PostCard> {
     super.initState();
   }
 
+  void _atToDetail(String name, BuildContext context) async {
+    String id = await UserDao.getIdByName(name, context);
+    print("根据用户名查出来的ID >>>> $id");
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => MinePage(
+                  userid: id,
+                  wLoginUserId: widget.userId,
+                )));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -54,7 +68,10 @@ class _PostCardState extends State<PostCard> {
           InkWell(
             child: Container(
               child: ClipOval(
-                child: ImageProcessTools.CachedNetworkProcessImage(item.user.avatar,memCacheHeight: 450,memCacheWidth: 450),
+                child: ImageProcessTools.CachedNetworkProcessImage(
+                    item.user.avatar,
+                    memCacheHeight: 450,
+                    memCacheWidth: 450),
               ),
               width: AdaptiveTools.setRpx(90),
               height: AdaptiveTools.setRpx(90),
@@ -79,25 +96,22 @@ class _PostCardState extends State<PostCard> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            Row(
-                              children: <Widget>[
-                                Container(
-                                  child: Text(item.user.name,
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontFamily: "sans-serif",
-                                          fontWeight: FontWeight.w800)),
-                                ),
-                                Container(
-                                  width: AdaptiveTools.setRpx(250),
-                                  margin: EdgeInsets.only(left: 4),
-                                  child: Text("@${item.user.username}",
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                          color: Colors.grey, fontSize: 13)),
-                                ),
-                              ],
+                            Container(
+                              child: Text(item.user.name,
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontFamily: "sans-serif",
+                                      fontWeight: FontWeight.w800)),
                             ),
+                            Expanded(
+                                child: Container(
+                              width: double.infinity,
+                              margin: EdgeInsets.only(left: 4),
+                              child: Text("@${item.user.username}",
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      color: Colors.grey, fontSize: 13)),
+                            )),
                             Container(
                                 margin: EdgeInsets.only(bottom: 2),
                                 child: InkWell(
@@ -183,7 +197,10 @@ class _PostCardState extends State<PostCard> {
                     item.photos != null && item.photos.length != 0
                         ? FourSquareGridImage.buildImage(context, item.photos)
                         : Container(),
-                    if (item.postId != null) item.postId == "*" ? _buildRemoteRetweet():_buildRetweet(item.forwardPost),
+                    if (item.postId != null)
+                      item.postId == "*"
+                          ? _buildRemoteRetweet()
+                          : _buildRetweet(item.forwardPost),
                     Container(
                       margin: EdgeInsets.only(top: 10),
                       child: Row(
@@ -282,29 +299,30 @@ class _PostCardState extends State<PostCard> {
                       children: <Widget>[
                         Container(
                           child: ClipOval(
-                            child: Image.network(item.user.avatar,cacheHeight: 250,cacheWidth: 250,),
+                            child: Image.network(
+                              item.user.avatar,
+                              cacheHeight: 250,
+                              cacheWidth: 250,
+                            ),
                           ),
                           width: 30,
                           height: 30,
                         ),
-                        Row(
-                          children: <Widget>[
-                            Container(
-                              padding: EdgeInsets.fromLTRB(10, 8, 0, 10),
-                              child: Text("${postItem.user.name}"),
-                            ),
-                            Container(
-                              padding: EdgeInsets.fromLTRB(5, 7, 10, 10),
-                              child: Text(
-                                "@${postItem.user.username}",
-                                style: TextStyle(color: Colors.black38),
-                              ),
-                            )
-                          ],
-                        ),
-                        Spacer(),
                         Container(
-                          padding: EdgeInsets.fromLTRB(10, 6, 10, 10),
+                          padding: EdgeInsets.fromLTRB(10, 8, 0, 10),
+                          child: Text("${postItem.user.name}"),
+                        ),
+                        Expanded(
+                            child: Container(
+                          padding: EdgeInsets.fromLTRB(5, 9, 0, 10),
+                          child: Text(
+                            "@${postItem.user.username}",
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: Colors.black38),
+                          ),
+                        )),
+                        Container(
+                          padding: EdgeInsets.fromLTRB(0, 10, 10, 10),
                           child: Text(
                             "${TimeUtil.parse(postItem.ctime.toString())}",
                             style:
@@ -434,12 +452,10 @@ class _PostCardState extends State<PostCard> {
         ],
       ));
     }
-    return Text(
-      content,
-      style: contentStyle,
-      maxLines: 3,
-      softWrap: true,
-    );
+    return BuildContent.buildContent(content,context,
+        maxLines: 3,
+        softWrap: true,
+        atOnTap: (name) => _atToDetail(name, context));
   }
 
   _tapRecognizer(BuildContext context) {
@@ -452,8 +468,14 @@ class _PostCardState extends State<PostCard> {
       margin: EdgeInsets.only(bottom: 5),
       child: Row(
         children: [
-          Icon(Icons.error,size: 14,color: Colors.red,),
-          Text("原帖已删除",)
+          Icon(
+            Icons.error,
+            size: 14,
+            color: Colors.red,
+          ),
+          Text(
+            "原帖已删除",
+          )
         ],
       ),
     );

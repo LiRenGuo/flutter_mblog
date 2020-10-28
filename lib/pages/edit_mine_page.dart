@@ -87,6 +87,7 @@ class _EditMinePageState extends State<EditMinePage> {
                     name: _nameEtController.text,
                     username: _userModel.username,
                     avatar: avatar ?? _userModel.avatar,
+                    banner: banner ?? _userModel.banner,
                     id: _userModel.id,following: _userModel.following,followers: _userModel.followers);
                   Shared_pre.Shared_setUser(editUserModel);
                   UserDao.saveUserInfo(context,formDate);
@@ -262,7 +263,7 @@ class _EditMinePageState extends State<EditMinePage> {
                                   height: AdaptiveTools.setPx(80),
                                   child:  ClipRRect(
                                     child: avatar != null ? Image.network(avatar,cacheHeight: 250,cacheWidth: 250,):Image.network(_userModel.avatar,cacheHeight: 250,cacheWidth: 250,),
-                                    borderRadius: BorderRadius.circular(42),
+                                    borderRadius: BorderRadius.all(Radius.circular(40)),
                                   ),
                                   margin: EdgeInsets.only(
                                       left: AdaptiveTools.setPx(18),
@@ -274,8 +275,7 @@ class _EditMinePageState extends State<EditMinePage> {
                                 padding: EdgeInsets.all(AdaptiveTools.setPx(30)),
                                 decoration: BoxDecoration(
                                     color: Colors.black38,
-                                    borderRadius:
-                                    BorderRadius.all(Radius.circular(40))),
+                                    borderRadius: BorderRadius.all(Radius.circular(40))),
                                 margin: EdgeInsets.only(
                                     top: AdaptiveTools.setPx(110),
                                     left: AdaptiveTools.setPx(18)),
@@ -391,7 +391,7 @@ class _EditMinePageState extends State<EditMinePage> {
                             Container(
                               padding: EdgeInsets.fromLTRB(9, 5, 10, 0),
                               child: Text(
-                                "用户名",
+                                "姓名",
                                 style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w100,
@@ -410,8 +410,9 @@ class _EditMinePageState extends State<EditMinePage> {
                                     onUpdate = true;
                                   });
                                 },
+                                maxLength: 15,
                                 decoration: InputDecoration(
-                                    hintText: "请输入用户名",
+                                    hintText: "请输入姓名",
                                     hintStyle: TextStyle(fontSize: 16),
                                     focusedBorder: UnderlineInputBorder(
                                         borderSide:

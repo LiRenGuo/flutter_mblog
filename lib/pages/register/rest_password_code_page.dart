@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/pages/register/rest_password_end_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
 import 'package:flutter_mblog/widget/lcfarm_code_input.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -65,28 +66,31 @@ class _RestPasswordPageState extends State<RestPasswordPage> {
                     height: 1,
                     color: Colors.black38,
                   ),
-                  Container(
-                    padding: EdgeInsets.only(left: AdaptiveTools.setPx(280)),
-                    margin: EdgeInsets.only(right: 10),
-                    alignment: Alignment.bottomRight,
-                    child: FlatButton(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20))),
-                      color: Colors.blue,
-                      child: Center(
-                        child: Text(
-                          "下一步",
-                          style: TextStyle(
-                              fontWeight: FontWeight.w800, color: Colors.white),
+                  Row(
+                    children: [
+                      Spacer(),
+                      Container(
+                        margin: EdgeInsets.only(right: 10),
+                        alignment: Alignment.bottomRight,
+                        child: FlatButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(20))),
+                          color: Colors.blue,
+                          child: Center(
+                            child: Text(
+                              "下一步",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w800, color: Colors.white),
+                            ),
+                          ),
+                          onPressed: () {
+                            if (_code.length == 4) {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => RestPasswordEndPage(widget.phone,_code)));
+                            }
+                          },
                         ),
-                      ),
-                      onPressed: () {
-                        print(_code);
-                        if (_code.length == 4) {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => RestPasswordEndPage(widget.phone,_code)));
-                        }
-                      },
-                    ),
+                      )
+                    ],
                   )
                 ],
               ),
@@ -104,26 +108,10 @@ class _RestPasswordPageState extends State<RestPasswordPage> {
       );
       if (response.statusCode == 200) {
         final responseData = response.data;
-        Fluttertoast.showToast(
-            msg: "发送成功",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Color(0XF20A2F4),
-            textColor: Colors.white,
-            fontSize: 16.0
-        );
+        MyToast.show("发送成功");
       }
     }on DioError catch(e) {
-      Fluttertoast.showToast(
-          msg: e.response.data["result"],
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Color(0XF20A2F4),
-          textColor: Colors.white,
-          fontSize: 16.0
-      );
+      MyToast.show(e.response.data["result"]);
     }
   }
 }

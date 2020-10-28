@@ -16,7 +16,7 @@ class SettingsEditUserNamePage extends StatefulWidget {
 }
 
 class _SettingsEditUserNamePageState extends State<SettingsEditUserNamePage> {
-  GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   TextEditingController _oldUserNameController = new TextEditingController();
   TextEditingController _newUserNameController = new TextEditingController();
   @override

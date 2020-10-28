@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+///
+/// 自适应工具
 class AdaptiveTools {
   static MediaQueryData _mediaQueryData = MediaQueryData.fromWindow(window);
   static double screenWidth = _mediaQueryData.size.width;

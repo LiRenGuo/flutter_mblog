@@ -14,7 +14,7 @@ class _SettingsEditPasswordPageState extends State<SettingsEditPasswordPage> {
   TextEditingController oldPassword = new TextEditingController();
   TextEditingController newPassword = new TextEditingController();
   TextEditingController rnewPassword = new TextEditingController();
-  GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   @override
   void dispose() {
     // TODO: implement dispose
@@ -147,11 +147,12 @@ class _SettingsEditPasswordPageState extends State<SettingsEditPasswordPage> {
                 Column(
                   children: <Widget>[
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      padding: EdgeInsets.symmetric(horizontal: 15),
                       margin: EdgeInsets.only(top: 15),
                       width: double.infinity,
                       child: RaisedButton(
-                        child: Text("更新密码",style: TextStyle(color: Colors.black),),
+                        color: Colors.blue,
+                        child: Text("更新密码",style: TextStyle(color: Colors.white),),
                         onPressed: (){
                           if (_formKey.currentState.validate()) {
                             onRestPassword();

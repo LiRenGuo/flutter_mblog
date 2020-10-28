@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/follow_dao.dart';
 import 'package:flutter_mblog/dao/user_dao.dart';
 import 'package:flutter_mblog/model/follow_model.dart';
+import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 
@@ -115,88 +116,93 @@ class _FollowMePageState extends State<FollowMePage> {
   }
 
   Widget followingUserWidget(Follow follow) {
-    return Padding(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Container(
-            child: follow.avatar != null && follow.avatar.isNotEmpty
-                ? Container(
-              child: ClipRRect(
-                child: ImageProcessTools.CachedNetworkProcessImage(follow.avatar,memCacheHeight: 250,memCacheWidth: 250),
-                borderRadius: BorderRadius.circular(50),
-              ),
-              width: AdaptiveTools.setRpx(100),
-              height: AdaptiveTools.setRpx(100),
-            )
-                : CircleAvatar(
-              radius: 30,
-              backgroundColor: Colors.black54,
-            ),
-            margin: EdgeInsets.only(right: 10),
-          ),
-          Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Container(
-                  child:  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Container(
-                            child: Text(follow.name,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 16),),
-                            margin: EdgeInsets.only(bottom: 3),
-                          ),
-                          Container(
-                            child: Text("@ ${follow.username}"),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        child: follow.isfollow ?FlatButton(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(20))
-                          ),
-                          color: Colors.blue,
-                          onPressed: (){
-                            _unfollowYou(follow.id);
-                          },
-                          child: Center(
-                            child: Text("取消关注",style: TextStyle(fontWeight: FontWeight.w800,color: Colors.white),),
-                          ),
-                        ):FlatButton(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(20))
-                          ),
-                          color: Colors.blue,
-                          onPressed: (){
-                            _followYou(follow.id);
-                          },
-                          child: Center(
-                            child: Text("关注",style: TextStyle(fontWeight: FontWeight.w800,color: Colors.white),),
-                          ),
-                        ),
-                        height: AdaptiveTools.setRpx(55),
-                      )
-                    ],
-                  ),
-                  margin: EdgeInsets.only(bottom: 5),
+    return InkWell(
+      child: Padding(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              child: follow.avatar != null && follow.avatar.isNotEmpty
+                  ? Container(
+                child: ClipRRect(
+                  child: ImageProcessTools.CachedNetworkProcessImage(follow.avatar,memCacheHeight: 250,memCacheWidth: 250),
+                  borderRadius: BorderRadius.circular(50),
                 ),
-                Container(
-                  child: Text(
-                    follow.intro != null && follow.intro != "" ? follow.intro : "这个人很懒什么都没留下",
-                    maxLines: 2,overflow: TextOverflow.ellipsis,),
-                )
-              ],
+                width: AdaptiveTools.setRpx(100),
+                height: AdaptiveTools.setRpx(100),
+              )
+                  : CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.black54,
+              ),
+              margin: EdgeInsets.only(right: 10),
             ),
-          )
-        ],
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    child:  Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Container(
+                              child: Text(follow.name,style: TextStyle(fontWeight: FontWeight.w400,fontSize: 16),),
+                              margin: EdgeInsets.only(bottom: 3),
+                            ),
+                            Container(
+                              child: Text("@ ${follow.username}"),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          child: follow.isfollow ?FlatButton(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(20))
+                            ),
+                            color: Colors.blue,
+                            onPressed: (){
+                              _unfollowYou(follow.id);
+                            },
+                            child: Center(
+                              child: Text("取消关注",style: TextStyle(fontWeight: FontWeight.w800,color: Colors.white),),
+                            ),
+                          ):FlatButton(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(20))
+                            ),
+                            color: Colors.blue,
+                            onPressed: (){
+                              _followYou(follow.id);
+                            },
+                            child: Center(
+                              child: Text("关注",style: TextStyle(fontWeight: FontWeight.w800,color: Colors.white),),
+                            ),
+                          ),
+                          height: AdaptiveTools.setRpx(55),
+                        )
+                      ],
+                    ),
+                    margin: EdgeInsets.only(bottom: 5),
+                  ),
+                  Container(
+                    child: Text(
+                      follow.intro != null && follow.intro != "" ? follow.intro : "这个人很懒什么都没留下",
+                      maxLines: 2,overflow: TextOverflow.ellipsis,),
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       ),
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      onTap: (){
+        Navigator.push(context, MaterialPageRoute(builder: (context) => MinePage(userid: follow.id,wLoginUserId: widget.userId,)));
+      },
     );
   }
 }

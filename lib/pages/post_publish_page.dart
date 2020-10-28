@@ -5,15 +5,21 @@ import 'package:dio/dio.dart';
 import 'package:emoji_picker/emoji_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
+import 'package:flutter_mblog/dao/user_dao.dart';
+import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
+import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/navigator/tab_navigator.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
+import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:flutter_mblog/widget/four_square_grid_image.dart';
 import 'package:flutter_mblog/widget/loading_container.dart';
+import 'package:giphy_picker/giphy_picker.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 
 class PostPublishPage extends StatefulWidget {
@@ -21,7 +27,7 @@ class PostPublishPage extends StatefulWidget {
   final PostItem postItem;
   final String postId;
 
-  const PostPublishPage({Key key, this.avatar, this.postItem,this.postId})
+  const PostPublishPage({Key key, this.avatar, this.postItem, this.postId})
       : super(key: key);
 
   @override
@@ -29,33 +35,50 @@ class PostPublishPage extends StatefulWidget {
 }
 
 class _PostPublishPageState extends State<PostPublishPage> {
+  FollowModel followModel;
+
   PostItem postItem;
   String devicemodel;
   FocusNode _commentFocus = FocusNode();
-  TextEditingController _contentController = TextEditingController();
+
+  List<String> typeList = [];
   List<Asset> fileList = List<Asset>();
+  List<String> gifList = List();
+
+  List<dynamic> fileGifList = [];
+
   File selectedImageFile;
   bool _loading = false;
   bool isOkForPostItem = false;
+
+  String content = "";
+  String contenting = "";
+  bool deleteAT = false;
 
   @override
   void initState() {
     getDeviceInfo();
     initPostItem();
+    _commentFocus.addListener(() {
+      print("Has focus: ${_commentFocus.hasFocus}");
+      print("_commentFocus.onKey ${_commentFocus}");
+    });
     super.initState();
   }
 
   @override
   void dispose() {
-    _contentController.dispose();
+    _commentFocus.dispose();
     super.dispose();
   }
 
-  initPostItem()async{
+  initPostItem() async {
+    UserModel userModel = await Shared_pre.Shared_getUser();
+    followModel = await UserDao.getFollowingList(userModel.id, context);
     if (widget.postId != null) {
-      postItem =  await PostDao.getPostById(widget.postId,context);
+      postItem = await PostDao.getPostById(widget.postId, context);
     }
-    if(widget.postItem != null){
+    if (widget.postItem != null) {
       postItem = widget.postItem;
     }
     if (mounted) {
@@ -102,11 +125,13 @@ class _PostPublishPageState extends State<PostPublishPage> {
           )
         ],
       ),
-      body: isOkForPostItem ? _publishContent():Container(
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
-      ),
+      body: isOkForPostItem
+          ? _publishContent()
+          : Container(
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
     );
   }
 
@@ -120,15 +145,16 @@ class _PostPublishPageState extends State<PostPublishPage> {
             child: Stack(
               alignment: Alignment.center,
               children: <Widget>[
-                ListView(
-                  children: <Widget>[
+                Column(
+                  children: [
                     _buildTextContent(),
-                    fileList.length == 0 ? Container() : _buildGridImage(),
+                    fileGifList.length == 0 ? Container() : _buildGridImage(),
                     postItem != null ? _buildRetweetCard() : Container()
                   ],
                 ),
                 Positioned(
-                  child: LoadingContainer(isLoading: _loading, child: Container()),
+                  child:
+                      LoadingContainer(isLoading: _loading, child: Container()),
                 ),
               ],
             ),
@@ -154,7 +180,10 @@ class _PostPublishPageState extends State<PostPublishPage> {
                 children: <Widget>[
                   Container(
                     child: ClipRRect(
-                      child: ImageProcessTools.CachedNetworkProcessImage(widget.avatar,memCacheHeight: 250,memCacheWidth: 250),
+                      child: ImageProcessTools.CachedNetworkProcessImage(
+                          widget.avatar,
+                          memCacheHeight: 250,
+                          memCacheWidth: 250),
                       borderRadius: BorderRadius.circular(50),
                     ),
                     width: AdaptiveTools.setRpx(60),
@@ -207,11 +236,77 @@ class _PostPublishPageState extends State<PostPublishPage> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
             _buildBottomIcon("images/icon_image.webp", () => _loadAssets()),
-            _buildBottomIcon("images/icon_mention.png", () => print('@联系人')),
+            _buildBottomIcon("images/icon_mention.png", () => _loadAtUser()),
             _buildBottomIcon("images/icon_topic.png", () => print("topic..")),
-            _buildBottomIcon("images/icon_gif.png", () => print("")),
+            Container(
+              child: InkWell(
+                child: Image.asset(
+                  "images/icon_gif.png",
+                  width: 25,
+                  height: 25,
+                ),
+                onTap: () async {
+                  final gif = await GiphyPicker.pickGif(
+                    context: context,
+                    apiKey: 'C8AXTOIfAiAtIjMaCBjSC8T4UkKRnqcT',
+                    fullScreenDialog: false,
+                    previewType: GiphyPreviewType.previewWebp,
+                    decorator: GiphyDecorator(
+                      showAppBar: false,
+                      searchElevation: 4,
+                      giphyTheme: ThemeData.dark().copyWith(
+                        inputDecorationTheme: InputDecorationTheme(
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                    ),
+                  );
+                  if (gif != null) {
+                    setState(() {
+                      fileGifList.add("https://media2.giphy.com/media/" +
+                          gif.id +
+                          "/giphy.gif");
+                    });
+                  }
+                },
+              ),
+            ),
             _buildBottomIcon(
-                "images/icon_emotion.png", () => _loadEmojiPicker()),
+                "images/icon_emotion.png",
+                () => showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) {
+                      return Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(10),
+                                topRight: Radius.circular(10)),
+                            color: Colors.white),
+                        height: AdaptiveTools.setRpx(470),
+                        child: Column(
+                          children: <Widget>[
+                            Container(
+                              child: Text("  "),
+                              width: AdaptiveTools.setRpx(60),
+                              height: AdaptiveTools.setRpx(10),
+                              margin: EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                  color: Colors.grey[400],
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(50))),
+                            ),
+                            Spacer(),
+                            Container(
+                              child: buildSticker(),
+                            ),
+                          ],
+                        ),
+                      );
+                    })),
             _buildBottomIcon("images/icon_add.png", () => print("")),
           ],
         ),
@@ -219,27 +314,102 @@ class _PostPublishPageState extends State<PostPublishPage> {
     );
   }
 
-  _loadEmojiPicker() async {
-    EmojiPicker(
+  _loadAtUser({bool isShow = false}) async {
+    return showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.transparent,
+        builder: (context) {
+          return Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    topRight: Radius.circular(10)),
+                color: Colors.white),
+            height: AdaptiveTools.setRpx(600),
+            child: Column(
+              children: <Widget>[
+                Container(
+                  child: Text("  "),
+                  width: AdaptiveTools.setRpx(60),
+                  height: AdaptiveTools.setRpx(10),
+                  margin: EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.all(Radius.circular(50))),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                      itemCount: followModel.followList.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          onTap: () {
+                            Navigator.pop(context);
+                            isShow
+                                ? contenting +=
+                                    "${followModel.followList[index].name} "
+                                : contenting +=
+                                    "@${followModel.followList[index].name} ";
+                            setState(() {
+                              content += isShow
+                                  ? "${followModel.followList[index].name} "
+                                  : "@${followModel.followList[index].name} ";
+                            });
+                          },
+                          leading: Container(
+                            width: 40,
+                            height: 40,
+                            child: ClipOval(
+                              child:
+                                  ImageProcessTools.CachedNetworkProcessImage(
+                                      followModel.followList[index].avatar,
+                                      memCacheHeight: 450,
+                                      memCacheWidth: 450),
+                            ),
+                          ),
+                          title: Text(followModel.followList[index].name),
+                        );
+                      }),
+                )
+              ],
+            ),
+          );
+        });
+  }
+
+  // 构建emoji图像
+  Widget buildSticker() {
+    return EmojiPicker(
       rows: 3,
       columns: 7,
+      buttonMode: ButtonMode.MATERIAL,
       recommendKeywords: ["racing", "horse"],
       numRecommended: 10,
       onEmojiSelected: (emoji, category) {
-        print(emoji);
+        setState(() {
+          contenting = contenting + emoji.emoji;
+        });
+        Navigator.pop(context);
       },
     );
   }
 
   // 打开系统相册
   Future<void> _loadAssets() async {
+    fileList = [];
+    gifList = [];
+    fileGifList.forEach((element) {
+      if (element is Asset)
+        fileList.add(element);
+      else
+        gifList.add(element);
+    });
     FocusScope.of(context).requestFocus(_commentFocus); //获取输入框的焦点
     _commentFocus.unfocus(); //让输入框失焦 使再次点击使会出现输入框
     List<Asset> resultList = fileList;
     try {
       resultList = await MultiImagePicker.pickImages(
         selectedAssets: fileList,
-        maxImages: 4, //最多9张
+        maxImages: 4 - gifList.length, //最多9张
         enableCamera: true,
       );
     } catch (e) {
@@ -247,85 +417,103 @@ class _PostPublishPageState extends State<PostPublishPage> {
     }
     if (mounted) {
       setState(() {
-        fileList = resultList;
+        fileList.forEach((element) {
+          fileGifList.remove(element);
+        });
+        print(fileGifList);
+        fileGifList.addAll(resultList);
       });
     }
   }
 
   //已选择图片的九宫格显示
   _buildGridImage() {
+    print(fileGifList);
     int gridCount;
-    if (fileList.length == 0) {
+    if (fileGifList.length == 0) {
       gridCount = 0;
-    } else if (fileList.length > 0 && fileList.length < 9) {
-      gridCount = fileList.length + 1;
+    } else if (fileGifList.length > 0 && fileGifList.length < 4) {
+      gridCount = fileGifList.length + 1;
     } else {
-      gridCount = fileList.length;
+      gridCount = fileGifList.length;
     }
-
-    return Padding(
-      child: GridView.count(
-        shrinkWrap: true,
-        primary: false,
-        crossAxisCount: 3,
-        children: List.generate(gridCount, (index) {
-          // 这个方法用于生成GridView中的一个item
-          var content;
-          if (index == fileList.length) {
-            // 添加图片按钮
-            var addCell = Center(
-              child: Image.asset(
-                'images/mine_feedback_add_image.png',
-                width: 300,
-                height: 300,
+    List<Widget> items = List.generate(gridCount, (index) {
+      // 这个方法用于生成GridView中的一个item
+      var content;
+      if (index == fileGifList.length) {
+        // 添加图片按钮
+        var addCell = Center(
+          child: Image.asset(
+            'images/mine_feedback_add_image.png',
+            width: 300,
+            height: 300,
+          ),
+        );
+        content = GestureDetector(
+          onTap: () {
+            // 如果已添加了4张图片，则提示不允许添加更多
+            if (fileGifList.length > 4) {
+              Scaffold.of(context).showSnackBar(SnackBar(
+                content: Text('最多只能添加4张图片或者动图'),
+              ));
+              return;
+            }
+            _loadAssets();
+          },
+          child: addCell,
+        );
+      } else {
+        content = Stack(
+          children: <Widget>[
+            Center(
+                child: fileGifList[index] is String
+                    ? Image.network(fileGifList[index])
+                    : AssetThumb(
+                        width: 300, height: 300, asset: fileGifList[index])),
+            Align(
+              alignment: Alignment.topRight,
+              child: InkWell(
+                onTap: () {
+                  fileGifList.removeAt(index);
+                  setState(() {});
+                },
+                child: Image.asset(
+                  'images/mine_feedback_ic_del.png',
+                  width: 20,
+                  height: 20,
+                ),
               ),
-            );
-            content = GestureDetector(
-              onTap: () {
-                // 如果已添加了4张图片，则提示不允许添加更多
-                if (fileList.length > 9) {
-                  Scaffold.of(context).showSnackBar(SnackBar(
-                    content: Text('最多只能添加4张图片'),
-                  ));
-                  return;
-                }
-                _loadAssets();
-              },
-              child: addCell,
-            );
-          } else {
-            content = Stack(
-              children: <Widget>[
-                Center(
-                    child: AssetThumb(
-                        width: 300, height: 300, asset: fileList[index])),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: InkWell(
-                    onTap: () {
-                      fileList.removeAt(index);
-                      setState(() {});
-                    },
-                    child: Image.asset(
-                      'images/mine_feedback_ic_del.png',
-                      width: 20,
-                      height: 20,
-                    ),
-                  ),
-                )
-              ],
-            );
+            )
+          ],
+        );
+      }
+      return Container(
+        margin: EdgeInsets.all(10),
+        width: 100,
+        height: 100,
+        color: Colors.white,
+        child: content,
+        key: ValueKey(content),
+      );
+    });
+    return Container(
+      child: ReorderableListView(
+        children: items,
+        scrollDirection: Axis.horizontal,
+        onReorder: (oldIndex, newIndex) {
+          if (oldIndex < newIndex) {
+            newIndex -= 1;
           }
-          return Container(
-            margin: EdgeInsets.all(10),
-            width: 80,
-            height: 80,
-            color: Colors.white,
-            child: content,
-          );
-        }),
+          dynamic newWidget = fileGifList[oldIndex];
+          fileGifList.removeAt(oldIndex);
+          fileGifList.insert(newIndex, newWidget);
+          var child = items.removeAt(oldIndex);
+          items.insert(newIndex, child);
+          setState(() {});
+        },
       ),
-      padding: EdgeInsets.fromLTRB(10, 5, 10, 0),
+      height: AdaptiveTools.setRpx(250),
+      margin: EdgeInsets.fromLTRB(10, 5, 10, 5),
     );
   }
 
@@ -333,24 +521,67 @@ class _PostPublishPageState extends State<PostPublishPage> {
   _buildTextContent() {
     return ListTile(
       leading: ClipRRect(
-        child: ImageProcessTools.CachedNetworkProcessImage(widget.avatar,memCacheHeight: 250,memCacheWidth: 250),
+        child: ImageProcessTools.CachedNetworkProcessImage(widget.avatar,
+            memCacheHeight: 250, memCacheWidth: 250),
         borderRadius: BorderRadius.circular(50),
       ),
       title: Row(
         children: <Widget>[
           Expanded(
-            child: TextField(
-              focusNode: _commentFocus,
-              autofocus: true,
-              maxLength: 200,
-              decoration: InputDecoration(
-                  hintText: '分享新鲜事...', border: InputBorder.none),
-              style: TextStyle(fontSize: 16),
-              minLines: 1,
-              maxLines: 100,
-              controller: _contentController,
-            ),
-          ),
+              child: TextField(
+            focusNode: _commentFocus,
+            autofocus: true,
+            maxLength: 200,
+            decoration:
+                InputDecoration(hintText: '分享新鲜事...', border: InputBorder.none),
+            style: TextStyle(fontSize: 16),
+            minLines: 1,
+            maxLines: 100,
+            controller: TextEditingController.fromValue(TextEditingValue(
+                // 设置内容
+                text: contenting,
+                // 保持光标在最后
+                selection: TextSelection.fromPosition(TextPosition(
+                    affinity: TextAffinity.downstream,
+                    offset: contenting.length)))),
+            onChanged: (value) {
+              if (content != null && content.length != 0) {
+                if (content.length > value.length) {
+                  if (deleteAT) {
+                    print("删除");
+                    int i = content.lastIndexOf("@");
+                    setState(() {
+                      deleteAT = !deleteAT;
+                      content = content.substring(0, i);
+                      contenting = content;
+                    });
+                    return;
+                  }
+                  if (content.endsWith(" ")) {
+                    print(deleteAT);
+                    if (!deleteAT) {
+                      setState(() {
+                        deleteAT = !deleteAT;
+                      });
+                    }
+                  }
+                }
+                if (content.length < value.length) {
+                  if (value.endsWith("@")) {
+                    _loadAtUser(isShow: true);
+                  }
+                }
+              } else {
+                if (value.endsWith("@")) {
+                  _loadAtUser(isShow: true);
+                }
+              }
+              setState(() {
+                content = value;
+                contenting = value;
+              });
+            },
+          )),
         ],
       ),
     );
@@ -371,7 +602,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
   }
 
   _onPublish(BuildContext context) {
-    final String content = _contentController.text.trim();
+    final String content = contenting.trimLeft();
     if (content.length <= 0) {
       MyToast.show('请输入您的新鲜事~');
       return;
@@ -389,20 +620,34 @@ class _PostPublishPageState extends State<PostPublishPage> {
       print("设备型号：$devicemodel");
       print("设备内容：$content");
       formData.fields.add(MapEntry("devicemodel", devicemodel));
-      if (fileList.length > 0) {
-        Iterable.generate(fileList.length).forEach((index) async {
-          Asset image = fileList[index];
-          ByteData byteData = await image.getByteData();
-          List<int> imageData = byteData.buffer.asUint8List();
-          String name = "$index.jpg";
-          MultipartFile multipartFile = MultipartFile.fromBytes(
-            imageData,
-            filename: name,
-          );
-          MapEntry<String, MultipartFile> file =
-              MapEntry("files", multipartFile);
-          formData.files.add(file);
-          if (formData.files.length == fileList.length) {
+      if (fileGifList.length > 0) {
+        int flag = 0;
+        Iterable.generate(fileGifList.length).forEach((index) async {
+          dynamic result = fileGifList[index];
+          if (result is Asset) {
+            flag++;
+            Asset image = result;
+            ByteData byteData = await image.getByteData();
+            List<int> imageData = byteData.buffer.asUint8List();
+            String name = "$index.jpg";
+            MultipartFile multipartFile = MultipartFile.fromBytes(
+              imageData,
+              filename: name,
+            );
+            MapEntry<String, MultipartFile> file =
+                MapEntry("files[$index]", multipartFile);
+            formData.files.add(file);
+          }
+          if (result is String) {
+            flag++;
+            formData.fields.add(MapEntry("files[$index]", result));
+          }
+          print("formData >>> ${formData.fields.toString()}");
+          print("formData >>> ${formData.files.toString()}");
+          print("flag == fileGifList.length >>> ${flag}");
+          print("flag == fileGifList.length >>> ${fileGifList.length}");
+
+          if (flag == fileGifList.length) {
             _publishApi(context, formData);
           }
         });
@@ -418,18 +663,16 @@ class _PostPublishPageState extends State<PostPublishPage> {
 
   _publishApi(BuildContext context, FormData formData) async {
     //发布帖子
-    print("发布帖子");
     if (postItem != null && postItem.id != null) {
-      print("我是转发啊");
-      formData.fields.add(MapEntry("postId",postItem.id));
+      formData.fields.add(MapEntry("postId", postItem.id));
       await PostDao.retweetPublish(context, formData);
-    }else{
+    } else {
       await PostDao.publish(context, formData);
     }
     setState(() {
       _loading = false;
     });
-    Navigator.push(context, MaterialPageRoute(builder: (content) => TabNavigator()));
+    Navigator.pop(context);
   }
 
   Future getDeviceInfo() async {

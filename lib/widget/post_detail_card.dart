@@ -5,8 +5,10 @@ import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/pages/home_detail_page.dart';
+import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
+import 'package:flutter_mblog/util/build_content.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:flutter_mblog/widget/four_square_grid_image.dart';
@@ -21,6 +23,7 @@ class PostDetailCard extends StatefulWidget {
 class _PostDetailCardState extends State<PostDetailCard> {
   bool isAttention;
   bool isOkAttention = false;
+  UserModel userModel;
 
   @override
   void initState() {
@@ -29,7 +32,7 @@ class _PostDetailCardState extends State<PostDetailCard> {
   }
 
   initAttention() async {
-    UserModel userModel = await Shared_pre.Shared_getUser();
+    userModel = await Shared_pre.Shared_getUser();
     FollowModel followModel =  await UserDao.getFollowingList(userModel.id,context);
     bool isAtt = false;
     if (followModel != null && followModel.followList.length != 0) {
@@ -69,6 +72,12 @@ class _PostDetailCardState extends State<PostDetailCard> {
     }
   }
 
+  void _atToDetail(String name,BuildContext context)async{
+    String id =  await UserDao.getIdByName(name,context);
+    print("根据用户名查出来的ID >>>> $id");
+    Navigator.push(context, MaterialPageRoute(builder: (context) => MinePage(userid: id,wLoginUserId: userModel.id,)));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -83,39 +92,37 @@ class _PostDetailCardState extends State<PostDetailCard> {
               width: double.infinity,
               margin: EdgeInsets.only(bottom: 10),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Row(
-                    children: <Widget>[
-                      Container(
-                        child: ClipOval(
-                          child: ImageProcessTools.CachedNetworkProcessImage(widget.item.user.avatar,memCacheWidth: 450,memCacheHeight: 450),
-                          /*child: Image.network(widget.item.user.avatar,cacheWidth: 450,cacheHeight: 450,),*/
-                        ),
-                        width: AdaptiveTools.setRpx(90),
-                        height: AdaptiveTools.setRpx(90),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(left: 10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(widget.item.user.name,
-                                style: TextStyle(fontWeight: FontWeight.w600,fontSize: 16)),
-                            Container(
-                              child: Text(
-                                "@ ${widget.item.user.username}",style: TextStyle(color: Colors.black54),
-                              ),
-                              margin: EdgeInsets.only(top: 5),
-                            )
-                          ],
-                        ),
-                      ),
-                    ],
+                  Container(
+                    child: ClipOval(
+                      child: ImageProcessTools.CachedNetworkProcessImage(widget.item.user.avatar,memCacheWidth: 450,memCacheHeight: 450),
+                    ),
+                    width: AdaptiveTools.setRpx(90),
+                    height: AdaptiveTools.setRpx(90),
                   ),
+                 Expanded(
+                   child:  Padding(
+                     padding: EdgeInsets.only(left: 10),
+                     child: Column(
+                       crossAxisAlignment: CrossAxisAlignment.start,
+                       children: <Widget>[
+                         Container(
+                           child: Text(widget.item.user.name,
+                             style: TextStyle(fontWeight: FontWeight.w600,fontSize: 16),overflow: TextOverflow.ellipsis,),
+                         ),
+                         Container(
+                           child: Text(
+                             "@ ${widget.item.user.username}",style: TextStyle(color: Colors.black54),
+                           ),
+                           margin: EdgeInsets.only(top: 5),
+                         )
+                       ],
+                     ),
+                   ),
+                 ),
                   InkWell(
                     child: Container(
-                      margin: EdgeInsets.only(bottom: 10),
+                      margin: EdgeInsets.only(bottom: 20),
                       child: Icon(Icons.keyboard_arrow_down,color: Colors.black54,),
                     ),
                     onTap: (){
@@ -170,7 +177,7 @@ class _PostDetailCardState extends State<PostDetailCard> {
                   child: _content(context),
                 ),
                 if (widget.item.photos.length != 0) FourSquareGridImage.buildImage(context, widget.item.photos),
-                if (widget.item.postId != null) _buildRetweet(widget.item.forwardPost),
+                if (widget.item.postId != null) widget.item.postId == "*" ? _buildRemoteRetweet(): _buildRetweet(widget.item.forwardPost),
                 Padding(
                   padding: EdgeInsets.only(top: 5),
                   child: Row(
@@ -219,21 +226,16 @@ class _PostDetailCardState extends State<PostDetailCard> {
                     width: AdaptiveTools.setRpx(50),
                     height:  AdaptiveTools.setRpx(50),
                   ),
-                  Row(
-                    children: <Widget>[
-                      Container(
-                        padding: EdgeInsets.fromLTRB(10, 8, 0, 10),
-                        child: Text("${postItem.user.name}"),
-                      ),
-                      Container(
-                        padding: EdgeInsets.fromLTRB(5, 7, 10, 10),
-                        child: Text("@${postItem.user.username}",style: TextStyle(color: Colors.black38),),
-                      )
-                    ],
-                  ),
-                  Spacer(),
                   Container(
-                    padding: EdgeInsets.fromLTRB(10, 6, 10, 10),
+                    padding: EdgeInsets.fromLTRB(10, 8, 0, 10),
+                    child: Text("${postItem.user.name}"),
+                  ),
+                  Expanded(child: Container(
+                    padding: EdgeInsets.fromLTRB(5, 9, 0, 10),
+                    child: Text("@${postItem.user.username}",style: TextStyle(color: Colors.black38),),
+                  )),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(0, 10, 10, 10),
                     child: Text(
                       "${TimeUtil.parse(postItem.ctime.toString())}",
                       style:
@@ -267,7 +269,18 @@ class _PostDetailCardState extends State<PostDetailCard> {
 
   _content(BuildContext context) {
     String content = widget.item.content;
-    TextStyle contentStyle = TextStyle(color: Colors.black, fontSize: 16);
-    return Text(content, style: contentStyle);
+    return BuildContent.buildContent(content,context,atOnTap: (name) => _atToDetail(name, context));
+  }
+
+  Widget _buildRemoteRetweet() {
+    return Container(
+      margin: EdgeInsets.only(bottom: 5),
+      child: Row(
+        children: [
+          Icon(Icons.error,size: 14,color: Colors.red,),
+          Text("原帖已删除",)
+        ],
+      ),
+    );
   }
 }

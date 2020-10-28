@@ -16,21 +16,25 @@ import 'package:flutter/material.dart';
 import 'Configs.dart';
 import 'net_utils.dart';
 
+///
+/// Oauth授权登陆
 class Oauth_2 {
-  static final authorizationEndpoint = Uri.parse(Test.TokenUrl);
+  static final authorizationEndpoint = Uri.parse(Auth.TokenUrl);
   static final identifier = "web";
   static final secret = "e25be7592b6a8a2c";
 
+  ///
+  /// Oauth登陆接口
   static Future Login_oauth2(
       String username, String password, BuildContext context) async {
     try {
       var client = await oauth2.resourceOwnerPasswordGrant(
           authorizationEndpoint, username, password,
           identifier: identifier, basicAuth: true, secret: secret);
-      Uint8List result = await client.readBytes(Test.AuthServer);
+      Uint8List result = await client.readBytes(Auth.AuthServer);
       Utf8Decoder utf8decoder = Utf8Decoder();
       Map parsed = json.decode(utf8decoder.convert(result));
-      print(">>>>>>刷新token"+client.credentials.accessToken);
+      print(">>>>>>token获取" + client.credentials.accessToken);
       Shared_pre.Shared_setUser(UserModel.fromJson(parsed));
       Shared_pre.Shared_setToken(client.credentials.accessToken);
       Shared_pre.Shared_setResToken(client.credentials.refreshToken);
@@ -41,6 +45,8 @@ class Oauth_2 {
     }
   }
 
+  ///
+  /// 刷新Token接口
   static ResToken(BuildContext context,{bool isLogin = true}) {
     BuildContext mContext  = context;
     print("Token过期，重新刷新");
@@ -54,7 +60,7 @@ class Oauth_2 {
       Options options = Options(headers: {HttpHeaders.authorizationHeader:"Basic d2ViOmUyNWJlNzU5MmI2YThhMmM"});
       print("准备请求token");
       try {
-        NetUtils.postdata(Test.TokenUrl, params: params,options: options).then((result) {
+        NetUtils.postdata(Auth.TokenUrl, params: params,options: options).then((result) {
           print("请求Token:${result}");
           if (result == 400 || result == 401) {
             Navigator.pushAndRemoveUntil(mContext, MaterialPageRoute(builder: (context) => WelcomePage()), (route) => route == null);
@@ -68,7 +74,12 @@ class Oauth_2 {
           }
         });
       }on DioError catch(e) {
-        print("刷新Token报错  $e");
+        if(e.response.statusCode==401){//401代表refresh_token过期
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => WelcomePage()),
+                (route) => route == null);
+        }
       }
     });
    }

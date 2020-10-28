@@ -43,6 +43,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
   initPostItem()async{
     PostItem _itemWidget;
     if (widget.postId != null) {
+      print(widget.postId);
       _itemWidget =  await PostDao.getPostById(widget.postId,context);
     }
     if (mounted) {
@@ -109,7 +110,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
             style: TextStyle(color: Colors.black),
           ),
         ),
-        body: initPostItemOk?Container(
+        body: initPostItemOk ? Container(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
@@ -363,7 +364,6 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
   }
 
   Future<void> sendComeent(PostItem item) async {
-    CommonUtil.showLoadingDialog(context);
     PostCommentItem commentItem = await PostDao.sendComment(
         context, item.id, _commentEditingController.text, fileList);
     setState(() {
@@ -435,34 +435,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
       children: <Widget>[
         Flexible(
           flex: 1,
-          child: InkWell(
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => PostPublishPage(
-                    avatar: _userModel.avatar,
-                    postItem: item,
-                  )));
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Image.asset(
-                  'images/ic_home_forward.png',
-                  width: 22,
-                  height: 22,
-                ),
-                Container(
-                  margin: EdgeInsets.only(left: 4),
-                  child: Text(
-                      item.forwardCount == 0
-                          ? '转发'
-                          : item.forwardCount.toString(),
-                      style: TextStyle(color: Colors.black, fontSize: 13)),
-                )
-              ],
-            ),
-          ),
+          child: _buildLikeButton(),
         ),
         Flexible(
           flex: 1,
@@ -476,48 +449,27 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                       child: Container(
                         child: Column(
                           children: <Widget>[
-                            // 输入框
                             Row(
                               children: <Widget>[
                                 Expanded(
-                                    child: Container(
-                                      child: TextField(
-                                        autofocus: true,
-                                        decoration: InputDecoration(
-                                            enabledBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    color: Colors.black38)),
-                                            focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    color: Colors.blueAccent)),
-                                            contentPadding: EdgeInsets.all(10),
-                                            hintText: "请输入你的评论"),
-                                        controller: _commentEditingController,
-                                      ),
-                                      padding: EdgeInsets.all(5),
-                                      height: 50,
+                                  child: Container(
+                                    child: TextField(
+                                      autofocus: true,
+                                      decoration: InputDecoration(
+                                          enabledBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: Colors.black38)),
+                                          focusedBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color: Colors.blueAccent)),
+                                          contentPadding: EdgeInsets.all(10),
+                                          hintText: "请输入你的评论"),
+                                      controller: _commentEditingController,
                                     ),
-                                  flex: 10,
+                                    padding: EdgeInsets.symmetric(vertical: 5,horizontal: 10),
+                                    height: 50,
+                                  ),
                                 ),
-                                Container(
-                                  padding: EdgeInsets.only(left: 5,right: 10),
-                                  height: 45,
-                                  width: AdaptiveTools.setRpx(200),
-                                  alignment: Alignment.bottomCenter,
-                                  child: RaisedButton(
-                                    child: Text("发送"),
-                                    onPressed: (){
-                                      if (_commentEditingController
-                                          .text.length !=
-                                          0) {
-                                        sendComeent(item);
-                                        Navigator.pop(context);
-                                      }
-                                    },
-                                    color: Colors.blue,
-                                    textColor: Colors.white,
-                                  )
-                                )
                               ],
                             ),
                             Container(
@@ -525,88 +477,79 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                                 mainAxisAlignment:
                                 MainAxisAlignment.spaceAround,
                                 children: <Widget>[
-                                  InkWell(
-                                    child: Stack(
-                                      children: <Widget>[
-                                        Container(
-                                          child: Image.asset(
-                                              "images/icon_image.webp"),
-                                          height: AdaptiveTools.setPx(23),
-                                          margin: EdgeInsets.only(
-                                              top: AdaptiveTools.setPx(3)),
-                                        ),
-                                        fileList.length != 0
-                                            ? Container(
-                                          child: Text(
-                                            fileList.length.toString(),
-                                            style: TextStyle(
-                                                fontSize:
-                                                AdaptiveTools.setPx(
-                                                    9),
-                                                color: Colors.white),
+                                  Padding(
+                                    child: InkWell(
+                                      child: Stack(
+                                        children: <Widget>[
+                                          Container(
+                                            child: Image.asset(
+                                                "images/icon_image.webp"),
+                                            height: AdaptiveTools.setPx(23),
+                                            margin: EdgeInsets.only(
+                                                top: AdaptiveTools.setPx(3)),
                                           ),
-                                          margin: EdgeInsets.only(
-                                              left: AdaptiveTools.setPx(
-                                                  17)),
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                              BorderRadius.all(
-                                                  Radius.circular(
-                                                      50)),
-                                              border: Border.all(
-                                                  color: Colors.red),
-                                              color: Colors.red),
-                                          padding: EdgeInsets.only(
-                                              left: AdaptiveTools.setPx(
-                                                  3)),
-                                          height:
-                                          AdaptiveTools.setPx(13),
-                                          width:
-                                          AdaptiveTools.setPx(13),
-                                        )
-                                            : Container(
-                                          height: 0,
-                                          width: 0,
-                                        )
-                                      ],
+                                          fileList.length != 0
+                                              ? Container(
+                                            child: Center(
+                                              child: Text(
+                                                fileList.length.toString(),
+                                                style: TextStyle(
+                                                    fontSize:
+                                                    AdaptiveTools.setPx(
+                                                        9),
+                                                    color: Colors.white),
+                                              ),
+                                            ),
+                                            margin: EdgeInsets.only(
+                                                left: AdaptiveTools.setPx(
+                                                    17)),
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                BorderRadius.all(
+                                                    Radius.circular(
+                                                        50)),
+                                                border: Border.all(
+                                                    color: Colors.red),
+                                                color: Colors.red),
+                                            padding: EdgeInsets.only(
+                                                left: AdaptiveTools.setPx(
+                                                    3)),
+                                            height: AdaptiveTools.setPx(13),
+                                            width: AdaptiveTools.setPx(13),
+                                          )
+                                              : Container(
+                                            height: 0,
+                                            width: 0,
+                                          )
+                                        ],
+                                      ),
+                                      onTap: () {
+                                        _loadAssets();
+                                      },
                                     ),
-                                    onTap: () {
-                                      _loadAssets();
-                                    },
+                                    padding: EdgeInsets.symmetric(horizontal: 10),
                                   ),
+                                  Spacer(),
                                   Container(
-                                    child: Image.asset(
-                                        "images/icon_mention.png"),
-                                    height: AdaptiveTools.setPx(23),
-                                    margin: EdgeInsets.only(
-                                        top: AdaptiveTools.setPx(3)),
-                                  ),
-                                  Container(
-                                    child:
-                                    Image.asset("images/icon_topic.png"),
-                                    height: AdaptiveTools.setPx(23),
-                                    margin: EdgeInsets.only(
-                                        top: AdaptiveTools.setPx(3)),
-                                  ),
-                                  Container(
-                                    child: Image.asset("images/icon_gif.png"),
-                                    height: AdaptiveTools.setPx(23),
-                                    margin: EdgeInsets.only(
-                                        top: AdaptiveTools.setPx(3)),
-                                  ),
-                                  Container(
-                                    child: Image.asset(
-                                        "images/icon_emotion.png"),
-                                    height: AdaptiveTools.setPx(23),
-                                    margin: EdgeInsets.only(
-                                        top: AdaptiveTools.setPx(3)),
-                                  ),
-                                  Container(
-                                    child: Image.asset("images/icon_add.png"),
-                                    height: AdaptiveTools.setPx(23),
-                                    margin: EdgeInsets.only(
-                                        top: AdaptiveTools.setPx(3)),
-                                  ),
+                                    margin: EdgeInsets.fromLTRB(10,0,10,0),
+                                      height: AdaptiveTools.setRpx(60),
+                                      width: AdaptiveTools.setRpx(180),
+                                      alignment: Alignment.bottomCenter,
+                                      child: RaisedButton(
+                                        child: Text("发送"),
+                                        onPressed: (){
+                                          if (_commentEditingController
+                                              .text.length !=
+                                              0) {
+                                            CommonUtil.showLoadingDialog(context);
+                                            sendComeent(item);
+                                            Navigator.pop(context);
+                                          }
+                                        },
+                                        color: Colors.blue,
+                                        textColor: Colors.white,
+                                      )
+                                  )
                                 ],
                               ),
                               margin: EdgeInsets.only(bottom: 10),
@@ -642,8 +585,35 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
         ),
         Flexible(
           flex: 1,
-          child: _buildLikeButton(),
-        )
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => PostPublishPage(
+                    avatar: _userModel.avatar,
+                    postItem: item,
+                  )));
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Image.asset(
+                  'images/ic_home_forward.png',
+                  width: 22,
+                  height: 22,
+                ),
+                Container(
+                  margin: EdgeInsets.only(left: 4),
+                  child: Text(
+                      item.forwardCount == 0
+                          ? '转发'
+                          : item.forwardCount.toString(),
+                      style: TextStyle(color: Colors.black, fontSize: 13)),
+                )
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }

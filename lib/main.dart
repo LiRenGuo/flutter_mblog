@@ -17,15 +17,12 @@ class MyApp extends StatelessWidget {
       navigatorObservers: [MyApp.routeObserver],
       navigatorKey: navigatorKey,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        primaryColor: Colors.blue,
+        primaryColor: Colors.white,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: TabNavigator(),
       debugShowCheckedModeBanner: false,
     );
   }
-
-
 }
 

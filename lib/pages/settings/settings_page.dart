@@ -10,7 +10,9 @@ import 'package:flutter_mblog/util/shared_pre.dart';
 // ignore: must_be_immutable
 class SettingsPage extends StatefulWidget {
   UserModel userModel;
+
   SettingsPage(this.userModel);
+
   @override
   _SettingsPageState createState() => _SettingsPageState();
 }
@@ -21,14 +23,19 @@ class _SettingsPageState extends State<SettingsPage> {
     return Container(
       child: Scaffold(
         appBar: AppBar(
-
           backgroundColor: Colors.white,
           iconTheme: IconThemeData(color: Colors.blue),
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text("${widget.userModel.name}",style: TextStyle(color: Colors.black),),
-              Text("@${widget.userModel.username}",style: TextStyle(color: Colors.black,fontSize: 15),)
+              Text(
+                "${widget.userModel.name}",
+                style: TextStyle(color: Colors.black),
+              ),
+              Text(
+                "@${widget.userModel.username}",
+                style: TextStyle(color: Colors.black, fontSize: 15),
+              )
             ],
           ),
         ),
@@ -41,7 +48,10 @@ class _SettingsPageState extends State<SettingsPage> {
               Container(
                 padding: EdgeInsets.all(10),
                 alignment: Alignment.centerLeft,
-                child: Text("登陆和安全",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500),),
+                child: Text(
+                  "登陆和安全",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
               ),
               Container(
                 color: Colors.white,
@@ -49,9 +59,16 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: <Widget>[
                     ListTile(
                       title: Text("用户名"),
-                      subtitle: Text("@${widget.userModel.username}",style: TextStyle(fontSize: 13),),
-                      onTap: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsEditUserNamePage(widget.userModel.username)));
+                      subtitle: Text(
+                        "@${widget.userModel.username}",
+                        style: TextStyle(fontSize: 13),
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => SettingsEditUserNamePage(
+                                    widget.userModel.username)));
                       },
                     ),
                     Container(
@@ -60,10 +77,19 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     ListTile(
                       title: Text("手机"),
-                      subtitle: Text("+86 ${widget.userModel.mobile}",style: TextStyle(fontSize: 13),),
-                      onTap: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsEditMobilePasswordPage(oldMobile: widget.userModel.mobile,)));
-                     },
+                      subtitle: Text(
+                        "+86 ${widget.userModel.mobile}",
+                        style: TextStyle(fontSize: 13),
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    SettingsEditMobilePasswordPage(
+                                      oldMobile: widget.userModel.mobile,
+                                    )));
+                      },
                     ),
                     Container(
                       height: 1,
@@ -71,8 +97,12 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                     ListTile(
                       title: Text("密码"),
-                      onTap: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsEditPasswordPage()));
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    SettingsEditPasswordPage()));
                       },
                     )
                   ],
@@ -84,7 +114,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: Column(
                   children: <Widget>[
                     ListTile(
-                      title: Text("登出",style: TextStyle(color: Colors.red,fontWeight: FontWeight.w700),),
+                      title: Text(
+                        "登出",
+                        style: TextStyle(
+                            color: Colors.red, fontWeight: FontWeight.w700),
+                      ),
                       onTap: () {
                         showDialog(
                             context: context,
@@ -100,6 +134,24 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
       ),
+    );
+  }
+
+  _deleteData(BuildContext context) {
+    return AlertDialog(
+      title: Text(""),
+      titlePadding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+      content: Text('你确定登出吗?登出将从此设备移除所有数据'),
+      actions: <Widget>[
+        FlatButton(
+          child: Text('取消'),
+          onPressed: () => Navigator.pop(context),
+        ),
+        FlatButton(
+          child: Text('确认'),
+          onPressed: () => _logout(context),
+        )
+      ],
     );
   }
 
@@ -125,6 +177,9 @@ class _SettingsPageState extends State<SettingsPage> {
     Shared_pre.Shared_deleteToken();
     Shared_pre.Shared_deleteResToken();
     Shared_pre.Shared_deleteUser();
-    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => WelcomePage()), (route) => false);
+    Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => WelcomePage()),
+        (route) => false);
   }
 }

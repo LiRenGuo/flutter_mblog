@@ -4,20 +4,13 @@ import 'package:flutter_mblog/util/shared_pre.dart';
 import 'dart:async';
 
 var dio = new Dio();
-
 class NetUtils {
   static Future get(String url, {Map<String, dynamic> params}) async {
-    var response;
-    response = await Shared_pre.Shared_getToken().then((token) async {
+    Shared_pre.Shared_getToken().then((token) async {
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
-      try {
-        var result = await dio.get(url, options: options);
-        return result.data;
-      } on DioError catch (a) {
-        return a.response.statusCode;
-      }
+      var result = await dio.get(url, options: options);
+      return result.data;
     });
-    return response;
   }
 
   static Future delete(String url) async {

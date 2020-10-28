@@ -17,7 +17,7 @@ class SettingEditPasswordPage extends StatefulWidget {
 }
 
 class _SettingEditPasswordPageState extends State<SettingEditPasswordPage> {
-  GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   TextEditingController _mobilePassword = new TextEditingController();
   @override
   void dispose() {
@@ -93,8 +93,8 @@ class _SettingEditPasswordPageState extends State<SettingEditPasswordPage> {
                             Navigator.pop(context);
                           },
                         ),
+                        Spacer(),
                         Container(
-                          padding: EdgeInsets.only(left: AdaptiveTools.setPx(245)),
                           margin: EdgeInsets.only(right: 10),
                           alignment: Alignment.bottomRight,
                           child: FlatButton(
@@ -143,7 +143,6 @@ class _SettingEditPasswordPageState extends State<SettingEditPasswordPage> {
             onPressed: (){
               print("sdsadsda"+_mobilePassword.text);
               _sendMobileCode(_mobilePassword.text);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => SettingEditMobileCodePage(_mobilePassword.text)));
             },
           )
         ],
@@ -160,27 +159,12 @@ class _SettingEditPasswordPageState extends State<SettingEditPasswordPage> {
         "http://mblog.yunep.com/api/reset/code",data: formData,options: options
       );
       if (response.statusCode == 200) {
-        final responseData = response.data;
-        Fluttertoast.showToast(
-            msg: "发送成功",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Color(0XF20A2F4),
-            textColor: Colors.white,
-            fontSize: 16.0
-        );
+        MyToast.show("发送成功");
+        Navigator.push(context, MaterialPageRoute(builder: (context) => SettingEditMobileCodePage(_mobilePassword.text)));
       }
     }on DioError catch(e) {
-      Fluttertoast.showToast(
-          msg: e.response.data["message"] == "user.account.exist"?"该用户已经绑定其他账号":e.response.data["message"],
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Color(0XF20A2F4),
-          textColor: Colors.white,
-          fontSize: 16.0
-      );
+      MyToast.show(e.response.data["message"] == "user.account.exist"?"该用户已经绑定其他账号":e.response.data["message"]);
+      Navigator.pop(context);
     }
   }
 }

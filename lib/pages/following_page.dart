@@ -6,6 +6,7 @@ import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 
+// ignore: must_be_immutable
 class FollowingPage extends StatefulWidget {
   String userId;
   String wLoginId;
@@ -168,7 +169,7 @@ class _FollowingPageState extends State<FollowingPage> {
                             ),
                           ],
                         ),
-                        widget.userId == widget.wLoginId ?Container(
+                        widget.userId == widget.wLoginId ? Container(
                           height: 30,
                           child: FlatButton(
                             shape: RoundedRectangleBorder(

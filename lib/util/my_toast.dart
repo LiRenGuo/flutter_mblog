@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+///
+/// 自定义Toast
 class MyToast {
   static show(String msg,
       {toastLength = Toast.LENGTH_SHORT, gravity = ToastGravity.BOTTOM, backgroundColor = Colors.grey, textColor = Colors.white, fontSize = 16.0}) {

@@ -40,7 +40,6 @@ class _MinePageState extends State<MinePage>
   int totalElements;
   List<MyPostItem> _myPostModel = [];
   List<PostLikeItem> _myLikePostModel = [];
-  int totalLikeElements;
   TabController tabController;
   bool isok = false;
   bool isLoadingMyPost = false;
@@ -52,6 +51,8 @@ class _MinePageState extends State<MinePage>
   int page = 0;
   int likePage = 1;
   int _currentPage = 0;
+
+  String userId;
   String loginUserId;
 
   bool isAttention = false;
@@ -62,7 +63,6 @@ class _MinePageState extends State<MinePage>
 
   _refreshPage(bool isRefresh) {
     if (isRefresh) {
-      print("子级叫我刷新页面");
       _easyRefreshController.callRefresh();
     }
   }
@@ -79,11 +79,11 @@ class _MinePageState extends State<MinePage>
   @override
   void initState() {
     super.initState();
+    userId = widget.userid;
     loginUserId = widget.wLoginUserId;
     _getUserInfo();
     (Connectivity().checkConnectivity()).then((onConnectivtiry){
       if (onConnectivtiry == ConnectivityResult.none) {
-        print("网络未连接");
         isOkAttention = true;
         MyToast.show("网络未连接");
       }else{
@@ -114,7 +114,7 @@ class _MinePageState extends State<MinePage>
       followersModel = await UserDao.getFollowersList(userModel.id, context);
       followModel = await UserDao.getFollowingList(userModel.id, context);
     }
-    /*FollowModel myFollowModel = await UserDao.getFollowingList(userModel.id, context);
+    FollowModel myFollowModel = await UserDao.getFollowingList(userModel.id, context);
     bool isAtt = false;
     if (myFollowModel != null && myFollowModel.followList.length != 0) {
       myFollowModel.followList.forEach((element) {
@@ -122,11 +122,7 @@ class _MinePageState extends State<MinePage>
           isAtt = true;
         }
       });
-    }*/
-    bool isAtt = false;
-    UserDao.isFollowMy(context, widget.userid).then((isFollow) {
-      isAtt = isFollow;
-    });
+    }
     if (mounted) {
       setState(() {
         isOkAttention = true;
@@ -143,9 +139,7 @@ class _MinePageState extends State<MinePage>
       }else{
         info = await UserDao.getUserInfoByUserId(widget.userid, context);
       }
-    }/* else {
-      info = await UserDao.getUserInfo(context);
-    }*/
+    }
     if (info != null) {
       setState(() {
         _userModel = info;
@@ -180,11 +174,13 @@ class _MinePageState extends State<MinePage>
       myPostModel = await PostDao.getMyPostList(context, page);
     }
     if (myPostModel != null) {
-      setState(() {
-        _myPostModel = myPostModel.itemList;
-        totalElements = myPostModel.totalElements;
-        isLoadingMyPost = true;
-      });
+      if (mounted) {
+        setState(() {
+          _myPostModel = myPostModel.itemList;
+          totalElements = myPostModel.totalElements;
+          isLoadingMyPost = true;
+        });
+      }
     }
   }
 
@@ -206,7 +202,7 @@ class _MinePageState extends State<MinePage>
   _getLikePostList(int likePostPage) async {
     PostLikeModel myPostLikeModel =
         await PostDao.getMyLikePost(widget.userid, likePostPage, context);
-    if (myPostLikeModel != null) {
+    if (myPostLikeModel != null && mounted) {
       setState(() {
         _myLikePostModel = myPostLikeModel.postLikeItemList;
         isLoadingMyLikePost = true;
@@ -245,8 +241,8 @@ class _MinePageState extends State<MinePage>
   @override
   Widget build(BuildContext context) {
     List<Widget> pageWidget = [
-      Tweets(_myPostModel, widget.userid, loginUserId, _userModel.avatar,widget.isTabNav,(isRefresh) => _refreshPage(isRefresh)),
-      LikePage(_myLikePostModel, widget.userid, loginUserId, _userModel.avatar)
+      Tweets(_myPostModel, userId, loginUserId, _userModel.avatar,widget.isTabNav,(isRefresh) => _refreshPage(isRefresh)),
+      LikePage(_myLikePostModel, userId, loginUserId, _userModel.avatar)
     ];
     return Scaffold(
       floatingActionButton: FloatingActionButton(
@@ -301,7 +297,7 @@ class _MinePageState extends State<MinePage>
                                         ? Container(
                                       color: Colors.black54,
                                     )
-                                        : ImageProcessTools.CachedNetworkProcessImage(_userModel.banner,memCacheWidth: 650,memCacheHeight: 350)/*CacheImage.cachedImage(_userModel.banner)*/
+                                        : ImageProcessTools.CachedNetworkProcessImage(_userModel.banner,memCacheWidth: 1050,memCacheHeight: 350)/*CacheImage.cachedImage(_userModel.banner)*/
                                 ),
                                 Container(
                                   margin: EdgeInsets.only(
@@ -321,7 +317,7 @@ class _MinePageState extends State<MinePage>
                                         height:  AdaptiveTools.setRpx(160),
                                       ),
                                       Container(
-                                        child: widget.userid == loginUserId
+                                        child: userId == loginUserId
                                             ? RaisedButton(
                                           color: Colors.white,
                                           textColor: Colors.blue,
@@ -373,8 +369,8 @@ class _MinePageState extends State<MinePage>
                                                   color: Colors.blue)),
                                           onPressed: () {
                                             isAttention
-                                                ? _unfollowYou(widget.userid)
-                                                : _followYou(widget.userid);
+                                                ? _unfollowYou(userId)
+                                                : _followYou(userId);
                                           },
                                         ),
                                         margin: EdgeInsets.only(
@@ -394,6 +390,7 @@ class _MinePageState extends State<MinePage>
                               Container(
                                 child: Text(
                                   _userModel.name,
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                       fontSize: AdaptiveTools.setPx(20),
                                       fontWeight: FontWeight.w800),
@@ -497,7 +494,7 @@ class _MinePageState extends State<MinePage>
                                                   builder: (context) =>
                                                       FollowingPage(
                                                         userId: _userModel.id,
-                                                        wLoginId: widget.wLoginUserId,
+                                                        wLoginId: loginUserId,
                                                         followModel:
                                                         followModel,
                                                       )));

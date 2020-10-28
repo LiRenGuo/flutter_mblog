@@ -1,10 +1,16 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/oauth.dart';
 
+///
+/// 统一Dio错误处理
 class DioErrorProcess {
   DioErrorProcess.dioError(BuildContext context, DioError error) {
+    print("错误报警 >>>> "+error.toString());
     switch (error.type) {
       case DioErrorType.CANCEL:
         MyToast.show("请求取消");
@@ -22,6 +28,7 @@ class DioErrorProcess {
         int errorCode =  error.response.statusCode;
         switch (errorCode) {
           case 401:
+            print("Token过期啦");
             Oauth_2.ResToken(context);
             break;
           case 500:
@@ -29,6 +36,7 @@ class DioErrorProcess {
             break;
           default:
             print(error.response.statusMessage);
+            MyToast.show(error.response.statusMessage);
             break;
         }
         break;
@@ -37,4 +45,5 @@ class DioErrorProcess {
         break;
     }
   }
+
 }

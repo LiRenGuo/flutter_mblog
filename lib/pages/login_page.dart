@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController _unameController = new TextEditingController();
   TextEditingController _pwdController = new TextEditingController();
   bool pwdShow = false; //密码是否显示明文
-  GlobalKey _formKey = new GlobalKey<FormState>();
+  final GlobalKey _formKey = new GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -102,9 +102,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               Container(
-                width: AdaptiveTools.setRpx(660),
+                width: double.infinity,
                 margin: EdgeInsets.only(top: 20),
-                padding: EdgeInsets.symmetric(vertical: 4),
+                padding: EdgeInsets.symmetric(vertical: 4,horizontal: 20),
                 child: Card(
                   color: Theme.of(context).primaryColor,
                   elevation: 3,

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-
+///
+/// 时间处理工具
 class TimeUtil {
   static final min = 60;
   static final hour = min * 60;
@@ -27,9 +27,10 @@ class TimeUtil {
     var nowa = DateTime.now();
     int dataTime = int.parse(timestamp);
     var data = DateTime.fromMillisecondsSinceEpoch(dataTime, isUtc: true);
-    //debugPrint("传过来的时间是 ${data}");
     var c = nowa.difference(data).inSeconds;
-    // print(c);
+    print(timestamp);
+    print(data);
+    print(c > years);
     if (c > years) {
       return ('${(c / years).toInt()}年前');
     } else if (c > mon) {

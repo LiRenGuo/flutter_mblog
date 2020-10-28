@@ -2,6 +2,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -19,7 +20,7 @@ class _RestPasswordEndPageState extends State<RestPasswordEndPage> {
   TextEditingController _passwordController = new TextEditingController();
   TextEditingController _rpasswordController = new TextEditingController();
 
-  GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   bool pwdShow = false;
   bool rpwdShow = false;
 
@@ -147,28 +148,10 @@ class _RestPasswordEndPageState extends State<RestPasswordEndPage> {
       if (response.statusCode == 200) {
         final responseData = response.data;
         Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
-        /*Fluttertoast.showToast(
-            msg: "注册成功",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Color(0XF20A2F4),
-            textColor: Colors.white,
-            fontSize: 16.0
-        );
-        */
       }
     }on DioError catch(e){
       print(e.toString());
-      Fluttertoast.showToast(
-          msg: e.response.data["result"],
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Color(0XF20A2F4),
-          textColor: Colors.white,
-          fontSize: 16.0
-      );
+      MyToast.show(e.response.data["result"]);
     }
   }
 }

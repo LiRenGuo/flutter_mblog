@@ -1,7 +1,8 @@
 import 'package:common_utils/common_utils.dart';
 
+///
+/// 时间处理工具
 class TimeMachineUtil{
-
   /// 当前时间 过去/未来 某个周的周一和周日
   static Map<String, String> getWeeksDate(int weeks) {
     Map<String, String> mapTime = new Map();

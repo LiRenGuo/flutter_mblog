@@ -2,11 +2,9 @@ import 'package:connectivity/connectivity.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/pages/register/rest_password_code_page.dart';
-import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/common_util.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   @override
@@ -14,7 +12,7 @@ class ResetPasswordPage extends StatefulWidget {
 }
 
 class _ResetPasswordPageState extends State<ResetPasswordPage> {
-  GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   TextEditingController _phoneController = new TextEditingController();
   @override
   void dispose() {
@@ -68,27 +66,31 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       height: 1,
                       color: Colors.black38,
                     ),
-                    Container(
-                      padding: EdgeInsets.only(left: AdaptiveTools.setPx(280)),
-                      margin: EdgeInsets.only(right: 10),
-                      alignment: Alignment.bottomRight,
-                      child: FlatButton(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(20))),
-                        color: Colors.blue,
-                        child: Center(
-                          child: Text(
-                            "下一步",
-                            style: TextStyle(
-                                fontWeight: FontWeight.w800, color: Colors.white),
+                    Row(
+                      children: [
+                        Spacer(),
+                        Container(
+                          margin: EdgeInsets.only(right: 10),
+                          alignment: Alignment.bottomRight,
+                          child: FlatButton(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(20))),
+                            color: Colors.blue,
+                            child: Center(
+                              child: Text(
+                                "下一步",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w800, color: Colors.white),
+                              ),
+                            ),
+                            onPressed: () {
+                              if (_formKey.currentState.validate()) {
+                                _sendMobileCode();
+                              }
+                            },
                           ),
-                        ),
-                        onPressed: () {
-                          if (_formKey.currentState.validate()) {
-                            _sendMobileCode();
-                          }
-                        },
-                      ),
+                        )
+                      ],
                     )
                   ],
                 ),
@@ -129,7 +131,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           FocusScope.of(context).requestFocus(FocusNode());
           MyToast.show("网络未连接");
         }else{
-          print("-----"+e.toString());
           MyToast.show(e.response.data["result"]);
         }
       });

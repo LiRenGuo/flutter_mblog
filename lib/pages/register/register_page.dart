@@ -2,10 +2,8 @@ import 'package:connectivity/connectivity.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/register_user.dart';
 import 'package:flutter_mblog/pages/register/check_code_page.dart';
-import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/common_util.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
@@ -20,7 +18,8 @@ class _RegisterPageState extends State<RegisterPage> {
   RegisterUser registerUser;
   TextEditingController _nameController = new TextEditingController();
   TextEditingController _phoneController = new TextEditingController();
-  GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKeyRegisterPage = new GlobalKey<FormState>();
+
   @override
   void dispose() {
     // TODO: implement dispose
@@ -38,7 +37,7 @@ class _RegisterPageState extends State<RegisterPage> {
           iconTheme: IconThemeData(color: Colors.blue),
         ),
         body: Form(
-          key: _formKey,
+          key: _formKeyRegisterPage,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -85,27 +84,31 @@ class _RegisterPageState extends State<RegisterPage> {
                       height: 1,
                       color: Colors.black38,
                     ),
-                    Container(
-                      padding: EdgeInsets.only(left: AdaptiveTools.setPx(280)),
-                      margin: EdgeInsets.only(right: 10),
-                      alignment: Alignment.bottomRight,
-                      child: FlatButton(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(20))),
-                        color: Colors.blue,
-                        child: Center(
-                          child: Text(
-                            "下一步",
-                            style: TextStyle(
-                                fontWeight: FontWeight.w800, color: Colors.white),
+                    Row(
+                      children: [
+                        Spacer(),
+                        Container(
+                          margin: EdgeInsets.only(right: 10),
+                          alignment: Alignment.bottomRight,
+                          child: FlatButton(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(20))),
+                            color: Colors.blue,
+                            child: Center(
+                              child: Text(
+                                "下一步",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w800, color: Colors.white),
+                              ),
+                            ),
+                            onPressed: () {
+                              if (_formKeyRegisterPage.currentState.validate()) {
+                                _sendMobileCode();
+                              }
+                            },
                           ),
-                        ),
-                        onPressed: () {
-                          if (_formKey.currentState.validate()) {
-                            _sendMobileCode();
-                          }
-                        },
-                      ),
+                        )
+                      ],
                     )
                   ],
                 ),
@@ -128,12 +131,11 @@ class _RegisterPageState extends State<RegisterPage> {
         Navigator.pop(context);
         MyToast.show("获取验证码错误");
       }
-    }); // TODO 发送验证码
+    });
   }
 
   Future<bool> _sendCode() async {
     try {
-      print(_phoneController.text);
       final response = await dio.post(
         "http://mblog.yunep.com/api/register/code/send?username=${_phoneController.text}",
       );

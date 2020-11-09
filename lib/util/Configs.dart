@@ -3,9 +3,15 @@ import 'dart:ui';
 ///
 /// 授权地址
 class Auth{
-  static final ipaddress = "http://mblog.yunep.com";  // 前缀地址
-  static final AuthServer ='${ipaddress}/api/profile';  // 获取授权信息用户
-  static final TokenUrl = '${ipaddress}/auth/oauth/token';//授权地址
+  //static final ipaddress = "http://mblog.yunep.com";  // 前缀地址
+  static final ipaddress = "http://10.1.53.17:10002";  // 前缀地址
+  static final AuthServer ='${Auth.ipaddress}/api/profile';  // 获取授权信息用户
+  //static final TokenUrl = '${Test.AUTH_URL}/auth/oauth/token';//授权地址
+  static final TokenUrl = '${Test.AUTH_URL}/oauth/token';//授权地址
+}
+
+class Test{
+  static final AUTH_URL = "http://10.1.53.17:10001";  // 前缀地址
 }
 
 ///

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/pages/settings/settings_edit_mobile_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/common_util.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
@@ -139,7 +140,7 @@ class _SettingsEditMobilePasswordPageState extends State<SettingsEditMobilePassw
     FormData formData = FormData.fromMap({"password":_passwordController.text});
     CommonUtil.showLoadingDialog(context);
     try {
-      final response = await dio.post("http://mblog.yunep.com/api/reset/valid/password", data: formData,options: options);
+      final response = await dio.post("${Auth.ipaddress}/api/reset/valid/password", data: formData,options: options);
       if (response.statusCode == 200) {
         if (!response.data) {
           MyToast.show("密码错误");

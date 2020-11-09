@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
+import 'package:flutter_mblog/pages/about_us_page.dart';
 import 'package:flutter_mblog/pages/following_page.dart';
 import 'package:flutter_mblog/pages/followme_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/settings/settings_page.dart';
+import 'package:flutter_mblog/util/check_update_tools.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 
 class MyDrawer extends StatelessWidget {
@@ -62,7 +64,7 @@ class MyDrawer extends StatelessWidget {
             Padding(
               padding: EdgeInsets.symmetric(vertical: 5),
               child: Text(
-                userModel.email ?? userModel.username,
+                userModel.email == "" ? "@${userModel.username}" : userModel.email ?? userModel.username,
                 style: TextStyle(color: Colors.grey, fontSize: 15),
               ),
             ),
@@ -117,7 +119,7 @@ class MyDrawer extends StatelessWidget {
           ListTile(
               leading: Icon(Icons.help_outline),
               title: Text('关于我们'),
-              onTap: () => print('关于我们')),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => AboutUsPage()))),
         ],
       ),
     );

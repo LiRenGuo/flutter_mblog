@@ -50,18 +50,20 @@ class _LoginPageState extends State<LoginPage> {
       body: SingleChildScrollView(
         child: Form(
           key: _formKey,
-          autovalidate: true,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Container(
-                width: AdaptiveTools.setRpx(500),
-                child: ImageProcessTools.AssetProcessImage("images/logo.png",cacheHeight: 450,cacheWidth: 640)/*Image.asset('images/logo.png', width: 180, height: 180,filterQuality: FilterQuality.low,)*/,
-                padding: EdgeInsets.fromLTRB(30, 30, 30, 0),
-              ),
               Padding(
-                padding: EdgeInsets.fromLTRB(30, 10, 30, 4),
+                child: Text(
+                  "登陆你的账号",
+                  style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2),
+                ),
+                padding: EdgeInsets.all(20),
+              ),
+              Container(
                 child: TextFormField(
                     decoration: InputDecoration(
                       labelText: "手机号",
@@ -75,9 +77,9 @@ class _LoginPageState extends State<LoginPage> {
                       return v.trim().isNotEmpty ? null : '手机号不能为空';
                     }
                 ),
+                padding: EdgeInsets.fromLTRB(20, 10, 20, 4),
               ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(30, 4, 30, 4),
+              Container(
                 child: TextFormField(
                   style: hintTips,
                   controller: _pwdController,
@@ -100,27 +102,28 @@ class _LoginPageState extends State<LoginPage> {
                     return v.trim().isNotEmpty ? null : '密码不能为空';
                   },
                 ),
+                padding: EdgeInsets.fromLTRB(20, 10, 20, 4),
               ),
               Container(
-                width: double.infinity,
-                margin: EdgeInsets.only(top: 20),
-                padding: EdgeInsets.symmetric(vertical: 4,horizontal: 20),
-                child: Card(
-                  color: Theme.of(context).primaryColor,
-                  elevation: 3,
-                  child: MaterialButton(
-                    onPressed: (){
-                      print("点击");
-                      _onLogin();
-                    },
-                    child: Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Text(
-                        '登录',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                margin: EdgeInsets.only(top: 30),
+                child: FlatButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius:
+                      BorderRadius.all(Radius.circular(20))),
+                  color: Colors.blue,
+                  child: Center(
+                    child: Text(
+                      "登陆",
+                      style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white),
                     ),
                   ),
+                  onPressed: () {
+                    print("点击");
+                    _onLogin();
+                  },
                 ),
               ),
               Container(
@@ -130,7 +133,7 @@ class _LoginPageState extends State<LoginPage> {
                     Row(
                       children: <Widget>[
                         InkWell(
-                          child: Text("忘记密码",style: TextStyle(fontSize: AdaptiveTools.setPx(14),color: Colors.blue),),
+                          child: Text("忘记密码",style: TextStyle(fontSize: AdaptiveTools.setPx(13),color: Colors.blue),),
                           onTap: (){
                             Navigator.push(context, MaterialPageRoute(builder: (context) => ResetPasswordPage()));
                           },
@@ -139,9 +142,9 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     Row(
                       children: <Widget>[
-                        Text("没有账号？",style: TextStyle(fontSize: AdaptiveTools.setPx(14)),),
+                        Text("没有账号？",style: TextStyle(fontSize: AdaptiveTools.setPx(13)),),
                         InkWell(
-                          child: Text("点击注册",style: TextStyle(fontSize: AdaptiveTools.setPx(14),color: Colors.blue),),
+                          child: Text("点击注册",style: TextStyle(fontSize: AdaptiveTools.setPx(13),color: Colors.blue),),
                           onTap: (){
                             Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterPage()));
                           },
@@ -150,7 +153,7 @@ class _LoginPageState extends State<LoginPage> {
                     )
                   ],
                 ),
-                margin: EdgeInsets.only(left: 28,right: 28),
+                padding: EdgeInsets.symmetric(horizontal: 25),
               )
             ],
           ),

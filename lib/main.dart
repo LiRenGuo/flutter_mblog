@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_mblog/navigator/tab_navigator.dart';
 import 'package:flutter/rendering.dart' show debugPaintSizeEnabled;
 
 void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  FlutterDownloader.initialize(debug: false);
   runApp(MyApp());
 }
 
@@ -17,7 +20,8 @@ class MyApp extends StatelessWidget {
       navigatorObservers: [MyApp.routeObserver],
       navigatorKey: navigatorKey,
       theme: ThemeData(
-        primaryColor: Colors.white,
+        primarySwatch: Colors.blue,
+        primaryColor: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       home: TabNavigator(),

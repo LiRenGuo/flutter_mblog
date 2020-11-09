@@ -77,7 +77,7 @@ class _SettingsEditUserNamePageState extends State<SettingsEditUserNamePage> {
                       validator: (value){
                         return value.isNotEmpty && value != null && value != "" ?null:"用户名不能为空";
                       },
-                      maxLength: 30,
+                      maxLength: 15,
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r"[a-zA-Z]|[0-9]")),
                       ],

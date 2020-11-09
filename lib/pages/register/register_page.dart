@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/model/register_user.dart';
 import 'package:flutter_mblog/pages/register/check_code_page.dart';
+import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/common_util.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
@@ -137,7 +138,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<bool> _sendCode() async {
     try {
       final response = await dio.post(
-        "http://mblog.yunep.com/api/register/code/send?username=${_phoneController.text}",
+        "${Auth.ipaddress}/api/register/code/send?username=${_phoneController.text}",
       );
       if (response.statusCode == 200) {
         final responseData = response.data;

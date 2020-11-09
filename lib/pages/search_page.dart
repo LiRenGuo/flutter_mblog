@@ -36,19 +36,17 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _getPostModel();
-
     _controller.addListener(() {
       var maxScroll = _controller.position.maxScrollExtent;
       var pixels = _controller.position.pixels;
       if (maxScroll == pixels) {
-        _getPostModel(loadMore: true);
+        _getPostModel(searchContent,loadMore: true);
       }
     });
   }
 
-  _getPostModel({bool loadMore = false}) async {
-    PostModel postModel = await PostDao.getRandomList(context);
+  _getPostModel(String keyword,{bool loadMore = false}) async {
+    PostModel postModel = await PostDao.findByKeyword(searchContent,context);
     userModel = await Shared_pre.Shared_getUser();
     if (mounted) {
       setState(() {
@@ -65,6 +63,7 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+
     return Container(
       child: Scaffold(
         appBar: AppBar(
@@ -78,6 +77,11 @@ class _SearchPageState extends State<SearchPage> {
               onChanged: (value) {
                 setState(() {
                   searchContent = value;
+                  if(value == "") {
+                    postItemList = [];
+                  }else{
+                    _getPostModel(searchContent);
+                  }
                 });
               },
               autofocus: autofocus,
@@ -119,7 +123,7 @@ class _SearchPageState extends State<SearchPage> {
           ),
         ),
         body: Container(
-          child: isok
+          child: isok && postItemList.length != 0
               ? EasyRefresh(
                   header: MaterialHeader(),
                   child: ListView.builder(
@@ -149,7 +153,7 @@ class _SearchPageState extends State<SearchPage> {
   Future<void> _onRefresh() async {
     isok = false;
     setState(() {
-      _getPostModel();
+      _getPostModel(searchContent);
     });
   }
 }

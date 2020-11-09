@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/model/user_model.dart';
+import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/dio_error_process.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
@@ -9,7 +10,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '../util/net_utils.dart';
 
 
-const USER_FOLLOW_URI = "http://mblog.yunep.com/api/follow/";
+final USER_FOLLOW_URI = "${Auth.ipaddress}/api/follow/";
 
 ///
 /// 关注Dao

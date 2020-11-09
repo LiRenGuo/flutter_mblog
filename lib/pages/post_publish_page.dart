@@ -21,6 +21,7 @@ import 'package:flutter_mblog/widget/four_square_grid_image.dart';
 import 'package:flutter_mblog/widget/loading_container.dart';
 import 'package:giphy_picker/giphy_picker.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class PostPublishPage extends StatefulWidget {
   final String avatar;
@@ -55,6 +56,14 @@ class _PostPublishPageState extends State<PostPublishPage> {
   String contenting = "";
   bool deleteAT = false;
 
+  final GlobalKey<FormState> _urlWebKey = new GlobalKey<FormState>();
+  TextEditingController _urlWebController = new TextEditingController();
+  WebViewController _webViewController;
+  String _urlWeb = "";
+  String _title = "";
+
+  TextEditingController _contentTextEditingController = new TextEditingController();
+
   @override
   void initState() {
     getDeviceInfo();
@@ -69,6 +78,8 @@ class _PostPublishPageState extends State<PostPublishPage> {
   @override
   void dispose() {
     _commentFocus.dispose();
+    _contentTextEditingController.dispose();
+    _urlWebController.dispose();
     super.dispose();
   }
 
@@ -91,6 +102,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomPadding: false,
       appBar: AppBar(
         elevation: 0,
         iconTheme: IconThemeData(color: Theme.of(context).primaryColor),
@@ -149,12 +161,14 @@ class _PostPublishPageState extends State<PostPublishPage> {
                   children: [
                     _buildTextContent(),
                     fileGifList.length == 0 ? Container() : _buildGridImage(),
-                    postItem != null ? _buildRetweetCard() : Container()
+                    postItem != null ? _buildRetweetCard() : Container(),
+                    _urlWeb != null && _urlWeb != ""
+                        ? _buildWebView()
+                        : Container()
                   ],
                 ),
                 Positioned(
-                  child:
-                      LoadingContainer(isLoading: _loading, child: Container()),
+                  child: LoadingContainer(isLoading: _loading, child: Container()),
                 ),
               ],
             ),
@@ -179,6 +193,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
               child: Row(
                 children: <Widget>[
                   Container(
+                    margin: EdgeInsets.only(top: AdaptiveTools.setRpx(10)),
                     child: ClipRRect(
                       child: ImageProcessTools.CachedNetworkProcessImage(
                           widget.avatar,
@@ -193,18 +208,21 @@ class _PostPublishPageState extends State<PostPublishPage> {
                     child: Text(postItem.user.name),
                     margin: EdgeInsets.only(left: 10),
                   ),
+                  Expanded(
+                      child: Container(
+                        padding: EdgeInsets.fromLTRB(5, 9, 0, 10),
+                        child: Text(
+                          "@${postItem.user.username}",
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: Colors.black38),
+                        ),
+                      )),
                   Container(
+                    padding: EdgeInsets.fromLTRB(0, 10, 10, 10),
                     child: Text(
-                      "@${postItem.user.username}",
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: Colors.black38),
-                    ),
-                  ),
-                  Spacer(),
-                  Container(
-                    child: Text(
-                      '${TimeUtil.parse(postItem.ctime.toString())}',
-                      style: TextStyle(color: Colors.black38),
+                      "${TimeUtil.parse(postItem.ctime.toString())}",
+                      style:
+                      TextStyle(fontSize: 13, color: Colors.black38),
                     ),
                   )
                 ],
@@ -225,6 +243,87 @@ class _PostPublishPageState extends State<PostPublishPage> {
     );
   }
 
+  /// 构建网页预览图
+  _buildWebView() {
+    return Padding(
+      child: Container(
+        child: Column(
+          children: [
+            Container(
+              height: AdaptiveTools.setRpx(400),
+              child: Stack(
+                children: [
+                  Container(
+                    child: WebView(
+                      initialUrl: _urlWeb,
+                      onWebViewCreated: (controller) {
+                        _webViewController = controller;
+                      },
+                      onPageFinished: (url) {
+                        _webViewController.evaluateJavascript("document.title").then((result) {
+                          setState(() {
+                            _title = result;
+                          });
+                        });
+                      },
+                      navigationDelegate: (NavigationRequest request) {
+                        print("request.url >> ${request.url}");
+                        if (request.url.startsWith("http") ||
+                            request.url.startsWith("https")) {
+                          print("允许请求");
+                          return NavigationDecision.navigate;
+                        }
+                        return NavigationDecision.prevent;
+                      },
+                      javascriptMode: JavascriptMode.unrestricted,
+                    ),
+                    height: AdaptiveTools.setRpx(300),
+                  ),
+                  InkWell(
+                    child: Container(
+                      height: double.infinity,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          border: Border.all(color: Colors.black12),
+                          borderRadius: BorderRadius.all(Radius.circular(10))),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(_title),
+                          Text("$_urlWeb")
+                        ],
+                      ),
+                      padding: EdgeInsets.only(top: AdaptiveTools.setRpx(310),left: AdaptiveTools.setRpx(20)),
+                    ),
+                    onTap: () {
+                      print("111");
+                    },
+                  ),
+                  InkWell(
+                    child: Container(
+                      alignment: Alignment.topRight,
+                      width: double.infinity,
+                      padding: EdgeInsets.all(10),
+                      child: Icon(Icons.remove_circle,color: Colors.red,),
+                    ),
+                    onTap: (){
+                      setState(() {
+                        _title = "";
+                        _urlWeb = "";
+                      });
+                    },
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+      padding: EdgeInsets.fromLTRB(20, 5, 20, 20),
+    );
+  }
+
   //底部操作栏布局
   _buildBottom() {
     return Align(
@@ -237,7 +336,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
           children: <Widget>[
             _buildBottomIcon("images/icon_image.webp", () => _loadAssets()),
             _buildBottomIcon("images/icon_mention.png", () => _loadAtUser()),
-            _buildBottomIcon("images/icon_topic.png", () => print("topic..")),
+            _buildBottomIcon("images/icon_url.png", () => _addUrl()),
             Container(
               child: InkWell(
                 child: Image.asset(
@@ -286,7 +385,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
                                 topLeft: Radius.circular(10),
                                 topRight: Radius.circular(10)),
                             color: Colors.white),
-                        height: AdaptiveTools.setRpx(470),
+                        height: AdaptiveTools.setRpx(460),
                         child: Column(
                           children: <Widget>[
                             Container(
@@ -345,14 +444,14 @@ class _PostPublishPageState extends State<PostPublishPage> {
                           onTap: () {
                             Navigator.pop(context);
                             isShow
-                                ? contenting +=
-                                    "${followModel.followList[index].name} "
-                                : contenting +=
-                                    "@${followModel.followList[index].name} ";
+                                ? _contentTextEditingController.text +=
+                                    "${followModel.followList[index].username} "
+                                : _contentTextEditingController.text +=
+                                    "@${followModel.followList[index].username} ";
                             setState(() {
                               content += isShow
-                                  ? "${followModel.followList[index].name} "
-                                  : "@${followModel.followList[index].name} ";
+                                  ? "${followModel.followList[index].username} "
+                                  : "@${followModel.followList[index].username} ";
                             });
                           },
                           leading: Container(
@@ -367,11 +466,69 @@ class _PostPublishPageState extends State<PostPublishPage> {
                             ),
                           ),
                           title: Text(followModel.followList[index].name),
+                          subtitle: Text(
+                              "@${followModel.followList[index].username}"),
                         );
                       }),
                 )
               ],
             ),
+          );
+        });
+  }
+
+  _addUrl() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('输入链向网址'),
+            content: Container(
+              child: Column(
+                children: <Widget>[
+                  Form(
+                    child: TextFormField(
+                      controller: _urlWebController,
+                      decoration: InputDecoration(
+                          hintText: 'http://或者https://',
+                          filled: true,
+                          fillColor: Colors.grey.shade50),
+                      validator: (value) {
+                        RegExp url = new RegExp(r"^((https|http)?:\/\/)[^\s]+");
+                        var result = url.firstMatch(value);
+                        if (result != null) {
+                          return null;
+                        }
+                        return "网址不正确";
+                      },
+                    ),
+                    key: _urlWebKey,
+                  ),
+                ],
+              ),
+              height: AdaptiveTools.setRpx(140),
+            ),
+            actions: <Widget>[
+              RaisedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('取消'),
+              ),
+              RaisedButton(
+                onPressed: () {
+                  if (_urlWebKey.currentState.validate()) {
+                    String url = _urlWebController.text.trim();
+                    setState(() {
+                      _urlWeb = url;
+                      _urlWebController.text = "";
+                    });
+                    Navigator.pop(context);
+                  }
+                },
+                child: Text('确定'),
+              ),
+            ],
           );
         });
   }
@@ -386,7 +543,8 @@ class _PostPublishPageState extends State<PostPublishPage> {
       numRecommended: 10,
       onEmojiSelected: (emoji, category) {
         setState(() {
-          contenting = contenting + emoji.emoji;
+          _contentTextEditingController.text =
+              _contentTextEditingController.text + emoji.emoji;
         });
         Navigator.pop(context);
       },
@@ -537,35 +695,9 @@ class _PostPublishPageState extends State<PostPublishPage> {
             style: TextStyle(fontSize: 16),
             minLines: 1,
             maxLines: 100,
-            controller: TextEditingController.fromValue(TextEditingValue(
-                // 设置内容
-                text: contenting,
-                // 保持光标在最后
-                selection: TextSelection.fromPosition(TextPosition(
-                    affinity: TextAffinity.downstream,
-                    offset: contenting.length)))),
+            controller: _contentTextEditingController,
             onChanged: (value) {
               if (content != null && content.length != 0) {
-                if (content.length > value.length) {
-                  if (deleteAT) {
-                    print("删除");
-                    int i = content.lastIndexOf("@");
-                    setState(() {
-                      deleteAT = !deleteAT;
-                      content = content.substring(0, i);
-                      contenting = content;
-                    });
-                    return;
-                  }
-                  if (content.endsWith(" ")) {
-                    print(deleteAT);
-                    if (!deleteAT) {
-                      setState(() {
-                        deleteAT = !deleteAT;
-                      });
-                    }
-                  }
-                }
                 if (content.length < value.length) {
                   if (value.endsWith("@")) {
                     _loadAtUser(isShow: true);
@@ -602,7 +734,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
   }
 
   _onPublish(BuildContext context) {
-    final String content = contenting.trimLeft();
+    final String content = _contentTextEditingController.text.trimLeft();
     if (content.length <= 0) {
       MyToast.show('请输入您的新鲜事~');
       return;
@@ -616,6 +748,9 @@ class _PostPublishPageState extends State<PostPublishPage> {
       setState(() {
         _loading = true;
       });
+      if(_urlWeb != ""){
+        formData.fields.add(MapEntry("website", _urlWeb));
+      }
       formData.fields.add(MapEntry("content", content));
       print("设备型号：$devicemodel");
       print("设备内容：$content");

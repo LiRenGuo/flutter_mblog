@@ -1,12 +1,11 @@
-import 'package:date_format/date_format.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/pages/settings/setting_edit_mobile_code_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class SettingEditPasswordPage extends StatefulWidget {
   String oldMobile;
@@ -156,7 +155,7 @@ class _SettingEditPasswordPageState extends State<SettingEditPasswordPage> {
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
       FormData formData = FormData.fromMap({"mobile":mobile});
       final response = await dio.post(
-        "http://mblog.yunep.com/api/reset/code",data: formData,options: options
+        "${Auth.ipaddress}/api/reset/code",data: formData,options: options
       );
       if (response.statusCode == 200) {
         MyToast.show("发送成功");

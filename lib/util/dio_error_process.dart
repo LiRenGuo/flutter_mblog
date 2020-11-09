@@ -11,6 +11,7 @@ import 'package:flutter_mblog/util/oauth.dart';
 class DioErrorProcess {
   DioErrorProcess.dioError(BuildContext context, DioError error) {
     print("错误报警 >>>> "+error.toString());
+    print("错误请求 >>>> ${error.request.path}");
     switch (error.type) {
       case DioErrorType.CANCEL:
         MyToast.show("请求取消");

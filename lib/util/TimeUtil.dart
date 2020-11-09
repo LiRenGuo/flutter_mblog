@@ -47,7 +47,6 @@ class TimeUtil {
   }
 
   static String readDataTime(int timestamp) {
-    //DateTime dateTime = DateTime.now();
     var data = DateTime.fromMillisecondsSinceEpoch(timestamp, isUtc: false);
     String hours;
     String times;

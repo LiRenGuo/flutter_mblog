@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/model/register_user.dart';
 import 'package:flutter_mblog/pages/register/register_password.dart';
+import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
 import 'package:flutter_mblog/widget/lcfarm_code_input.dart';
@@ -105,7 +106,7 @@ class _CheckCodePageState extends State<CheckCodePage> {
   _sendCode() async {
     try {
       final response = await dio.post(
-        "http://mblog.yunep.com/api/register/code/send?username=${widget.registerUser.phone}",
+        "${Auth.ipaddress}/api/register/code/send?username=${widget.registerUser.phone}",
     );
       if (response.statusCode == 200) {
         MyToast.show("发送成功");

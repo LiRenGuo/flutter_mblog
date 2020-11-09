@@ -2,6 +2,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/pages/register/rest_password_code_page.dart';
+import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/common_util.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
@@ -118,7 +119,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   Future<bool> _sendCode() async {
     try {
       final response = await dio.post(
-        "http://mblog.yunep.com/api/forget/password/code/send?username=${_phoneController.text}",
+        "${Auth.ipaddress}/api/forget/password/code/send?username=${_phoneController.text}",
       );
       if (response.statusCode == 200) {
         final responseData = response.data;

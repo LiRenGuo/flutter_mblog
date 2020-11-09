@@ -1,11 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/pages/register/rest_password_end_page.dart';
-import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
 import 'package:flutter_mblog/widget/lcfarm_code_input.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class RestPasswordPage extends StatefulWidget {
   String phone;
@@ -104,7 +103,7 @@ class _RestPasswordPageState extends State<RestPasswordPage> {
   _sendCode() async {
     try {
       final response = await dio.post(
-        "http://mblog.yunep.com/api/forget/password/code/send?username=${widget.phone}",
+        "${Auth.ipaddress}/api/forget/password/code/send?username=${widget.phone}",
       );
       if (response.statusCode == 200) {
         final responseData = response.data;

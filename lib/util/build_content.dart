@@ -1,84 +1,77 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:flutter_mblog/dao/user_dao.dart';
 import 'package:flutter_mblog/main.dart';
+import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/widget/browser_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 ///
 /// 构建Content内容，构建信息，content中可能包含@号和链接
 /// 需要区分开来
+///
+const String urlPattern = r'https?:/\/\\S+';
+const String emailPattern = r'\S+@\S+';
+const String phonePattern = r'[\d-]{9,}';
+final RegExp linkRegExp = RegExp('($urlPattern)|($emailPattern)|($phonePattern)', caseSensitive: false);
 class BuildContent {
   static Widget buildContent(String text, BuildContext context,
       {TextStyle style,
       int maxLines,
       bool softWrap = false,
       Function atOnTap}) {
-    List<String> list = buildContentAt(text, []);
-    if (list.isEmpty) {
+    int flag = text.indexOf("@");
+    if (flag == -1) {
       return maxLines == null
           ? Linkify(
               onOpen: _onOpen,
               text: text,
-              style: style ?? TextStyle(color: Colors.black, fontSize: 14),
+              style: style ?? TextStyle(color: Colors.black, fontSize: 15),
             )
           : Linkify(
               onOpen: _onOpen,
               text: text,
-              style: style ?? TextStyle(color: Colors.black, fontSize: 14),
+              style: style ?? TextStyle(color: Colors.black, fontSize: 15),
               maxLines: maxLines,
               softWrap: softWrap);
     } else {
+      List<String> list = buildContentAt(text);
       return RichText(
         text: TextSpan(
             children: list.map((result) {
-          if (result.startsWith("@")) {
-            return TextSpan(
-              text: result + " ",
-              style: TextStyle(fontSize: 12, color: Colors.blue),
-              recognizer: TapGestureRecognizer()
-                ..onTap = () {
-                  print('点击了隐私政策');
-                  if (atOnTap != null) atOnTap(result.substring(1));
-                },
-            );
-          } else {
-            return TextSpan(
-              text: result,
-              style: TextStyle(fontSize: 12, color: Colors.black),
-            );
-          }
-        }).toList()),
+              if (result.startsWith("@")) {
+                return TextSpan(
+                  text: result + " ",
+                  style: TextStyle(fontSize: 14, color: Colors.blue),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      print('点击了隐私政策');
+                      if (atOnTap != null) atOnTap(result.substring(1));
+                    },
+                );
+              } else {
+                return TextSpan(
+                  text: result,
+                  style: TextStyle(fontSize: 14, color: Colors.black),
+                );
+              }
+            }).toList()),
       );
     }
   }
 
   ///
-  /// 可能需要修改，想到好的可以修改，该方法中使用了递归，可能会比较耗性能
-  static List<String> buildContentAt(String text, List<String> textList) {
-    for (int i = text.length - 1; i >= 0; i--) {
-      String flag = text[i];
-      if (flag == " ") {
-        int lastAt = text.lastIndexOf("@");
-        if (lastAt == -1) {
-          return [];
-        }
-        String at = text.substring(lastAt, i);
-        text = text.substring(0, lastAt);
-        if (textList.isNotEmpty) {
-          textList.removeAt(0);
-        }
-        textList.insert(0, at);
-        if (text.isNotEmpty) {
-          textList.insert(0, text);
-          /// 递归处
-          return buildContentAt(text, textList);
-        } else {
-          return textList;
-        }
-      }
-      return textList;
-    }
+  /// 正则表达式切割字符串
+  static List<String> buildContentAt(String text) {
+    List<String> matchList = [];
+    RegExp regExp = new RegExp(r"@.*?\s");
+    text.splitMapJoin(regExp, onMatch: (match) {
+      matchList.add(match.group(0));
+    }, onNonMatch: (nonMatch) {
+      matchList.add(nonMatch.trim());
+    });
+    return matchList;
   }
 
   ///
@@ -94,6 +87,15 @@ class BuildContent {
       }));
     } else {
       throw 'Could not launch $link';
+    }
+  }
+
+  static bool checkName(String name, BuildContext context) {
+    try {
+      UserDao.getIdByName(name, context);
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 }

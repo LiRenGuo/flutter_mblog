@@ -6,59 +6,79 @@ import 'package:flutter_mblog/model/mypost_model.dart';
 import 'package:flutter_mblog/model/post_comment_model.dart';
 import 'package:flutter_mblog/model/post_like_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
+import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/dio_error_process.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 
-const POST_LIST_URL = "http://mblog.yunep.com/api/post";
-const POST_COMMENT_URL = "http://mblog.yunep.com/api/comment/post/";
-const POST_PUBLISH_URL = "http://mblog.yunep.com/api/post";
-const POST_RETWEET_URL = "http://mblog.yunep.com/api/post/quote";
-const MY_POST_LIST_URL = "http://mblog.yunep.com/api/post/my";
-const YOUR_POST_LIST_URL = "http://mblog.yunep.com/api/post/user/";
-const LIKE_URL = 'http://mblog.yunep.com/api/post/like';
-const SEND_COMMENT = "http://mblog.yunep.com/api/post/";
-const LIKE_POST_URI = "http://mblog.yunep.com/api/post/like/list/";
-const POST_RANDOM_LIST = "http://mblog.yunep.com/api/post/list";
+final POST_LIST_URL = "${Auth.ipaddress}/api/post";
+final POST_COMMENT_URL = "${Auth.ipaddress}/api/comment/post";
+final POST_PUBLISH_URL = "${Auth.ipaddress}/api/post";
+final POST_RETWEET_URL = "${Auth.ipaddress}/api/post/quote";
+final MY_POST_LIST_URL = "${Auth.ipaddress}/api/post/my";
+final YOUR_POST_LIST_URL = "${Auth.ipaddress}/api/post/user/";
+final LIKE_URL = '${Auth.ipaddress}/api/post/like';
+final SEND_COMMENT = "${Auth.ipaddress}/api/post/";
+final LIKE_POST_URI = "${Auth.ipaddress}/api/post/like/list/";
+final POST_RANDOM_LIST = "${Auth.ipaddress}/api/post/list";
+final FIND_KEYWORD_BY_POST = "${Auth.ipaddress}/api/post/search";
 
 ///
 /// 帖子接口
 class PostDao {
-
   /// TODO
   /// 获取首页随机帖子数，后期可能会修改
-  static Future<PostModel> getRandomList(BuildContext context)async{
+  static Future<PostModel> getRandomList(BuildContext context) async {
     print("获取首页推特数据");
     try {
       String token = await Shared_pre.Shared_getToken();
       Options options = Options(headers: {"Authorization": "Bearer $token"});
       dio.options.connectTimeout = 5000;
       dio.options.receiveTimeout = 10000;
-      final response = await dio
-          .get(POST_RANDOM_LIST,options: options);
+      final response = await dio.get(POST_RANDOM_LIST, options: options);
       if (response.statusCode == 200) {
         final responseData = response.data;
+        print("responseData >> ${responseData}");
         return PostModel.fromJson(responseData);
       }
-    }on DioError catch(e) {
+    } on DioError catch (e) {
+      DioErrorProcess.dioError(context, e);
+    }
+  }
+
+  static Future<PostModel> findByKeyword(String keyword,BuildContext context) async {
+    try {
+      String token = await Shared_pre.Shared_getToken();
+      Options options = Options(headers: {"Authorization": "Bearer $token"});
+      dio.options.connectTimeout = 5000;
+      dio.options.receiveTimeout = 10000;
+      final response = await dio.get("$FIND_KEYWORD_BY_POST?keyword=$keyword", options: options);
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+        print("responseData >> ${responseData}");
+        return PostModel.fromJson(responseData);
+      }
+    } on DioError catch (e) {
       DioErrorProcess.dioError(context, e);
     }
   }
 
   ///
   /// 获取评论列表
-  static Future<PostCommentModel> getCommentList(BuildContext context,String postId) async {
+  static Future<PostCommentModel> getCommentList(
+      BuildContext context, String postId) async {
     try {
       String token = await Shared_pre.Shared_getToken();
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
-      final response = await dio.get(POST_COMMENT_URL + "/$postId",options: options);
+      final response =
+          await dio.get(POST_COMMENT_URL + "/$postId", options: options);
       if (response.statusCode == 200) {
         final responseData = response.data;
         return PostCommentModel.fromJson(responseData);
       }
-    }on DioError catch(e) {
+    } on DioError catch (e) {
       DioErrorProcess.dioError(context, e);
     }
   }
@@ -80,12 +100,14 @@ class PostDao {
             imageData,
             filename: name,
           );
-          MapEntry<String, MultipartFile> file = MapEntry("files", multipartFile);
+          MapEntry<String, MultipartFile> file =
+              MapEntry("files", multipartFile);
           formData.files.add(file);
           if (formData.files.length == fileList.length) {
             formData.fields.add(MapEntry("content", content));
             String token = await Shared_pre.Shared_getToken();
-            Options options = Options(headers: {"Authorization": "Bearer $token"});
+            Options options =
+                Options(headers: {"Authorization": "Bearer $token"});
             final response = await dio.post(SEND_COMMENT + "$postId/comment",
                 data: formData, options: options);
             if (response.statusCode == 200 || response.statusCode == 201) {
@@ -107,7 +129,7 @@ class PostDao {
           return PostCommentItem.fromJson(responseData);
         }
       }
-    } on DioError catch(e) {
+    } on DioError catch (e) {
       Navigator.pop(context);
       MyToast.show("评论失败");
       DioErrorProcess.dioError(context, e);
@@ -156,11 +178,12 @@ class PostDao {
     try {
       final response = Shared_pre.Shared_getToken().then((token) async {
         Options options = Options(headers: {'Authorization': 'Bearer $token'});
-        final response = await dio.post(POST_PUBLISH_URL, data: formData, options: options);
+        final response =
+            await dio.post(POST_PUBLISH_URL, data: formData, options: options);
         return response.data;
       });
       return response;
-    }on DioError catch(e) {
+    } on DioError catch (e) {
       DioErrorProcess.dioError(context, e);
     }
   }
@@ -172,11 +195,12 @@ class PostDao {
       final response = Shared_pre.Shared_getToken().then((token) async {
         Options options = Options(headers: {'Authorization': 'Bearer $token'});
         print("请求推文发布");
-        final response = await dio.post(POST_RETWEET_URL, data: formData, options: options);
+        final response =
+            await dio.post(POST_RETWEET_URL, data: formData, options: options);
         return response.data;
       });
       return response;
-    }on DioError catch (e) {
+    } on DioError catch (e) {
       DioErrorProcess.dioError(context, e);
     }
   }
@@ -211,7 +235,8 @@ class PostDao {
 
   ///
   /// 获取我点过赞的帖子列表
-  static Future<PostLikeModel> getMyLikePost(String userId,int page,BuildContext context) async {
+  static Future<PostLikeModel> getMyLikePost(
+      String userId, int page, BuildContext context) async {
     try {
       String token = await Shared_pre.Shared_getToken();
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
@@ -226,7 +251,6 @@ class PostDao {
     }
   }
 
-
   ///
   /// 根据ID获取帖子
   static Future<PostItem> getPostById(
@@ -234,7 +258,8 @@ class PostDao {
     try {
       String token = await Shared_pre.Shared_getToken();
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
-      final response = await dio.get(POST_LIST_URL + "/$postId", options: options);
+      final response =
+          await dio.get(POST_LIST_URL + "/$postId", options: options);
       if (response.statusCode == 200) {
         final responseData = response.data;
         return PostItem.fromJson(responseData);
@@ -243,5 +268,4 @@ class PostDao {
       DioErrorProcess.dioError(context, e);
     }
   }
-
 }

@@ -1,6 +1,3 @@
-import 'package:date_format/date_format.dart';
-import 'package:flutter_mblog/model/mypost_model.dart' as model;
-
 class PostModel {
   int totalPages;
   List<PostItem> content;
@@ -44,8 +41,8 @@ class PostItem {
   int pubtime;
   int ctime;
   String postId;
+  String website;
   PostItem forwardPost;
-
 
   @override
   String toString() {
@@ -65,6 +62,7 @@ class PostItem {
         this.islike,
         this.pubtime,
         this.postId,
+        this.website,
         this.ctime,this.forwardPost});
 
 PostItem.fromJson(Map<String, dynamic> json) {
@@ -81,6 +79,7 @@ PostItem.fromJson(Map<String, dynamic> json) {
     pubtime = json['pubtime'];
     ctime = json['ctime'];
     postId = json['postId'];
+    website = json['website'];
     forwardPost = json['forwardPost'] != null
         ? new PostItem.fromJson(json['forwardPost'])
         : null;

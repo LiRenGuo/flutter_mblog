@@ -2,6 +2,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -143,7 +144,7 @@ class _RestPasswordEndPageState extends State<RestPasswordEndPage> {
         "cpassword":_rpasswordController.text
       });
       final response = await dio.post(
-          "http://mblog.yunep.com/api/forget/password",data: formData
+          "${Auth.ipaddress}/api/forget/password",data: formData
       );
       if (response.statusCode == 200) {
         final responseData = response.data;

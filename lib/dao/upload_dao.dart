@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/dio_error_process.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
@@ -10,8 +11,8 @@ import 'package:flutter_mblog/util/shared_pre.dart';
 ///
 /// 上传头像和banner图接口
 class UploadDao{
-  static final String UPDATE_BANNER = "http://mblog.yunep.com/api/profile/update/banner";//更换背景地址
-  static final String UPDATE_AVATAR = "http://mblog.yunep.com/api/profile/update/avatar";//更换头像地址
+  static final String UPDATE_BANNER = "${Auth.ipaddress}/api/profile/update/banner";//更换背景地址
+  static final String UPDATE_AVATAR = "${Auth.ipaddress}/api/profile/update/avatar";//更换头像地址
 
   static Future<String> uploadImage(String url,File file,BuildContext context)async{
     try {

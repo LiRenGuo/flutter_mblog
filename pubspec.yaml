@@ -32,7 +32,6 @@ dependencies:
   fluttertoast: ^7.0.2
   multi_image_picker: ^4.7.10
   device_info: ^0.4.1+4
-  date_format: ^1.0.8
   common_utils: ^1.2.1
   image_picker: ^0.6.7+4
   cached_network_image: ^2.3.3
@@ -46,6 +45,10 @@ dependencies:
   webview_flutter: ^1.0.5
   url_launcher: ^5.7.6
   flutter_linkify: ^3.1.3
+  package_info: ^0.4.3+2
+  permission_handler: ^5.0.1+1
+  flutter_downloader: ^1.5.2
+  open_file: ^3.0.3
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -94,6 +97,7 @@ flutter:
     - images/image_loading_error.png
     - images/more_menu.png
     - images/image.png
+    - images/icon_url.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

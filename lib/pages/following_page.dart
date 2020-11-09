@@ -196,7 +196,7 @@ class _FollowingPageState extends State<FollowingPage> {
                   ),
                   Container(
                     child: Text(
-                      follow.intro.isNotEmpty ? follow.intro : "这个人很懒什么都没留下",
+                      follow.intro != null && follow.intro != "" ? follow.intro : "这个人很懒什么都没留下",
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),

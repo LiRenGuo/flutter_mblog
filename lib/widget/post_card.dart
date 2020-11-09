@@ -16,6 +16,8 @@ import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/build_content.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/widget/four_square_grid_image.dart';
+import 'package:flutter_mblog/widget/retweet_widget.dart';
+import 'package:flutter_mblog/widget/url_web_widget.dart';
 import 'package:like_button/like_button.dart';
 
 class PostCard extends StatefulWidget {
@@ -44,14 +46,9 @@ class _PostCardState extends State<PostCard> {
 
   void _atToDetail(String name, BuildContext context) async {
     String id = await UserDao.getIdByName(name, context);
-    print("根据用户名查出来的ID >>>> $id");
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => MinePage(
-                  userid: id,
-                  wLoginUserId: widget.userId,
-                )));
+    if(id != null){
+      Navigator.push(context, MaterialPageRoute(builder: (context) => MinePage(userid: id, wLoginUserId: widget.userId,)));
+    }
   }
 
   @override
@@ -200,7 +197,10 @@ class _PostCardState extends State<PostCard> {
                     if (item.postId != null)
                       item.postId == "*"
                           ? _buildRemoteRetweet()
-                          : _buildRetweet(item.forwardPost),
+                          : RetweetWidget(item.user.avatar, item.user.name, item.user.username
+                          , item.forwardPost.id, item.forwardPost.ctime.toString()
+                          , item.forwardPost.content, item.forwardPost.photos),
+                    if (item.website != null) UrlWebWidget(item.website),
                     Container(
                       margin: EdgeInsets.only(top: 10),
                       child: Row(
@@ -277,85 +277,6 @@ class _PostCardState extends State<PostCard> {
         ],
       ),
     );
-  }
-
-  Widget _buildRetweet(PostItem postItem) {
-    Widget retweetWidget;
-    postItem != null && postItem.id != null
-        ? retweetWidget = InkWell(
-            child: Container(
-              margin: EdgeInsets.only(top: 10),
-              width: double.infinity,
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black12),
-                  borderRadius: BorderRadius.all(Radius.circular(10))),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.fromLTRB(10, 3, 3, 0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Container(
-                          child: ClipOval(
-                            child: Image.network(
-                              item.user.avatar,
-                              cacheHeight: 250,
-                              cacheWidth: 250,
-                            ),
-                          ),
-                          width: 30,
-                          height: 30,
-                        ),
-                        Container(
-                          padding: EdgeInsets.fromLTRB(10, 8, 0, 10),
-                          child: Text("${postItem.user.name}"),
-                        ),
-                        Expanded(
-                            child: Container(
-                          padding: EdgeInsets.fromLTRB(5, 9, 0, 10),
-                          child: Text(
-                            "@${postItem.user.username}",
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: Colors.black38),
-                          ),
-                        )),
-                        Container(
-                          padding: EdgeInsets.fromLTRB(0, 10, 10, 10),
-                          child: Text(
-                            "${TimeUtil.parse(postItem.ctime.toString())}",
-                            style:
-                                TextStyle(fontSize: 13, color: Colors.black38),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.fromLTRB(10, 0, 3, 3),
-                    child: Text("${postItem.content}"),
-                  ),
-                  // TODO
-                  postItem.photos != null && postItem.photos.length != 0
-                      ? FourSquareGridImage.buildRetweetImage(postItem.photos)
-                      : Container()
-                ],
-              ),
-            ),
-            onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => HomeDetailPage(
-                        new PostItem(),
-                        postId: postItem.id,
-                      )));
-            },
-          )
-        : retweetWidget = Container(
-            width: 0,
-            height: 0,
-          );
-    return retweetWidget;
   }
 
   _followYou(String userId) {

@@ -39,7 +39,7 @@ class Oauth_2 {
       Shared_pre.Shared_setToken(client.credentials.accessToken);
       Shared_pre.Shared_setResToken(client.credentials.refreshToken);
       return 'success';
-    }  catch (e) {
+    } catch (e) {
       print(e.toString());
       return e.toString();
     }
@@ -47,8 +47,8 @@ class Oauth_2 {
 
   ///
   /// 刷新Token接口
-  static ResToken(BuildContext context,{bool isLogin = true}) {
-    BuildContext mContext  = context;
+  static Future<bool> ResToken(BuildContext context, {bool isLogin = true}) {
+    BuildContext mContext = context;
     print("Token过期，重新刷新");
     Shared_pre.Shared_getResToken().then((token) {
       Map<String, dynamic> params = {
@@ -57,30 +57,88 @@ class Oauth_2 {
         'client_id': '$identifier',
         'client_secret': '$secret'
       };
-      Options options = Options(headers: {HttpHeaders.authorizationHeader:"Basic d2ViOmUyNWJlNzU5MmI2YThhMmM"});
-      print("准备请求token");
+      Options options = Options(headers: {
+        HttpHeaders.authorizationHeader: "Basic d2ViOmUyNWJlNzU5MmI2YThhMmM"
+      });
       try {
-        NetUtils.postdata(Auth.TokenUrl, params: params,options: options).then((result) {
+        NetUtils.postdata(Auth.TokenUrl, params: params, options: options)
+            .then((result) {
           print("请求Token:${result}");
           if (result == 400 || result == 401) {
-            Navigator.pushAndRemoveUntil(mContext, MaterialPageRoute(builder: (context) => WelcomePage()), (route) => route == null);
+            Navigator.pushAndRemoveUntil(
+                mContext,
+                MaterialPageRoute(builder: (context) => WelcomePage()),
+                (route) => route == null);
           } else {
             Shared_pre.Shared_setToken(result['access_token']);
             Shared_pre.Shared_setResToken(result['refresh_token']);
-            if(isLogin) {
-              Navigator.pushAndRemoveUntil(mContext,
-                  MaterialPageRoute(builder: (context) => TabNavigator()), (route) => route == null);
+            if (isLogin) {
+              Navigator.pushAndRemoveUntil(
+                  mContext,
+                  MaterialPageRoute(builder: (context) => TabNavigator()),
+                  (route) => route == null);
             }
+            return true;
           }
         });
-      }on DioError catch(e) {
-        if(e.response.statusCode==401){//401代表refresh_token过期
+      } on DioError catch (e) {
+        if (e.response.statusCode == 401) {
+          //401代表refresh_token过期
           Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => WelcomePage()),
-                (route) => route == null);
+              context,
+              MaterialPageRoute(builder: (context) => WelcomePage()),
+              (route) => route == null);
         }
       }
     });
-   }
+  }
+
+  ///
+  /// 刷新Token接口
+  static ResToken2(BuildContext context, {bool isLogin = true}) async {
+    BuildContext mContext = context;
+    print("Token过期，重新刷新");
+    String token = await Shared_pre.Shared_getResToken();
+    Map<String, dynamic> params = {
+      'grant_type': 'refresh_token',
+      'refresh_token': '$token',
+      'client_id': '$identifier',
+      'client_secret': '$secret'
+    };
+    Options options = Options(headers: {
+      HttpHeaders.authorizationHeader: "Basic d2ViOmUyNWJlNzU5MmI2YThhMmM"
+    });
+    try {
+      var result =  await NetUtils.postdata(Auth.TokenUrl, params: params, options: options);
+      print("请求Token:${result}");
+      if (result == 400 || result == 401) {
+        Navigator.pushAndRemoveUntil(
+            mContext,
+            MaterialPageRoute(builder: (context) => WelcomePage()),
+                (route) => route == null);
+      } else if(result == 302){
+        Navigator.pushAndRemoveUntil(
+            mContext,
+            MaterialPageRoute(builder: (context) => WelcomePage()),
+                (route) => route == null);
+      } else {
+        Shared_pre.Shared_setToken(result['access_token']);
+        Shared_pre.Shared_setResToken(result['refresh_token']);
+        if (isLogin) {
+          Navigator.pushAndRemoveUntil(
+              mContext,
+              MaterialPageRoute(builder: (context) => TabNavigator()),
+                  (route) => route == null);
+        }
+      }
+    } on DioError catch (e) {
+      if (e.response.statusCode == 401) {
+        //401代表refresh_token过期
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => WelcomePage()),
+                (route) => route == null);
+      }
+    }
+  }
 }

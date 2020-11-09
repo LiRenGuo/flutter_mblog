@@ -12,7 +12,6 @@ import 'package:flutter_mblog/pages/search_page.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
-import 'package:flutter_mblog/widget/browser_page.dart';
 import 'package:flutter_mblog/widget/my_drawer.dart';
 import 'package:flutter_mblog/widget/post_card.dart';
 
@@ -21,6 +20,7 @@ import '../main.dart';
 const PAGE_SIZE = 10;
 const DEFAULT_AVATAR = 'https://zzm888.oss-cn-shenzhen.aliyuncs.com/avatar-default.png';
 GlobalKey<_HomePageState> childKey = GlobalKey();
+
 class HomePage extends StatefulWidget {
   final loadingCacheData;
   final logNum;
@@ -32,6 +32,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with RouteAware {
   EasyRefreshController _easyRefreshController = EasyRefreshController();
+  ImageCache get imageCache => PaintingBinding.instance.imageCache;
 
   UserModel userModel;
   int page = 0;
@@ -46,7 +47,6 @@ class _HomePageState extends State<HomePage> with RouteAware {
   bool isOkAttention = false;
 
   void ref() {
-    print("刷新数据");
     if (items.length != 0) {
       _easyRefreshController.callRefresh();
     } else {
@@ -67,7 +67,6 @@ class _HomePageState extends State<HomePage> with RouteAware {
   void initState() {
     (Connectivity().checkConnectivity()).then((onConnectivtiry) {
       if (onConnectivtiry == ConnectivityResult.none) {
-        print("网络未连接");
         isOkAttention = true;
         MyToast.show("网络未连接");
       } else {
@@ -80,7 +79,7 @@ class _HomePageState extends State<HomePage> with RouteAware {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
         // 滑动到最底部了
-        print("到底了");
+        print("到最底部了");
       }
     });
     super.initState();
@@ -103,11 +102,10 @@ class _HomePageState extends State<HomePage> with RouteAware {
     MyApp.routeObserver.subscribe(this, ModalRoute.of(context));
   }
 
-  @override
+  /*@override
   void didPopNext() {
     _getRandomPostList();
-  }
-
+  }*/
 
   @override
   void didPush() {
@@ -117,10 +115,10 @@ class _HomePageState extends State<HomePage> with RouteAware {
   _getCachePostList() async {
     PostModel postModel = await Shared_pre.Shared_getTwitter();
     if (postModel != null) {
-      // 如果不为空
+      /// 如果不为空
       items = postModel.content;
     } else {
-      // 如果为空，获取数据并加载到缓存中
+      /// 如果为空，获取数据并加载到缓存中
       items = [];
       _getRandomPostList();
     }
@@ -154,7 +152,7 @@ class _HomePageState extends State<HomePage> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    if (items.length >= 100) {
+    if (items.length > 100) {
       items.removeRange(101, items.length);
     }
     return Scaffold(
@@ -172,6 +170,7 @@ class _HomePageState extends State<HomePage> with RouteAware {
         followModel: followModel,
         followersModel: followersModel,) : MyDrawer(userModel: userModel),
       appBar: AppBar(
+        backgroundColor: Colors.white,
         leading: Container(
           padding: EdgeInsets.all(5),
           child: FutureBuilder(
@@ -218,6 +217,13 @@ class _HomePageState extends State<HomePage> with RouteAware {
           RaisedButton(
             child: Text("测试"),
             onPressed: () {
+              bool istrue =  imageCache.evict("http://photo.iksns.net/2019112716373872375bc37fcfca8460.jpg");
+              print("istrue  >>  ${istrue}");
+            },
+          ),
+          RaisedButton(
+            child: Text("测试"),
+            onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(builder: (_){
                 return new BrowserPage(url: "https://www.baidu.com/",title: "百度",);
               }));
@@ -235,8 +241,8 @@ class _HomePageState extends State<HomePage> with RouteAware {
             onPressed: () async {
               print("实际数：${items.length}");
             },
-          ),*/
-          /*RaisedButton(
+          ),
+          RaisedButton(
             child: Text("测试"),
             onPressed: () async {
               await Shared_pre.Shared_setToken("1");
@@ -292,15 +298,9 @@ class _HomePageState extends State<HomePage> with RouteAware {
               ),
             ),
           ),
-          height: MediaQuery
-              .of(context)
-              .size
-              .height * 0.8,
+          height: MediaQuery.of(context).size.height * 0.8,
         ) : Container(
-          height: MediaQuery
-              .of(context)
-              .size
-              .height * 0.8,
+          height: MediaQuery.of(context).size.height * 0.8,
           alignment: Alignment.center,
           child: Center(
             child: CircularProgressIndicator(),

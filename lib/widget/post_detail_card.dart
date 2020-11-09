@@ -12,6 +12,9 @@ import 'package:flutter_mblog/util/build_content.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:flutter_mblog/widget/four_square_grid_image.dart';
+import 'package:flutter_mblog/widget/retweet_widget.dart';
+import 'package:flutter_mblog/widget/url_web_widget.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class PostDetailCard extends StatefulWidget {
   final PostItem item;
@@ -177,7 +180,11 @@ class _PostDetailCardState extends State<PostDetailCard> {
                   child: _content(context),
                 ),
                 if (widget.item.photos.length != 0) FourSquareGridImage.buildImage(context, widget.item.photos),
-                if (widget.item.postId != null) widget.item.postId == "*" ? _buildRemoteRetweet(): _buildRetweet(widget.item.forwardPost),
+                if (widget.item.postId != null) widget.item.postId == "*" ? _buildRemoteRetweet(): RetweetWidget(widget.item.user.avatar, widget.item.user.name, widget.item.user.username
+                , widget.item.forwardPost.id, widget.item.forwardPost.ctime.toString()
+                , widget.item.forwardPost.content, widget.item.forwardPost.photos),
+                SizedBox(height: 5,),
+                if (widget.item.website != null) UrlWebWidget(widget.item.website),
                 Padding(
                   padding: EdgeInsets.only(top: 5),
                   child: Row(
@@ -199,72 +206,6 @@ class _PostDetailCardState extends State<PostDetailCard> {
           ],
         )
     );
-  }
-
-  Widget _buildRetweet(PostItem postItem) {
-    Widget retweetWidget;
-    postItem != null && postItem.id != null
-        ? retweetWidget = InkWell(
-      child: Container(
-        margin: EdgeInsets.only(top: 10),
-        width: double.infinity,
-        decoration: BoxDecoration(
-            border: Border.all(color: Colors.black12),
-            borderRadius: BorderRadius.all(Radius.circular(10))),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Container(
-              padding: EdgeInsets.fromLTRB(10, 3, 3, 0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Container(
-                    child: ClipOval(
-                      child: ImageProcessTools.CachedNetworkProcessImage(postItem.user.avatar,memCacheHeight: 250,memCacheWidth: 250),
-                    ),
-                    width: AdaptiveTools.setRpx(50),
-                    height:  AdaptiveTools.setRpx(50),
-                  ),
-                  Container(
-                    padding: EdgeInsets.fromLTRB(10, 8, 0, 10),
-                    child: Text("${postItem.user.name}"),
-                  ),
-                  Expanded(child: Container(
-                    padding: EdgeInsets.fromLTRB(5, 9, 0, 10),
-                    child: Text("@${postItem.user.username}",style: TextStyle(color: Colors.black38),),
-                  )),
-                  Container(
-                    padding: EdgeInsets.fromLTRB(0, 10, 10, 10),
-                    child: Text(
-                      "${TimeUtil.parse(postItem.ctime.toString())}",
-                      style:
-                      TextStyle(fontSize: 13, color: Colors.black38),
-                    ),
-                  )
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.fromLTRB(10, 0, 3, 3),
-              child: Text("${postItem.content}"),
-            ),
-            postItem.photos != null && postItem.photos.length != 0
-                ? FourSquareGridImage.buildRetweetImage(postItem.photos)
-                : Container()
-          ],
-        ),
-      ),
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => HomeDetailPage(null,postId: postItem.id,)));
-      },
-    )
-        : retweetWidget = Container(
-      width: 0,
-      height: 0,
-    );
-    return retweetWidget;
   }
 
   _content(BuildContext context) {

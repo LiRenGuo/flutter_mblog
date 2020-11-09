@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
+import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/dio_error_process.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
@@ -10,12 +11,12 @@ import 'package:flutter_mblog/util/shared_pre.dart';
 import '../util/net_utils.dart';
 import '../util/oauth.dart';
 
-const USER_INFO_URL = "http://mblog.yunep.com/api/profile";
-const EDIT_USERNAME_URL = "http://mblog.yunep.com/api/reset/username";
-const USER_ID_INFO_URL = "http://mblog.yunep.com/api/user";
-const USER_FOLLOWING_LIST = "http://mblog.yunep.com/api/user/following";
-const GET_ID_BY_NAME = "http://mblog.yunep.com/api/user/name/";
-
+final USER_INFO_URL = "${Auth.ipaddress}/api/profile";
+final EDIT_USERNAME_URL = "${Auth.ipaddress}/api/reset/username";
+final USER_ID_INFO_URL = "${Auth.ipaddress}/api/user";
+final USER_FOLLOWING_LIST = "${Auth.ipaddress}/api/user/following";
+final GET_ID_BY_NAME = "${Auth.ipaddress}/api/user/name/";
+final USER_FOLLOWERS = "${Auth.ipaddress}/api/user/followers/";
 ///
 /// 用户接口
 class UserDao {
@@ -81,7 +82,7 @@ class UserDao {
       String token = await Shared_pre.Shared_getToken();
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
       final response = await dio.get(
-          "http://mblog.yunep.com/api/user/following/$userId",
+          "$USER_FOLLOWING_LIST/$userId",
           options: options);
       if (response.statusCode == 200) {
         final responseData = response.data;
@@ -102,7 +103,7 @@ class UserDao {
       dio.options.connectTimeout = 5000;
       dio.options.receiveTimeout = 10000;
       final response = await dio.get(
-          "http://mblog.yunep.com/api/user/followers/$userId",
+          "$USER_FOLLOWERS$userId",
           options: options);
       if (response.statusCode == 200) {
         final responseData = response.data;
@@ -122,7 +123,7 @@ class UserDao {
       dio.options.connectTimeout = 5000;
       dio.options.receiveTimeout = 10000;
       final response = await dio.get(
-          "http://mblog.yunep.com/user/isfollow/$userId",
+          "${Auth.ipaddress}/user/isfollow/$userId",
           options: options);
       if (response.statusCode == 200) {
         final responseData = response.data;
@@ -161,6 +162,7 @@ class UserDao {
         return response.data;
       }
     } on DioError catch (e) {
+      MyToast.show("该用户不存在");
       DioErrorProcess.dioError(context, e);
     }
   }

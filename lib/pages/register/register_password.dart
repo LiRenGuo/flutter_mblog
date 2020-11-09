@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/model/register_user.dart';
 import 'package:flutter_mblog/pages/welcome_page.dart';
+import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -193,7 +194,7 @@ class _RegisterPasswordPageState extends State<RegisterPasswordPage> {
         "cpassword": registerUser.cpassword
       });
       final response =
-          await dio.post("http://mblog.yunep.com/api/register", data: formData);
+          await dio.post("${Auth.ipaddress}/api/register", data: formData);
       if (response.statusCode == 200) {
         final responseData = response.data;
         Navigator.pushAndRemoveUntil(

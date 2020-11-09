@@ -59,6 +59,7 @@ class MyPostItem {
   int ctime;
   bool islike;
   String postId;
+  String website;
   MyPostItem rPostItem;
 
   MyPostItem(
@@ -88,6 +89,7 @@ class MyPostItem {
       this.ctime,
       this.islike,
       this.postId,
+      this.website,
       this.rPostItem});
 
   factory MyPostItem.fromJson(jsonRes) {
@@ -154,6 +156,7 @@ class MyPostItem {
         status: jsonRes['status'],
         ctime: jsonRes['ctime'],
         islike: jsonRes['islike'],
+        website: jsonRes['website'],
         postId: jsonRes["postId"],
         rPostItem: jsonRes['forwardPost'] != null
             ? MyPostItem.fromJson(jsonRes['forwardPost'])

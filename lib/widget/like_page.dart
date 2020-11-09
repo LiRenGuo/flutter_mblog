@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
+import 'package:flutter_mblog/dao/user_dao.dart';
 import 'package:flutter_mblog/model/post_like_model.dart';
 import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
@@ -11,8 +12,11 @@ import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/build_content.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/widget/four_square_grid_image.dart';
+import 'package:flutter_mblog/widget/retweet_widget.dart';
+import 'package:flutter_mblog/widget/url_web_widget.dart';
 import 'package:like_button/like_button.dart';
 
+// ignore: must_be_immutable
 class LikePage extends StatefulWidget {
   List<PostLikeItem> _item;
   String userId;
@@ -47,7 +51,7 @@ class _LikePageState extends State<LikePage> {
         PostDao.like(postItem.id);
       }
       postItem.likeCount =
-      postItem.islike ? postItem.likeCount + 1 : postItem.likeCount - 1;
+          postItem.islike ? postItem.likeCount + 1 : postItem.likeCount - 1;
       postItem.islike = !postItem.islike;
       completer.complete(postItem.islike);
     });
@@ -69,7 +73,7 @@ class _LikePageState extends State<LikePage> {
       likeCount: postItem.likeCount,
       countBuilder: (int count, bool isLiked, String text) {
         final ColorSwatch<int> color =
-        isLiked ? Colors.pinkAccent : Colors.grey;
+            isLiked ? Colors.pinkAccent : Colors.grey;
         Widget result;
         if (count == 0) {
           result = Text(
@@ -107,10 +111,13 @@ class _LikePageState extends State<LikePage> {
                         child: Container(
                           margin: EdgeInsets.only(left: AdaptiveTools.setPx(7)),
                           child: ClipOval(
-                            child: ImageProcessTools.CachedNetworkProcessImage(_item.userDto.avatar,memCacheWidth: 250,memCacheHeight: 250),
+                            child: ImageProcessTools.CachedNetworkProcessImage(
+                                _item.userDto.avatar,
+                                memCacheWidth: 250,
+                                memCacheHeight: 250),
                           ),
                           width: AdaptiveTools.setRpx(80),
-                          height:  AdaptiveTools.setRpx(80),
+                          height: AdaptiveTools.setRpx(80),
                         ),
                       )
                     ],
@@ -120,14 +127,16 @@ class _LikePageState extends State<LikePage> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => MinePage(
-                              userid: _item.userDto.id,
-                              wLoginUserId: widget.loginUserId,
-                            )));
+                                  userid: _item.userDto.id,
+                                  wLoginUserId: widget.loginUserId,
+                                )));
                   },
                 ),
                 flex: 1,
               ),
-              SizedBox(width: 5,),
+              SizedBox(
+                width: 5,
+              ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -149,7 +158,11 @@ class _LikePageState extends State<LikePage> {
                           ),
                           Expanded(
                             child: Container(
-                              child: Text("@${_item.userDto.username}",overflow: TextOverflow.ellipsis,),
+                              child: Text(
+                                "@${_item.userDto.username}",
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontSize: 12,color: Colors.black38),
+                              ),
                             ),
                           )
                         ],
@@ -160,32 +173,41 @@ class _LikePageState extends State<LikePage> {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => MinePage(
-                                  userid: _item.userDto.id,
-                                  wLoginUserId: widget.loginUserId,
-                                )));
+                                      userid: _item.userDto.id,
+                                      wLoginUserId: widget.loginUserId,
+                                    )));
                       },
                     ),
                     InkWell(
                       child: Container(
                         width: double.infinity,
                         margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
-                        child: BuildContent.buildContent(_item.content,context),
+                        child: BuildContent.buildContent(_item.content, context,
+                            atOnTap: (name) => _atToDetail(name, context)),
                       ),
                       onTap: () {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => HomeDetailPage(
-                                  null,
-                                  postId: _item.id,
-                                )));
+                                      null,
+                                      postId: _item.id,
+                                    )));
                       },
                     ),
-                    Container(
-                      margin: EdgeInsets.only(top: 8, bottom: 5),
-                      child: FourSquareGridImage.buildImage(context, _item.photos)/*image(_item.photos, context),*/
+                    if(_item.photos != null && _item.photos.length != 0) Container(
+                        margin: EdgeInsets.only(top: 8),
+                        child: FourSquareGridImage.buildImage(context,
+                            _item.photos) /*image(_item.photos, context),*/
                     ),
-                    if (_item.postId != null) _item.postId == "*" ?_buildRemoteRetweet():_buildRetweet(_item.rPostLikeItem),
+                    if (_item.postId != null)
+                      _item.postId == "*"
+                          ? _buildRemoteRetweet()
+                          : RetweetWidget(_item.userDto.avatar, _item.userDto.name, _item.userDto.username
+                          , _item.rPostLikeItem.id, _item.rPostLikeItem.ctime.toString()
+                          , _item.rPostLikeItem.content, _item.rPostLikeItem.photos),
+                    if (_item.website != null) UrlWebWidget(_item.website),
+                    SizedBox(height: 5,),
                     Container(
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -207,14 +229,14 @@ class _LikePageState extends State<LikePage> {
                               ),
                               height: AdaptiveTools.setPx(20),
                             ),
-                            onTap: (){
+                            onTap: () {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => HomeDetailPage(
-                                        null,
-                                        postId: _item.id,
-                                      )));
+                                            null,
+                                            postId: _item.id,
+                                          )));
                             },
                           ),
                           InkWell(
@@ -227,9 +249,9 @@ class _LikePageState extends State<LikePage> {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => PostPublishPage(
-                                        avatar: avatar,
-                                        postId: _item.id,
-                                      )));
+                                            avatar: avatar,
+                                            postId: _item.id,
+                                          )));
                             },
                           )
                         ],
@@ -252,78 +274,17 @@ class _LikePageState extends State<LikePage> {
     );
   }
 
-  Widget _buildRetweet(PostLikeItem postItem) {
-    Widget retweetWidget;
-    postItem != null && postItem.id != null
-        ? retweetWidget = InkWell(
-      child: Container(
-        margin: EdgeInsets.only(bottom: 10),
-        width: double.infinity,
-        decoration: BoxDecoration(
-            border: Border.all(color: Colors.black12),
-            borderRadius: BorderRadius.all(Radius.circular(10))),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Container(
-              padding: EdgeInsets.fromLTRB(10, 3, 3, 0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Container(
-                    child: ClipOval(
-                      child: ImageProcessTools.CachedNetworkProcessImage(postItem.userDto.avatar,memCacheHeight: 250,memCacheWidth: 250),
-                    ),
-                    width: AdaptiveTools.setRpx(60),
-                    height:  AdaptiveTools.setRpx(60),
-                  ),
-                  Container(
-                    padding: EdgeInsets.fromLTRB(10, 8, 0, 10),
-                    child: Text("${postItem.userDto.name}"),
-                  ),
-                  Expanded(
-                      child: Container(
-                        padding: EdgeInsets.fromLTRB(5, 9, 0, 10),
-                        child: Text(
-                          "@${postItem.userDto.username}",
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: Colors.black38),
-                        ),
-                      )),
-                  Container(
-                    padding: EdgeInsets.fromLTRB(0, 10, 10, 10),
-                    child: Text(
-                      "${TimeUtil.parse(postItem.ctime.toString())}",
-                      style:
-                      TextStyle(fontSize: 13, color: Colors.black38),
-                    ),
-                  )
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.fromLTRB(10, 0, 3, 3),
-              child: Text("${postItem.content}"),
-            ),
-            postItem.photos != null && postItem.photos.length != 0
-                ? FourSquareGridImage.buildRetweetImage(postItem.photos)
-                : Container()
-          ],
-        ),
-      ),
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => HomeDetailPage(
-              null,
-              postId: postItem.id,
-            )));
-      },
-    )
-        : retweetWidget = Container(
-      width: 0,
-      height: 0,
-    );
-    return retweetWidget;
+  void _atToDetail(String name, BuildContext context) async {
+    String id = await UserDao.getIdByName(name, context);
+    if (id != null) {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => MinePage(
+                    userid: id,
+                    wLoginUserId: widget.userId,
+                  )));
+    }
   }
 
   Widget _buildRemoteRetweet() {
@@ -331,11 +292,16 @@ class _LikePageState extends State<LikePage> {
       margin: EdgeInsets.only(bottom: 5),
       child: Row(
         children: [
-          Icon(Icons.error,size: 14,color: Colors.red,),
-          Text("原帖已删除",)
+          Icon(
+            Icons.error,
+            size: 14,
+            color: Colors.red,
+          ),
+          Text(
+            "原帖已删除",
+          )
         ],
       ),
     );
   }
-
 }

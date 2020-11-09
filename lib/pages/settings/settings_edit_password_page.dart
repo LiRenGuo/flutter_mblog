@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/common_util.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
@@ -177,7 +178,7 @@ class _SettingsEditPasswordPageState extends State<SettingsEditPasswordPage> {
     FormData formData = FormData.fromMap({"password":newPassword.text,"cpassword":rnewPassword.text,"oldpassword":oldPassword.text});
     CommonUtil.showLoadingDialog(context);
     try {
-      final response = await dio.post("http://mblog.yunep.com/api/reset/password", data: formData,options: options);
+      final response = await dio.post("${Auth.ipaddress}/api/reset/password", data: formData,options: options);
       if (response.statusCode == 200) {
         Navigator.pop(context);
         Navigator.pop(context);

@@ -23,7 +23,8 @@ import 'package:multi_image_picker/multi_image_picker.dart';
 class HomeDetailPage extends StatefulWidget {
   PostItem item;
   String postId;
-  HomeDetailPage(this.item,{this.postId});
+
+  HomeDetailPage(this.item, {this.postId});
 
   @override
   _HomeDetailPageState createState() => _HomeDetailPageState();
@@ -40,17 +41,17 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
   List<String> isAttention;
   UserModel _userModel;
 
-  initPostItem()async{
+  initPostItem() async {
     PostItem _itemWidget;
     if (widget.postId != null) {
       print(widget.postId);
-      _itemWidget =  await PostDao.getPostById(widget.postId,context);
+      _itemWidget = await PostDao.getPostById(widget.postId, context);
     }
     if (mounted) {
       setState(() {
         if (widget.postId != null) {
           _item = _itemWidget;
-        }else{
+        } else {
           _item = widget.item;
         }
         if (_item != null) {
@@ -63,10 +64,9 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
   getPostDetail() async {
     PostCommentModel postCommentModel;
     if (widget.postId != null) {
-      print("postId : ${widget.postId}");
-      postCommentModel = await PostDao.getCommentList(context,widget.postId);
-    }else{
-      postCommentModel = await PostDao.getCommentList(context,widget.item.id);
+      postCommentModel = await PostDao.getCommentList(context, widget.postId);
+    } else {
+      postCommentModel = await PostDao.getCommentList(context, widget.item.id);
     }
     setState(() {
       _postCommentModel = postCommentModel;
@@ -99,7 +99,6 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    print("内容为"+_item.toString());
     return Container(
       child: Scaffold(
         appBar: AppBar(
@@ -110,56 +109,59 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
             style: TextStyle(color: Colors.black),
           ),
         ),
-        body: initPostItemOk ? Container(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Expanded(
-                child: RefreshIndicator(
-                  child: ListView(
-                    physics: new AlwaysScrollableScrollPhysics(),
-                    children: <Widget>[
-                      PostDetailCard(item: _item),
-                      Container(
-                        height: 4,
-                        color: Colors.black12,
+        body: initPostItemOk
+            ? Container(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Expanded(
+                      child: RefreshIndicator(
+                        child: ListView(
+                          physics: new AlwaysScrollableScrollPhysics(),
+                          children: <Widget>[
+                            PostDetailCard(item: _item),
+                            Container(
+                              height: 4,
+                              color: Colors.black12,
+                            ),
+                            isok
+                                ? commentist()
+                                : Container(
+                                    height: 0,
+                                    width: 0,
+                                  )
+                          ],
+                        ),
+                        onRefresh: _onRefresh,
                       ),
-                      isok
-                          ? commentist()
-                          : Container(
-                        height: 0,
-                        width: 0,
-                      )
-                    ],
-                  ),
-                  onRefresh: _onRefresh,
+                    ),
+                    Container(
+                      height: 1,
+                      color: Colors.black12,
+                    ),
+                    Container(
+                      child: _bottomAction(_item),
+                      height: 58,
+                    )
+                  ],
+                ),
+              )
+            : Container(
+                child: Center(
+                  child: CircularProgressIndicator(),
                 ),
               ),
-              Container(
-                height: 1,
-                color: Colors.black12,
-              ),
-              Container(
-                child: _bottomAction(_item),
-                height: 58,
-              )
-            ],
-          ),
-        ):Container(
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
       ),
     );
   }
 
   initAttention() async {
     _userModel = await Shared_pre.Shared_getUser();
-    FollowModel followModel =  await UserDao.getFollowingList(_userModel.id,context);
+    FollowModel followModel =
+        await UserDao.getFollowingList(_userModel.id, context);
     List<String> isAtt = [];
     if (followModel != null && followModel.followList.length != 0) {
-      var isAttList =  followModel.followList.map((e)=>e.id);
+      var isAttList = followModel.followList.map((e) => e.id);
       isAtt.addAll(isAttList);
     }
     if (mounted) {
@@ -170,8 +172,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
     }
   }
 
-  _followYou(String userId){
-    print(userId);
+  _followYou(String userId) {
     FollowDao.follow(userId, context);
     Navigator.pop(context);
     if (mounted) {
@@ -181,8 +182,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
     }
   }
 
-  _unfollowYou(String userId){
-    print(userId);
+  _unfollowYou(String userId) {
     FollowDao.unfollow(userId, context);
     Navigator.pop(context);
     if (mounted) {
@@ -195,24 +195,26 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
   Widget commentist() {
     if (_postCommentModel.content.length != 0) {
       List<Widget> commentWidget = _postCommentModel.content.map((e) {
-        print(e.photos.toString());
         return Container(
           child: Padding(
-            padding: EdgeInsets.fromLTRB(10,10,10,0),
+            padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
             child: Column(
               children: <Widget>[
                 Container(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                     Container(
-                       child: ClipRRect(
-                         child: ImageProcessTools.CachedNetworkProcessImage(e.user.avatar,memCacheHeight: 250,memCacheWidth: 250),
-                         borderRadius: BorderRadius.circular(50),
-                       ),
-                       width: AdaptiveTools.setRpx(90),
-                       height: AdaptiveTools.setRpx(90),
-                     ),
+                      Container(
+                        child: ClipRRect(
+                          child: ImageProcessTools.CachedNetworkProcessImage(
+                              e.user.avatar,
+                              memCacheHeight: 250,
+                              memCacheWidth: 250),
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        width: AdaptiveTools.setRpx(90),
+                        height: AdaptiveTools.setRpx(90),
+                      ),
                       SizedBox(
                         width: AdaptiveTools.setPx(10),
                       ),
@@ -224,21 +226,19 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                               Container(
                                 child: Row(
                                   children: <Widget>[
-                                    Container(
-                                      child: Text("${e.user.name}"),
-                                    ),
-                                    Container(
-                                      padding: EdgeInsets.only(left: 5),
-                                      child: Text("@${e.user.username}"),
-                                    ),
-                                    Container(
-                                      child: Text(
-                                          " · ${TimeUtil.parse(e.ctime.toString())}"),
-                                    ),
-                                    Spacer(),
+                                    Expanded(
+                                        child: Row(
+                                      children: [
+                                        Text("${e.user.name}"),
+                                        Text(
+                                            " · ${TimeUtil.parse(e.ctime.toString())}"),
+                                      ],
+                                    )),
                                     InkWell(
-                                      child: Container(child: Icon(Icons.keyboard_arrow_down),),
-                                      onTap: (){
+                                      child: Container(
+                                        child: Icon(Icons.keyboard_arrow_down),
+                                      ),
+                                      onTap: () {
                                         print("关注");
                                         showModalBottomSheet(
                                           context: context,
@@ -254,24 +254,56 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                                                   height: 60,
                                                   decoration: BoxDecoration(
                                                     color: Colors.white,
-                                                    borderRadius: BorderRadius.only(
-                                                      topLeft: Radius.circular(20),
-                                                      topRight: Radius.circular(20),
+                                                    borderRadius:
+                                                        BorderRadius.only(
+                                                      topLeft:
+                                                          Radius.circular(20),
+                                                      topRight:
+                                                          Radius.circular(20),
                                                     ),
                                                   ),
                                                   child: ListView(
                                                     children: <Widget>[
-                                                      isOkAttention ?
-                                                      ListTile(
-                                                        leading: Container(
-                                                          child: isAttention.contains(e.user.id)?Image.asset("images/unattention.png"):Image.asset("images/attention.png"),
-                                                          padding: EdgeInsets.all(14),
-                                                        ),
-                                                        title: isAttention.contains(e.user.id) ?Text("取消关注 @${e.user.name}",style: TextStyle(fontSize: 15),):Text("关注 @${e.user.name}",style: TextStyle(fontSize: 15),),
-                                                        onTap: (){
-                                                          isAttention.contains(e.id)?_unfollowYou(e.user.id):_followYou(e.user.id);
-                                                        },
-                                                      ):Container()
+                                                      isOkAttention
+                                                          ? ListTile(
+                                                              leading:
+                                                                  Container(
+                                                                child: isAttention
+                                                                        .contains(e
+                                                                            .user
+                                                                            .id)
+                                                                    ? Image.asset(
+                                                                        "images/unattention.png")
+                                                                    : Image.asset(
+                                                                        "images/attention.png"),
+                                                                padding:
+                                                                    EdgeInsets
+                                                                        .all(
+                                                                            14),
+                                                              ),
+                                                              title: isAttention
+                                                                      .contains(e
+                                                                          .user
+                                                                          .id)
+                                                                  ? Text(
+                                                                      "取消关注 @${e.user.name}",
+                                                                      style: TextStyle(
+                                                                          fontSize:
+                                                                              15),
+                                                                    )
+                                                                  : Text(
+                                                                      "关注 @${e.user.name}",
+                                                                      style: TextStyle(
+                                                                          fontSize:
+                                                                              15),
+                                                                    ),
+                                                              onTap: () {
+                                                                isAttention.contains(e.id)
+                                                                    ? _unfollowYou(e.user.id)
+                                                                    : _followYou(e.user.id);
+                                                              },
+                                                            )
+                                                          : Container()
                                                     ],
                                                   ),
                                                 )
@@ -290,7 +322,9 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                               Container(
                                 child: Text(e.content),
                               ),
-                              if(e.photos != null && e.photos.isNotEmpty) FourSquareGridImage.buildImage(context, e.photos)
+                              if (e.photos != null && e.photos.isNotEmpty)
+                                FourSquareGridImage.buildImage(
+                                    context, e.photos)
                             ],
                           ),
                           margin: EdgeInsets.only(top: 1),
@@ -311,22 +345,16 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
           ),
         );
       }).toList();
-      commentWidget.insert(
-          0,
-          Container(
+      commentWidget.insert(0, Container(
             margin: EdgeInsets.fromLTRB(10, 5, 0, 5),
             alignment: Alignment.centerLeft,
             child: Text(
               "回复",
-              style: TextStyle(fontSize: AdaptiveTools.setPx(16),color: Colors.black54),
+              style: TextStyle(
+                  fontSize: AdaptiveTools.setPx(16), color: Colors.black54),
             ),
           ));
-      commentWidget.insert(
-          1,
-          Container(
-            height: 1,
-            color: Colors.black12,
-          ));
+      commentWidget.insert(1, Container(height: 1, color: Colors.black12,));
       return Column(
         children: commentWidget,
       );
@@ -342,7 +370,9 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     "评论",
-                    style: TextStyle(fontSize: AdaptiveTools.setPx(16),color: Colors.black54),
+                    style: TextStyle(
+                        fontSize: AdaptiveTools.setPx(16),
+                        color: Colors.black54),
                   ),
                 ),
                 Container(
@@ -356,7 +386,10 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
             height: 280,
             alignment: Alignment.center,
             width: double.infinity,
-            child: Text("快来发表你的评论",style: TextStyle(color: Colors.black54,fontSize: 14),),
+            child: Text(
+              "快来发表你的评论",
+              style: TextStyle(color: Colors.black54, fontSize: 14),
+            ),
           )
         ],
       );
@@ -419,9 +452,8 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
         print("like...${_item.id}");
         PostDao.like(_item.id);
       }
-      postItem.likeCount = postItem.islike
-          ? _item.likeCount + 1
-          : _item.likeCount - 1;
+      postItem.likeCount =
+          postItem.islike ? _item.likeCount + 1 : _item.likeCount - 1;
       postItem.islike = !postItem.islike;
       completer.complete(postItem.islike);
     });
@@ -445,7 +477,8 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                   context: context,
                   builder: (context) {
                     return Padding(
-                      padding: EdgeInsets.only(bottom:MediaQuery.of(context).viewInsets.bottom),
+                      padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).viewInsets.bottom),
                       child: Container(
                         child: Column(
                           children: <Widget>[
@@ -466,7 +499,8 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                                           hintText: "请输入你的评论"),
                                       controller: _commentEditingController,
                                     ),
-                                    padding: EdgeInsets.symmetric(vertical: 5,horizontal: 10),
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 5, horizontal: 10),
                                     height: 50,
                                   ),
                                 ),
@@ -475,7 +509,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                             Container(
                               child: Row(
                                 mainAxisAlignment:
-                                MainAxisAlignment.spaceAround,
+                                    MainAxisAlignment.spaceAround,
                                 children: <Widget>[
                                   Padding(
                                     child: InkWell(
@@ -490,66 +524,70 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                                           ),
                                           fileList.length != 0
                                               ? Container(
-                                            child: Center(
-                                              child: Text(
-                                                fileList.length.toString(),
-                                                style: TextStyle(
-                                                    fontSize:
-                                                    AdaptiveTools.setPx(
-                                                        9),
-                                                    color: Colors.white),
-                                              ),
-                                            ),
-                                            margin: EdgeInsets.only(
-                                                left: AdaptiveTools.setPx(
-                                                    17)),
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                BorderRadius.all(
-                                                    Radius.circular(
-                                                        50)),
-                                                border: Border.all(
-                                                    color: Colors.red),
-                                                color: Colors.red),
-                                            padding: EdgeInsets.only(
-                                                left: AdaptiveTools.setPx(
-                                                    3)),
-                                            height: AdaptiveTools.setPx(13),
-                                            width: AdaptiveTools.setPx(13),
-                                          )
+                                                  child: Center(
+                                                    child: Text(
+                                                      fileList.length
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                          fontSize:
+                                                              AdaptiveTools
+                                                                  .setPx(9),
+                                                          color: Colors.white),
+                                                    ),
+                                                  ),
+                                                  margin: EdgeInsets.only(
+                                                      left: AdaptiveTools.setPx(
+                                                          17)),
+                                                  decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  50)),
+                                                      border: Border.all(
+                                                          color: Colors.red),
+                                                      color: Colors.red),
+                                                  padding: EdgeInsets.only(
+                                                      left: AdaptiveTools.setPx(
+                                                          3)),
+                                                  height:
+                                                      AdaptiveTools.setPx(13),
+                                                  width:
+                                                      AdaptiveTools.setPx(13),
+                                                )
                                               : Container(
-                                            height: 0,
-                                            width: 0,
-                                          )
+                                                  height: 0,
+                                                  width: 0,
+                                                )
                                         ],
                                       ),
                                       onTap: () {
                                         _loadAssets();
                                       },
                                     ),
-                                    padding: EdgeInsets.symmetric(horizontal: 10),
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 10),
                                   ),
                                   Spacer(),
                                   Container(
-                                    margin: EdgeInsets.fromLTRB(10,0,10,0),
+                                      margin: EdgeInsets.fromLTRB(10, 0, 10, 0),
                                       height: AdaptiveTools.setRpx(60),
                                       width: AdaptiveTools.setRpx(180),
                                       alignment: Alignment.bottomCenter,
                                       child: RaisedButton(
                                         child: Text("发送"),
-                                        onPressed: (){
+                                        onPressed: () {
                                           if (_commentEditingController
-                                              .text.length !=
+                                                  .text.length !=
                                               0) {
-                                            CommonUtil.showLoadingDialog(context);
+                                            CommonUtil.showLoadingDialog(
+                                                context);
                                             sendComeent(item);
                                             Navigator.pop(context);
                                           }
                                         },
                                         color: Colors.blue,
                                         textColor: Colors.white,
-                                      )
-                                  )
+                                      ))
                                 ],
                               ),
                               margin: EdgeInsets.only(bottom: 10),
@@ -589,9 +627,9 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
             onTap: () {
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => PostPublishPage(
-                    avatar: _userModel.avatar,
-                    postItem: item,
-                  )));
+                        avatar: _userModel.avatar,
+                        postItem: item,
+                      )));
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -624,7 +662,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
     try {
       resultList = await MultiImagePicker.pickImages(
         selectedAssets: fileList,
-        maxImages: 2, //最多9张
+        maxImages: 2, //最多2张
         enableCamera: true,
       );
     } catch (e) {

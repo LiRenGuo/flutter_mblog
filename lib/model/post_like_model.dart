@@ -40,6 +40,7 @@ class PostLikeItem {
   UserDto userDto;
   int ctime;
   String postId;
+  String website;
   PostLikeItem rPostLikeItem;
 
   PostLikeItem(
@@ -53,6 +54,7 @@ class PostLikeItem {
         this.likeCount,
         this.islike,
         this.userDto,
+        this.website,
         this.ctime,this.postId,this.rPostLikeItem});
 
   PostLikeItem.fromJson(Map<String, dynamic> json) {
@@ -67,6 +69,7 @@ class PostLikeItem {
     islike = json['islike'];
     userDto = json['userDto'] != null ? new UserDto.fromJson(json['userDto']) : json["user"] != null ?UserDto.fromJson(json["user"]):null;
     ctime = json['ctime'];
+    website = json['website'];
     postId = json['postId'];
     rPostLikeItem = json['forwardPost'] != null
         ? new PostLikeItem.fromJson(json['forwardPost'])

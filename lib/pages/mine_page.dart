@@ -7,7 +7,6 @@ import 'package:flutter_easyrefresh/easy_refresh.dart';
 import 'package:flutter_mblog/dao/follow_dao.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/dao/user_dao.dart';
-import 'package:flutter_mblog/main.dart';
 import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/mypost_model.dart';
 import 'package:flutter_mblog/model/post_like_model.dart';
@@ -156,12 +155,13 @@ class _MinePageState extends State<MinePage>
     } else {
       myPostModel = await PostDao.getMyPostList(context, page);
     }
-    setState(() {
-      _myPostModel.addAll(myPostModel.itemList);
-    });
     if (myPostModel.itemList.length == 0) {
       setState(() {
         this.page = this.page - 1;
+      });
+    }else{
+      setState(() {
+        _myPostModel.addAll(myPostModel.itemList);
       });
     }
   }
@@ -186,7 +186,7 @@ class _MinePageState extends State<MinePage>
 
   _getLikePostListNo(int likePostPage) async {
     PostLikeModel myPostLikeModel = await PostDao.getMyLikePost(widget.userid, likePostPage, context);
-    if (myPostLikeModel != null) {
+    if (myPostLikeModel != null && myPostLikeModel.postLikeItemList.length != 0) {
       setState(() {
         _myLikePostModel.addAll(myPostLikeModel.postLikeItemList);
         isLoadingMyLikePost = true;
@@ -212,8 +212,10 @@ class _MinePageState extends State<MinePage>
 
   Future<Null> _onRefresh() async {
     setState(() {
+      _myPostModel = [];
+      _myLikePostModel = [];
       page = 0;
-      likePage = 0;
+      likePage = 1;
       _getUserInfo();
       _getMyPostList();
       _getLikePostList(1);
@@ -409,7 +411,7 @@ class _MinePageState extends State<MinePage>
                                 child: Text(
                                   _userModel.intro == null ||
                                       _userModel.intro == ""
-                                      ? "这个人很懒，什么都没有写下！！！"
+                                      ? "这个人很懒，什么都没有留下！！！"
                                       : _userModel.intro,
                                   style: TextStyle(
                                       fontSize: AdaptiveTools.setPx(15)),

@@ -5,9 +5,13 @@ import 'package:flutter_mblog/pages/home_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/welcome_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
+import 'package:flutter_mblog/util/check_update_tools.dart';
+import 'package:flutter_mblog/util/dio_error_process.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
+import 'package:flutter_mblog/util/net_utils.dart';
 import 'package:flutter_mblog/util/oauth.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
+import 'package:package_info/package_info.dart';
 
 ///
 /// 底部导航栏
@@ -27,15 +31,12 @@ class _TabNavigatorState extends State<TabNavigator> {
 
   int loadingNum = 0;
 
-  var homeChild;
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     (Connectivity().checkConnectivity()).then((onConnectivtiry) {
       if (onConnectivtiry == ConnectivityResult.none) {
-        print("网络未连接");
         _loadUser();
         MyToast.show("网络未连接");
       } else {
@@ -71,20 +72,24 @@ class _TabNavigatorState extends State<TabNavigator> {
 
   ///
   /// 判读是否有登陆
-  isLogin() {
-    Shared_pre.Shared_getToken().then((token) {
-      /// 如果Token为空，则没有进行过任何登陆，则跳转到欢迎界面
-      if (token == null) {
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => WelcomePage()),
-            (route) => false);
-      } else {
-        /// 如果token不为空，则刷新一次token
-        Oauth_2.ResToken(context, isLogin: false);
-        _loadUser();
-      }
-    });
+  isLogin() async {
+    /// 检查更新
+    CheckUpdateTools().check(context, isShowToast: false);
+
+    /// 刷新Token
+    String token = await Shared_pre.Shared_getToken();
+
+    /// 如果Token为空，则没有进行过任何登陆，则跳转到欢迎界面
+    if (token == null) {
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => WelcomePage()),
+          (route) => false);
+    } else {
+      /// 如果token不为空，则刷新一次token
+      await Oauth_2.ResToken2(context, isLogin: false);
+      _loadUser();
+    }
   }
 
   _loadUser() {
@@ -95,13 +100,12 @@ class _TabNavigatorState extends State<TabNavigator> {
             MaterialPageRoute(builder: (context) => WelcomePage()),
             (route) => false);
       } else {
-        homeChild = HomePage(
-          (num) => _updateLodingNum(num),
-          () => _getNum(),
-          key: childKey,
-        );
         bodyWidget = [
-          homeChild,
+          HomePage(
+            (num) => _updateLodingNum(num),
+            () => _getNum(),
+            key: childKey,
+          ),
           MinePage(
             userid: userModel.id,
             wLoginUserId: userModel.id,
@@ -128,24 +132,31 @@ class _TabNavigatorState extends State<TabNavigator> {
                 child: CircularProgressIndicator(),
               ),
             ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) async {
-          if (index == 0 && loadingNum != 0) {
+      bottomNavigationBar: GestureDetector(
+        onDoubleTap: (){
+          if(_currentIndex == 0){
             childKey.currentState.ref();
-            setState(() {
-              loadingNum = 0;
-            });
           }
-          setState(() {
-            _currentIndex = index;
-          });
         },
-        type: BottomNavigationBarType.fixed,
-        items: [
-          _bottomItem('首页', Icons.home, 0),
-          _bottomItem('我的', Icons.account_circle, 1),
-        ],
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) async {
+            if (index == 0 && loadingNum != 0) {
+              childKey.currentState.ref();
+              setState(() {
+                loadingNum = 0;
+              });
+            }
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          type: BottomNavigationBarType.fixed,
+          items: [
+            _bottomItem('首页', Icons.home, 0),
+            _bottomItem('我的', Icons.account_circle, 1),
+          ],
+        ),
       ),
     );
   }
@@ -240,11 +251,7 @@ class _TabNavigatorState extends State<TabNavigator> {
                 icon,
                 color: _activeColor,
               ),
-        title: Text(
-          title,
-          style: TextStyle(
-              fontSize: 13,
-              color: _currentIndex != index ? _defaultColor : _activeColor),
-        ));
+        label:title
+    );
   }
 }

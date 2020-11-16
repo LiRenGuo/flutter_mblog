@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_mblog/navigator/tab_navigator.dart';
-import 'package:flutter/rendering.dart' show debugPaintSizeEnabled;
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,7 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'mblog app',
       navigatorObservers: [MyApp.routeObserver],
       navigatorKey: navigatorKey,
       theme: ThemeData(

@@ -33,6 +33,7 @@ apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
+    // TODO 可能不支持android9.0
     compileSdkVersion 29
 
     sourceSets {

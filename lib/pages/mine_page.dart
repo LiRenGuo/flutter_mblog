@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:common_utils/common_utils.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -16,12 +16,31 @@ import 'package:flutter_mblog/pages/following_page.dart';
 import 'package:flutter_mblog/pages/followme_page.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
-import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:flutter_mblog/widget/like_page.dart';
 import 'package:flutter_mblog/widget/tweets_page.dart';
+
+
+
+class ZHAliPayTimelineInfo implements TimelineInfo {
+  String suffixAgo() => '前';
+  String suffixAfter() => '后';
+  int maxJustNowSecond() => 30;
+  String lessThanOneMinute() => '刚刚';
+  String customYesterday() => '昨天';
+  bool keepOneDay() => true;
+  bool keepTwoDays() => false;
+  String oneMinute(int minutes) => '$minutes分';
+  String minutes(int minutes) => '$minutes分';
+  String anHour(int hours) => '$hours小时';
+  String hours(int hours) => '$hours小时';
+  String oneDay(int days) => '$days天';
+  String weeks(int week) => ''; //x week(星期x).
+  String days(int days) => '$days天';
+}
+
 
 class MinePage extends StatefulWidget {
   String userid;
@@ -78,6 +97,9 @@ class _MinePageState extends State<MinePage>
   @override
   void initState() {
     super.initState();
+
+    setLocaleInfo("zh_mblog_time", ZHAliPayTimelineInfo());
+
     userId = widget.userid;
     loginUserId = widget.wLoginUserId;
     _getUserInfo();
@@ -140,6 +162,7 @@ class _MinePageState extends State<MinePage>
       }
     }
     if (info != null) {
+      print("info >> $info");
       setState(() {
         _userModel = info;
         isok = true;
@@ -327,8 +350,8 @@ class _MinePageState extends State<MinePage>
                                             "编辑个人资料",
                                             style: TextStyle(
                                                 fontSize:
-                                                AdaptiveTools.setPx(13),
-                                                fontWeight: FontWeight.w700),
+                                                AdaptiveTools.setPx(12),
+                                                fontWeight: FontWeight.w600),
                                           ),
                                           shape: RoundedRectangleBorder(
                                               borderRadius:
@@ -394,11 +417,12 @@ class _MinePageState extends State<MinePage>
                                   _userModel.name,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                      fontSize: AdaptiveTools.setPx(20),
-                                      fontWeight: FontWeight.w800),
+                                      fontSize: AdaptiveTools.setPx(18),
+                                      fontWeight: FontWeight.w700),
                                 ),
                               ),
                               Container(
+                                margin: EdgeInsets.only(top: 5),
                                 child: Text(
                                   "@${_userModel.username}",
                                   style: TextStyle(
@@ -414,7 +438,7 @@ class _MinePageState extends State<MinePage>
                                       ? "这个人很懒，什么都没有留下！！！"
                                       : _userModel.intro,
                                   style: TextStyle(
-                                      fontSize: AdaptiveTools.setPx(15)),
+                                      fontSize: AdaptiveTools.setPx(14)),
                                 ),
                               ),
                               Container(
@@ -425,7 +449,7 @@ class _MinePageState extends State<MinePage>
                                       Row(
                                         children: <Widget>[
                                           Container(
-                                            height: 19,
+                                            height: AdaptiveTools.setPx(15),
                                             child: Image.asset("images/lng.png"),
                                           ),
                                           SizedBox(
@@ -436,7 +460,7 @@ class _MinePageState extends State<MinePage>
                                             child: Text(
                                               _userModel.address ?? "外星球",
                                               style: TextStyle(
-                                                  fontSize: 17,
+                                                  fontSize: AdaptiveTools.setPx(14),
                                                   color: Colors.black54),
                                             ),
                                           )
@@ -449,16 +473,19 @@ class _MinePageState extends State<MinePage>
                                         children: <Widget>[
                                           Container(
                                             child: Image.asset("images/ic_vector_calendar.png"),
-                                            height: 19,
+                                            height: AdaptiveTools.setPx(15),
                                           ),
                                           SizedBox(
                                             width: 4,
                                           ),
                                           Container(
                                             child: Text(
-                                              "${TimeUtil.parse(_userModel.ctime.toString())}加入",
+                                              "${TimelineUtil.format(_userModel.ctime,
+                                                  locTimeMs: DateTime.now().millisecondsSinceEpoch,
+                                                  locale: 'zh',
+                                                  dayFormat: DayFormat.Common)}加入",
                                               style: TextStyle(
-                                                  fontSize: 17,
+                                                  fontSize: AdaptiveTools.setPx(14),
                                                   color: Colors.black54),
                                             ),
                                             margin: EdgeInsets.only(bottom: 2),
@@ -474,19 +501,22 @@ class _MinePageState extends State<MinePage>
                                       InkWell(
                                         child: Row(
                                           children: <Widget>[
-                                            Text(
-                                              isOkAttention
-                                                  ? followModel != null ? followModel.followList.length
-                                                  .toString(): _userModel.following.toString()
-                                                  : "0",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w800,
-                                                  fontSize: 18),
+                                            Padding(
+                                              padding: EdgeInsets.only(top: 2),
+                                              child: Text(
+                                                isOkAttention
+                                                    ? followModel != null ? followModel.followList.length
+                                                    .toString(): _userModel.following.toString()
+                                                    : "0",
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w400,
+                                                    fontSize: AdaptiveTools.setPx(14)),
+                                              ),
                                             ),
                                             SizedBox(
                                               width: 3,
                                             ),
-                                            Text("正在关注"),
+                                            Text("正在关注",style: TextStyle(fontSize: AdaptiveTools.setPx(12)),),
                                           ],
                                         ),
                                         onTap: () {
@@ -508,19 +538,19 @@ class _MinePageState extends State<MinePage>
                                       InkWell(
                                         child: Row(
                                           children: <Widget>[
-                                            Text(
+                                            Padding(padding: EdgeInsets.only(top: 2),child: Text(
                                               isOkAttention
                                                   ? followersModel != null ?followersModel
                                                   .followList.length.toString() : _userModel.followers.toString()
                                                   : "0",
                                               style: TextStyle(
-                                                  fontWeight: FontWeight.w800,
-                                                  fontSize: 18),
-                                            ),
+                                                  fontWeight: FontWeight.w400,
+                                                  fontSize: AdaptiveTools.setPx(14)),
+                                            ),),
                                             SizedBox(
                                               width: 3,
                                             ),
-                                            Text("个关注者")
+                                            Text("关注者",style: TextStyle(fontSize: AdaptiveTools.setPx(12)),)
                                           ],
                                         ),
                                         onTap: () {

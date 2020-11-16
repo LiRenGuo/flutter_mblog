@@ -9,15 +9,12 @@ import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
-import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/build_content.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
-import 'package:flutter_mblog/widget/browser_page.dart';
 import 'package:flutter_mblog/widget/four_square_grid_image.dart';
 import 'package:flutter_mblog/widget/retweet_widget.dart';
 import 'package:flutter_mblog/widget/url_web_widget.dart';
 import 'package:like_button/like_button.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class Tweets extends StatefulWidget {
   List<MyPostItem> _item;
@@ -140,201 +137,204 @@ class _TweetsState extends State<Tweets> {
                           child: ClipOval(
                             child: ImageProcessTools.CachedNetworkProcessImage(
                                 _item.user.avatar,
-                                memCacheWidth: 250,
-                                memCacheHeight: 250),
+                                memCacheWidth: 450,
+                                memCacheHeight: 450),
                           ),
-                          width: AdaptiveTools.setRpx(80),
-                          height: AdaptiveTools.setRpx(80),
+                          width: AdaptiveTools.setRpx(90),
+                          height: AdaptiveTools.setRpx(90),
                         ),
                       )
                     ],
                   ),
                   flex: 1,
                 ),
-                SizedBox(
-                  width: 5,
-                ),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Container(
-                            child: Text(
-                              _item.user.name,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                letterSpacing: 2,
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            margin: EdgeInsets.only(right: 5),
-                          ),
-                          Expanded(
-                            child: Container(
-                              child: Text(
-                                "@${_item.user.username}",
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 12,color: Colors.black38),
-                              ),
-                            ),
-                          ),
-                          userId == loginUserId
-                              ? InkWell(
-                                  child: Container(
-                                    alignment: Alignment.topRight,
-                                    child: Icon(
-                                      Icons.keyboard_arrow_down,
-                                      color: Colors.black54,
-                                      size: AdaptiveTools.setPx(19),
-                                    ),
-                                  ),
-                                  onTap: () {
-                                    showModalBottomSheet(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return Stack(
-                                          children: <Widget>[
-                                            Container(
-                                              height: 25,
-                                              width: double.infinity,
-                                              color: Colors.black54,
-                                            ),
-                                            Container(
-                                              height: 60,
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius: BorderRadius.only(
-                                                  topLeft: Radius.circular(20),
-                                                  topRight: Radius.circular(20),
-                                                ),
-                                              ),
-                                              child: ListView(
-                                                children: <Widget>[
-                                                  ListTile(
-                                                    leading: Container(
-                                                      child: Image.asset(
-                                                          "images/deletePost.png"),
-                                                      padding:
-                                                          EdgeInsets.all(15),
-                                                    ),
-                                                    title: Text(
-                                                      "删除推文",
-                                                      style: TextStyle(
-                                                          fontSize: 15),
-                                                    ),
-                                                    onTap: () {
-                                                      showDialog(
-                                                          context: context,
-                                                          builder: (context) {
-                                                            return AlertDialog(
-                                                              content: Text(
-                                                                  '是否确认删除该帖子?'),
-                                                              actions: <Widget>[
-                                                                FlatButton(
-                                                                  child: Text(
-                                                                      '取消'),
-                                                                  onPressed: () =>
-                                                                      Navigator.pop(
-                                                                          context),
-                                                                ),
-                                                                FlatButton(
-                                                                  child: Text(
-                                                                      '确认'),
-                                                                  onPressed: () =>
-                                                                      _deletePost(
-                                                                          _item
-                                                                              .id,
-                                                                          context),
-                                                                )
-                                                              ],
-                                                            );
-                                                          });
-                                                    },
-                                                  )
-                                                ],
-                                              ),
-                                            )
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  },
-                                )
-                              : Container(),
-                        ],
-                      ),
-                      Container(
-                        width: double.infinity,
-                        margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
-                        child: BuildContent.buildContent(_item.content, context,
-                            atOnTap: (name) => _atToDetail(name, context)),
-                      ),
-                      if(_item.photos != null && _item.photos.length != 0) Container(
-                          margin: EdgeInsets.only(top: 5),
-                          child: FourSquareGridImage.buildImage(context, _item.photos)
-                      ),
-                      if (_item.postId != null)
-                        _item.postId == "*"
-                            ? _buildRemoteRetweet()
-                            :  RetweetWidget(_item.user.avatar, _item.user.name, _item.user.username
-                                    , _item.rPostItem.id, _item.rPostItem.ctime.toString()
-                                    , _item.rPostItem.content, _item.rPostItem.photos),
-                      if (_item.website != null) UrlWebWidget(_item.website),
-                      SizedBox(height: 5,),
-                      Container(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Container(
+                    margin: EdgeInsets.only(left: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Row(
                           children: <Widget>[
                             Container(
-                              child: _buildLikeButton(_item),
-                              height: AdaptiveTools.setPx(20),
-                            ),
-                            InkWell(
-                              child: Container(
-                                child: Row(
-                                  children: <Widget>[
-                                    Image.asset("images/ic_home_comment.webp"),
-                                    SizedBox(
-                                      width: 10,
-                                    ),
-                                    Text("${_item.commentCount.toString()}")
-                                  ],
+                              child: Text(
+                                _item.user.name,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
                                 ),
-                                height: AdaptiveTools.setPx(20),
                               ),
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => HomeDetailPage(
-                                              null,
-                                              postId: _item.id,
-                                            )));
-                              },
                             ),
-                            InkWell(
+                            Expanded(
                               child: Container(
-                                child:
-                                    Image.asset("images/ic_home_forward.png"),
-                                height: AdaptiveTools.setPx(20),
+                                margin: EdgeInsets.only(left: 3),
+                                child: Text(
+                                  "@${_item.user.username}",
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: 16,color: Colors.grey),
+                                ),
                               ),
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => PostPublishPage(
-                                              avatar: widget.avatar,
-                                              postId: _item.id,
-                                            )));
-                              },
-                            )
+                            ),
+                            userId == loginUserId
+                                ? InkWell(
+                                    child: Container(
+                                      alignment: Alignment.topRight,
+                                      child: Icon(
+                                        Icons.keyboard_arrow_down,
+                                        color: Colors.black54,
+                                        size: AdaptiveTools.setPx(18),
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      showModalBottomSheet(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return Stack(
+                                            children: <Widget>[
+                                              Container(
+                                                height: 25,
+                                                width: double.infinity,
+                                                color: Colors.black54,
+                                              ),
+                                              Container(
+                                                height: 60,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius: BorderRadius.only(
+                                                    topLeft: Radius.circular(20),
+                                                    topRight: Radius.circular(20),
+                                                  ),
+                                                ),
+                                                child: ListView(
+                                                  children: <Widget>[
+                                                    ListTile(
+                                                      leading: Container(
+                                                        child: Image.asset(
+                                                            "images/deletePost.png"),
+                                                        padding:
+                                                            EdgeInsets.all(15),
+                                                      ),
+                                                      title: Text(
+                                                        "删除推文",
+                                                        style: TextStyle(
+                                                            fontSize: 15),
+                                                      ),
+                                                      onTap: () {
+                                                        showDialog(
+                                                            context: context,
+                                                            builder: (context) {
+                                                              return AlertDialog(
+                                                                content: Text(
+                                                                    '是否确认删除该帖子?'),
+                                                                actions: <Widget>[
+                                                                  FlatButton(
+                                                                    child: Text(
+                                                                        '取消'),
+                                                                    onPressed: () =>
+                                                                        Navigator.pop(
+                                                                            context),
+                                                                  ),
+                                                                  FlatButton(
+                                                                    child: Text(
+                                                                        '确认'),
+                                                                    onPressed: () =>
+                                                                        _deletePost(
+                                                                            _item
+                                                                                .id,
+                                                                            context),
+                                                                  )
+                                                                ],
+                                                              );
+                                                            });
+                                                      },
+                                                    )
+                                                  ],
+                                                ),
+                                              )
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                  )
+                                : Container(),
                           ],
                         ),
-                      ),
-                    ],
+                        Container(
+                          width: double.infinity,
+                          margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
+                          child: BuildContent.buildContent(_item.content, context,
+                              atOnTap: (name) => _atToDetail(name, context)),
+                        ),
+                        if(_item.photos != null && _item.photos.length != 0) Container(
+                            margin: EdgeInsets.only(top: 5),
+                            child: FourSquareGridImage.buildImage(context, _item.photos)
+                        ),
+                        if (_item.postId != null)
+                          _item.postId == "*"
+                              ? _buildRemoteRetweet()
+                              :  RetweetWidget(_item.user.avatar, _item.user.name, _item.user.username
+                                      , _item.rPostItem.id, _item.rPostItem.ctime.toString()
+                                      , _item.rPostItem.content, _item.rPostItem.photos),
+                        if (_item.website != null) Container(
+                          child: UrlWebWidget(_item.website),
+                          margin: EdgeInsets.only(top: 5),
+                        ),
+                        SizedBox(height: 5,),
+                        Container(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Container(
+                                child: _buildLikeButton(_item),
+                                height: AdaptiveTools.setPx(20),
+                              ),
+                              InkWell(
+                                child: Container(
+                                  child: Row(
+                                    children: <Widget>[
+                                      Image.asset("images/ic_home_comment.webp"),
+                                      SizedBox(
+                                        width: 10,
+                                      ),
+                                      Text("${_item.commentCount.toString()}")
+                                    ],
+                                  ),
+                                  height: AdaptiveTools.setPx(20),
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => HomeDetailPage(
+                                                null,
+                                                postId: _item.id,
+                                              )));
+                                },
+                              ),
+                              InkWell(
+                                child: Container(
+                                  child:
+                                      Image.asset("images/ic_home_forward.png"),
+                                  height: AdaptiveTools.setPx(20),
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => PostPublishPage(
+                                                avatar: widget.avatar,
+                                                postId: _item.id,
+                                              )));
+                                },
+                              )
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   flex: 6,
                 ),

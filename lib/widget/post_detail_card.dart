@@ -14,7 +14,6 @@ import 'package:flutter_mblog/util/shared_pre.dart';
 import 'package:flutter_mblog/widget/four_square_grid_image.dart';
 import 'package:flutter_mblog/widget/retweet_widget.dart';
 import 'package:flutter_mblog/widget/url_web_widget.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class PostDetailCard extends StatefulWidget {
   final PostItem item;

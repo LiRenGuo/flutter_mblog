@@ -31,7 +31,6 @@ class MyDrawer extends StatelessWidget {
   _buildHeader(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        print("login...${userModel.name}");
         Navigator.push(context, MaterialPageRoute(builder: (context) => MinePage(userid: userModel.id,wLoginUserId: userModel.id,)));
       },
       child: Container(

@@ -44,7 +44,7 @@ class _BrowserPageState extends State<BrowserPage> {
             iconTheme: IconThemeData(color: Colors.blue),
             backgroundColor: Colors.white,
             title: Text(
-              _title,
+              _title.replaceAll('"', ""),
               style: TextStyle(color: Colors.black),
             ),
             actions: [

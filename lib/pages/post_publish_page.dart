@@ -11,7 +11,6 @@ import 'package:flutter_mblog/dao/user_dao.dart';
 import 'package:flutter_mblog/model/follow_model.dart';
 import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/model/user_model.dart';
-import 'package:flutter_mblog/navigator/tab_navigator.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
@@ -68,10 +67,6 @@ class _PostPublishPageState extends State<PostPublishPage> {
   void initState() {
     getDeviceInfo();
     initPostItem();
-    _commentFocus.addListener(() {
-      print("Has focus: ${_commentFocus.hasFocus}");
-      print("_commentFocus.onKey ${_commentFocus}");
-    });
     super.initState();
   }
 
@@ -157,7 +152,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
             child: Stack(
               alignment: Alignment.center,
               children: <Widget>[
-                Column(
+                ListView(
                   children: [
                     _buildTextContent(),
                     fileGifList.length == 0 ? Container() : _buildGridImage(),
@@ -290,7 +285,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(_title),
+                          Text(_title.replaceAll('"', "")),
                           Text("$_urlWeb")
                         ],
                       ),
@@ -324,92 +319,133 @@ class _PostPublishPageState extends State<PostPublishPage> {
     );
   }
 
-  //底部操作栏布局
+  /// 底部操作栏布局
   _buildBottom() {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Container(
-        color: Color(0xffF9F9F9),
-        padding: EdgeInsets.only(left: 15, right: 5, top: 10, bottom: 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            _buildBottomIcon("images/icon_image.webp", () => _loadAssets()),
-            _buildBottomIcon("images/icon_mention.png", () => _loadAtUser()),
-            _buildBottomIcon("images/icon_url.png", () => _addUrl()),
-            Container(
-              child: InkWell(
-                child: Image.asset(
-                  "images/icon_gif.png",
-                  width: 25,
-                  height: 25,
-                ),
-                onTap: () async {
-                  final gif = await GiphyPicker.pickGif(
-                    context: context,
-                    apiKey: 'C8AXTOIfAiAtIjMaCBjSC8T4UkKRnqcT',
-                    fullScreenDialog: false,
-                    previewType: GiphyPreviewType.previewWebp,
-                    decorator: GiphyDecorator(
-                      showAppBar: false,
-                      searchElevation: 4,
-                      giphyTheme: ThemeData.dark().copyWith(
-                        inputDecorationTheme: InputDecorationTheme(
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
+    return Container(
+      padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: Container(
+          color: Color(0xffF9F9F9),
+          padding: EdgeInsets.only(left: 15, right: 5, top: 10, bottom: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              _buildBottomIcon("images/icon_image.webp", () => _loadAssets()),
+              _buildBottomIcon("images/icon_mention.png", () => _loadAtUser()),
+              _buildBottomIcon("images/icon_url.png", () => _addUrl()),
+              Container(
+                child: InkWell(
+                  child: Image.asset(
+                    "images/icon_gif.png",
+                    width: 25,
+                    height: 25,
+                  ),
+                  onTap: () async {
+                    final gif = await GiphyPicker.pickGif(
+                      context: context,
+                      apiKey: 'C8AXTOIfAiAtIjMaCBjSC8T4UkKRnqcT',
+                      fullScreenDialog: false,
+                      previewType: GiphyPreviewType.previewWebp,
+                      decorator: GiphyDecorator(
+                        showAppBar: false,
+                        searchElevation: 4,
+                        giphyTheme: ThemeData.dark().copyWith(
+                          inputDecorationTheme: InputDecorationTheme(
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                  if (gif != null) {
-                    setState(() {
-                      fileGifList.add("https://media2.giphy.com/media/" +
-                          gif.id +
-                          "/giphy.gif");
-                    });
-                  }
-                },
+                    );
+                    if (gif != null) {
+                      setState(() {
+                        fileGifList.add("https://media2.giphy.com/media/" +
+                            gif.id +
+                            "/giphy.gif");
+                      });
+                    }
+                  },
+                ),
               ),
-            ),
-            _buildBottomIcon(
-                "images/icon_emotion.png",
-                () => showModalBottomSheet(
-                    context: context,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) {
-                      return Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(10),
-                                topRight: Radius.circular(10)),
-                            color: Colors.white),
-                        height: AdaptiveTools.setRpx(460),
-                        child: Column(
-                          children: <Widget>[
-                            Container(
-                              child: Text("  "),
-                              width: AdaptiveTools.setRpx(60),
-                              height: AdaptiveTools.setRpx(10),
-                              margin: EdgeInsets.all(5),
-                              decoration: BoxDecoration(
-                                  color: Colors.grey[400],
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(50))),
-                            ),
-                            Spacer(),
-                            Container(
-                              child: buildSticker(),
-                            ),
-                          ],
-                        ),
-                      );
-                    })),
-            _buildBottomIcon("images/icon_add.png", () => print("")),
-          ],
+              _buildBottomIcon(
+                  "images/icon_emotion.png",
+                  () => showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) {
+                        return Container(
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(10),
+                                  topRight: Radius.circular(10)),
+                              color: Color(0xFFF2F2F2)),
+                          height: AdaptiveTools.setRpx(460),
+                          child: Column(
+                            children: <Widget>[
+                              Container(
+                                width: AdaptiveTools.setRpx(60),
+                                height: AdaptiveTools.setRpx(10),
+                                margin: EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                    color: Colors.grey[400],
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(50))),
+                              ),
+                              Spacer(),
+                              Container(
+                                child: buildSticker(),
+                              ),
+                            ],
+                          ),
+                        );
+                      })),
+              _buildBottomIcon("images/icon_add.png", () => _allOperating()),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  _allOperating(){
+    return showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context){
+        return Container(
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10)),
+              color: Colors.white),
+          height: AdaptiveTools.setRpx(600),
+          child: Column(
+            children: <Widget>[
+              Container(
+                width: AdaptiveTools.setRpx(60),
+                height: AdaptiveTools.setRpx(10),
+                margin: EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.all(Radius.circular(50))),
+              ),
+              Expanded(
+                child: ListView(
+                  children: [
+                    ListTile(
+                      title: Text("相册"),
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
+        );
+      }
     );
   }
 
@@ -428,7 +464,6 @@ class _PostPublishPageState extends State<PostPublishPage> {
             child: Column(
               children: <Widget>[
                 Container(
-                  child: Text("  "),
                   width: AdaptiveTools.setRpx(60),
                   height: AdaptiveTools.setRpx(10),
                   margin: EdgeInsets.all(5),
@@ -437,7 +472,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
                       borderRadius: BorderRadius.all(Radius.circular(50))),
                 ),
                 Expanded(
-                  child: ListView.builder(
+                  child: followModel.followList != null && followModel.followList.length != 0 ? ListView.builder(
                       itemCount: followModel.followList.length,
                       itemBuilder: (context, index) {
                         return ListTile(
@@ -469,7 +504,10 @@ class _PostPublishPageState extends State<PostPublishPage> {
                           subtitle: Text(
                               "@${followModel.followList[index].username}"),
                         );
-                      }),
+                      }):Container(
+                    margin: EdgeInsets.all(AdaptiveTools.setRpx(50)),
+                    child: Text("暂无关注者",style: TextStyle(fontSize: 16,color: Colors.grey),),
+                  ),
                 )
               ],
             ),
@@ -491,8 +529,7 @@ class _PostPublishPageState extends State<PostPublishPage> {
                       controller: _urlWebController,
                       decoration: InputDecoration(
                           hintText: 'http://或者https://',
-                          filled: true,
-                          fillColor: Colors.grey.shade50),
+                          ),
                       validator: (value) {
                         RegExp url = new RegExp(r"^((https|http)?:\/\/)[^\s]+");
                         var result = url.firstMatch(value);
@@ -777,10 +814,10 @@ class _PostPublishPageState extends State<PostPublishPage> {
             flag++;
             formData.fields.add(MapEntry("files[$index]", result));
           }
-          print("formData >>> ${formData.fields.toString()}");
+          /*print("formData >>> ${formData.fields.toString()}");
           print("formData >>> ${formData.files.toString()}");
           print("flag == fileGifList.length >>> ${flag}");
-          print("flag == fileGifList.length >>> ${fileGifList.length}");
+          print("flag == fileGifList.length >>> ${fileGifList.length}");*/
 
           if (flag == fileGifList.length) {
             _publishApi(context, formData);
@@ -815,7 +852,6 @@ class _PostPublishPageState extends State<PostPublishPage> {
     if (Platform.isAndroid) {
       AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
       devicemodel = "Android";
-      print(androidInfo.toString());
     } else if (Platform.isIOS) {
       IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
       devicemodel = iosInfo.name;

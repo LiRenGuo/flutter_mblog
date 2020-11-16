@@ -34,6 +34,7 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
   PostItem _item;
   bool isok = false;
   bool initPostItemOk = false;
+
   PostCommentModel _postCommentModel;
   TextEditingController _commentEditingController = new TextEditingController();
   List<Asset> fileList = List<Asset>();
@@ -316,9 +317,6 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                                   ],
                                 ),
                               ),
-                              SizedBox(
-                                height: 5,
-                              ),
                               Container(
                                 child: Text(e.content),
                               ),
@@ -549,10 +547,8 @@ class _HomeDetailPageState extends State<HomeDetailPage> {
                                                   padding: EdgeInsets.only(
                                                       left: AdaptiveTools.setPx(
                                                           3)),
-                                                  height:
-                                                      AdaptiveTools.setPx(13),
-                                                  width:
-                                                      AdaptiveTools.setPx(13),
+                                                  height: AdaptiveTools.setPx(13),
+                                                  width: AdaptiveTools.setPx(13),
                                                 )
                                               : Container(
                                                   height: 0,

@@ -213,61 +213,6 @@ class _HomePageState extends State<HomePage> with RouteAware {
               },
             ),
           ),
-          /*
-          RaisedButton(
-            child: Text("测试"),
-            onPressed: () {
-              bool istrue =  imageCache.evict("http://photo.iksns.net/2019112716373872375bc37fcfca8460.jpg");
-              print("istrue  >>  ${istrue}");
-            },
-          ),
-          RaisedButton(
-            child: Text("测试"),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (_){
-                return new BrowserPage(url: "https://www.baidu.com/",title: "百度",);
-              }));
-            },
-          ),
-          RaisedButton(
-            child: Text("测试"),
-            onPressed: () async {
-               PostModel po = await Shared_pre.Shared_getTwitter();
-               print("目标数：${po.content.length}");
-            },
-          ),
-          RaisedButton(
-            child: Text("测试1"),
-            onPressed: () async {
-              print("实际数：${items.length}");
-            },
-          ),
-          RaisedButton(
-            child: Text("测试"),
-            onPressed: () async {
-              await Shared_pre.Shared_setToken("1");
-            },
-          ),
-          RaisedButton(
-            child: Text("测试2"),
-            onPressed: () async {
-              await Shared_pre.Shared_setResToken("111");
-            },
-          ),
-          RaisedButton(
-            child: Text("测试3"),
-            onPressed: () async {
-              String token = await Shared_pre.Shared_getToken();
-              MyToast.show(token);
-            },
-          ),
-          RaisedButton(
-            child: Text("测试4"),
-            onPressed: () async {
-              String token = await Shared_pre.Shared_getResToken();
-              MyToast.show(token);
-            },
-          ),*/
         ],
       ),
       body: EasyRefresh(

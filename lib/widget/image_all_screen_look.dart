@@ -6,9 +6,10 @@ const Color selColor =Colors.white;
 const Color otherColor = Colors.grey;
 
 
+// ignore: must_be_immutable
 class ImageAllScreenLook extends StatefulWidget {
 
-  List imgDataArr=[];
+  List imgDataArr = [];
   int index=0;
   String heroTag;
   PageController controller;

@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -12,7 +11,6 @@ import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
-import 'package:flutter_mblog/util/TimeUtil.dart';
 import 'package:flutter_mblog/util/build_content.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
 import 'package:flutter_mblog/widget/four_square_grid_image.dart';
@@ -78,7 +76,7 @@ class _PostCardState extends State<PostCard> {
                   builder: (context) => MinePage(
                         userid: item.user.id,
                         wLoginUserId: widget.userId,
-                      )));
+                  )));
             },
           ),
           Expanded(
@@ -95,10 +93,7 @@ class _PostCardState extends State<PostCard> {
                           children: <Widget>[
                             Container(
                               child: Text(item.user.name,
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontFamily: "sans-serif",
-                                      fontWeight: FontWeight.w800)),
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400)),
                             ),
                             Expanded(
                                 child: Container(

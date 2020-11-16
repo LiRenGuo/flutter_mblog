@@ -43,7 +43,7 @@ class BuildContent {
               if (result.startsWith("@")) {
                 return TextSpan(
                   text: result + " ",
-                  style: TextStyle(fontSize: 14, color: Colors.blue),
+                  style: TextStyle(fontSize: 15, color: Colors.blue),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
                       print('点击了隐私政策');
@@ -53,7 +53,7 @@ class BuildContent {
               } else {
                 return TextSpan(
                   text: result,
-                  style: TextStyle(fontSize: 14, color: Colors.black),
+                  style: TextStyle(fontSize: 15, color: Colors.black),
                 );
               }
             }).toList()),

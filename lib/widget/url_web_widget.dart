@@ -68,7 +68,7 @@ class _UrlWebWidgetState extends State<UrlWebWidget> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _title,
+                            _title.replaceAll('"', ""),
                             overflow: TextOverflow.ellipsis,
                           ),
                           SizedBox(

@@ -39,35 +39,37 @@ class _RetweetWidgetState extends State<RetweetWidget> {
             Container(
               padding: EdgeInsets.fromLTRB(10, 3, 3, 0),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   Container(
                     margin: EdgeInsets.only(top: AdaptiveTools.setRpx(8)),
                     child: ClipOval(
                       child: Image.network(
                         widget.avatar,
-                        cacheHeight: 250,
-                        cacheWidth: 250,
+                        cacheHeight: 450,
+                        cacheWidth: 450,
                       ),
                     ),
                     width: AdaptiveTools.setRpx(50),
                     height: AdaptiveTools.setRpx(50),
                   ),
                   Container(
-                    padding: EdgeInsets.fromLTRB(10, 8, 0, 10),
-                    child: Text("${widget.name}"),
+                    margin: EdgeInsets.only(left: 5),
+                    child: Text(widget.name,
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
                   ),
                   Expanded(
                       child: Container(
-                        padding: EdgeInsets.fromLTRB(5, 9, 0, 10),
+                        margin: EdgeInsets.only(left: 5),
                         child: Text(
                           "@${widget.username}",
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: Colors.black38),
+                          style: TextStyle(color: Colors.grey,fontSize: 12),
                         ),
                       )),
                   Container(
-                    padding: EdgeInsets.fromLTRB(0, 10, 10, 10),
+                    margin: EdgeInsets.only(right: 5),
                     child: Text(
                       "${TimeUtil.parse(widget.postItemCtime)}",
                       style:

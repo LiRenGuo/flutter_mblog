@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mblog/dao/post_dao.dart';
 import 'package:flutter_mblog/dao/user_dao.dart';
 import 'package:flutter_mblog/model/post_like_model.dart';
+import 'package:flutter_mblog/model/post_model.dart';
 import 'package:flutter_mblog/pages/home_detail_page.dart';
 import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/post_publish_page.dart';
@@ -96,14 +97,14 @@ class _LikePageState extends State<LikePage> {
 
   Widget body(String userId, String loginUserId, PostLikeItem _item,
       String avatar, BuildContext context) {
-    return Padding(
-      child: Column(
-        children: <Widget>[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Expanded(
-                child: InkWell(
+    return InkWell(
+      child: Padding(
+        child: Column(
+          children: <Widget>[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(
                   child: Stack(
                     children: <Widget>[
                       Align(
@@ -113,164 +114,141 @@ class _LikePageState extends State<LikePage> {
                           child: ClipOval(
                             child: ImageProcessTools.CachedNetworkProcessImage(
                                 _item.userDto.avatar,
-                                memCacheWidth: 250,
-                                memCacheHeight: 250),
+                                memCacheWidth: 450,
+                                memCacheHeight: 450),
                           ),
-                          width: AdaptiveTools.setRpx(80),
-                          height: AdaptiveTools.setRpx(80),
+                          width: AdaptiveTools.setRpx(90),
+                          height: AdaptiveTools.setRpx(90),
                         ),
                       )
                     ],
                   ),
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => MinePage(
-                                  userid: _item.userDto.id,
-                                  wLoginUserId: widget.loginUserId,
-                                )));
-                  },
+                  flex: 1,
                 ),
-                flex: 1,
-              ),
-              SizedBox(
-                width: 5,
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    InkWell(
-                      child: Row(
-                        children: <Widget>[
-                          Container(
-                            child: Text(
-                              _item.userDto.name,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                letterSpacing: 2,
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            margin: EdgeInsets.only(right: 5),
-                          ),
-                          Expanded(
-                            child: Container(
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.only(left: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          children: <Widget>[
+                            Container(
                               child: Text(
-                                "@${_item.userDto.username}",
+                                _item.userDto.name,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 12,color: Colors.black38),
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
-                          )
-                        ],
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => MinePage(
-                                      userid: _item.userDto.id,
-                                      wLoginUserId: widget.loginUserId,
-                                    )));
-                      },
-                    ),
-                    InkWell(
-                      child: Container(
-                        width: double.infinity,
-                        margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
-                        child: BuildContent.buildContent(_item.content, context,
-                            atOnTap: (name) => _atToDetail(name, context)),
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => HomeDetailPage(
-                                      null,
-                                      postId: _item.id,
-                                    )));
-                      },
-                    ),
-                    if(_item.photos != null && _item.photos.length != 0) Container(
-                        margin: EdgeInsets.only(top: 8),
-                        child: FourSquareGridImage.buildImage(context,
-                            _item.photos) /*image(_item.photos, context),*/
-                    ),
-                    if (_item.postId != null)
-                      _item.postId == "*"
-                          ? _buildRemoteRetweet()
-                          : RetweetWidget(_item.userDto.avatar, _item.userDto.name, _item.userDto.username
-                          , _item.rPostLikeItem.id, _item.rPostLikeItem.ctime.toString()
-                          , _item.rPostLikeItem.content, _item.rPostLikeItem.photos),
-                    if (_item.website != null) UrlWebWidget(_item.website),
-                    SizedBox(height: 5,),
-                    Container(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Container(
-                            child: _buildLikeButton(_item),
-                            height: AdaptiveTools.setPx(20),
-                          ),
-                          InkWell(
-                            child: Container(
-                              child: Row(
-                                children: <Widget>[
-                                  Image.asset("images/ic_home_comment.webp"),
-                                  SizedBox(
-                                    width: 10,
+                            Expanded(
+                              child: Container(
+                                margin: EdgeInsets.only(left: 3),
+                                child: Text(
+                                  "@${_item.userDto.username}",
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: 12,color: Colors.grey),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          width: double.infinity,
+                          margin: EdgeInsets.only(top: AdaptiveTools.setPx(3)),
+                          child: BuildContent.buildContent(_item.content, context,
+                              atOnTap: (name) => _atToDetail(name, context)),
+                        ),
+                        if(_item.photos != null && _item.photos.length != 0) Container(
+                            margin: EdgeInsets.only(top: 5),
+                            child: FourSquareGridImage.buildImage(context, _item.photos)
+                        ),
+                        if (_item.postId != null)
+                          _item.postId == "*"
+                              ? _buildRemoteRetweet()
+                              :  RetweetWidget(_item.userDto.avatar, _item.userDto.name, _item.userDto.username
+                              , _item.rPostLikeItem.id, _item.rPostLikeItem.ctime.toString()
+                              , _item.rPostLikeItem.content, _item.rPostLikeItem.photos),
+                        if (_item.website != null) UrlWebWidget(_item.website),
+                        SizedBox(height: 5,),
+                        Container(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Container(
+                                child: _buildLikeButton(_item),
+                                height: AdaptiveTools.setPx(20),
+                              ),
+                              InkWell(
+                                child: Container(
+                                  child: Row(
+                                    children: <Widget>[
+                                      Image.asset("images/ic_home_comment.webp"),
+                                      SizedBox(
+                                        width: 10,
+                                      ),
+                                      Text("${_item.commentCount.toString()}")
+                                    ],
                                   ),
-                                  Text("${_item.commentCount.toString()}")
-                                ],
-                              ),
-                              height: AdaptiveTools.setPx(20),
-                            ),
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => HomeDetailPage(
+                                  height: AdaptiveTools.setPx(20),
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => HomeDetailPage(
                                             null,
                                             postId: _item.id,
                                           )));
-                            },
-                          ),
-                          InkWell(
-                            child: Container(
-                              child: Image.asset("images/ic_home_forward.png"),
-                              height: AdaptiveTools.setPx(20),
-                            ),
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => PostPublishPage(
-                                            avatar: avatar,
+                                },
+                              ),
+                              InkWell(
+                                child: Container(
+                                  child:
+                                  Image.asset("images/ic_home_forward.png"),
+                                  height: AdaptiveTools.setPx(20),
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => PostPublishPage(
+                                            avatar: widget.avatar,
                                             postId: _item.id,
                                           )));
-                            },
-                          )
-                        ],
-                      ),
+                                },
+                              )
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
+                  flex: 6,
                 ),
-                flex: 6,
-              ),
-            ],
-          ),
-          Container(
-            margin: EdgeInsets.only(top: 10),
-            height: 1,
-            color: Colors.black12,
-          )
-        ],
+              ],
+            ),
+            Container(
+              margin: EdgeInsets.only(top: 10),
+              height: 1,
+              color: Colors.black12,
+            )
+          ],
+        ),
+        padding: EdgeInsets.fromLTRB(10, 5, 10, 10),
       ),
-      padding: EdgeInsets.fromLTRB(10, 5, 10, 10),
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => HomeDetailPage(
+                  new PostItem(),
+                  postId: _item.id,
+                )));
+      },
     );
   }
 

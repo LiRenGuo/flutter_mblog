@@ -430,8 +430,7 @@ class _CodePaint extends CustomPainter {
 
       startX = text.length * (singleWidth + dr.gapSpace) + singleWidth / 2;
       var endY = size.height - 28.0 - 8;
-      canvas.drawLine(
-          Offset(startX, startY), Offset(startX, endY), cursorPaint);
+      canvas.drawLine(Offset(startX, startY), Offset(startX, endY), cursorPaint);
       if (cursorAnimationListener != null) {
         cursorAnimationListener(true);
       }

@@ -215,40 +215,42 @@ class _HomePageState extends State<HomePage> with RouteAware {
           ),
         ],
       ),
-      body: EasyRefresh(
-        controller: _easyRefreshController,
-        header: MaterialHeader(),
-        onRefresh: _handleRefresh,
-        child: isOkAttention && _loading && items.length != 0 ? ListView
-            .builder(
-          cacheExtent: 1.0,
-          shrinkWrap: true,
-          controller: _scrollController,
-          itemCount: items.length >= 100 ? 100 : items.length,
-          itemBuilder: (context, index) {
-            return PostCard(item: items[index],
-                index: index,
-                userId: userModel.id,
-                avatar: userModel.avatar);
-          },
-        ) : items.length == 0 ? Container(
-          child: Center(
-            child: InkWell(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text("暂无关注用户的帖子"),
-                  Text("点击首页图标上的小红点查看推荐数据")
-                ],
+      body: Container(
+        child: EasyRefresh(
+          controller: _easyRefreshController,
+          scrollController: _scrollController,
+          header: MaterialHeader(),
+          onRefresh: _handleRefresh,
+          child: isOkAttention && _loading && items.length != 0 ? ListView
+              .builder(
+            cacheExtent: 1.0,
+            shrinkWrap: true,
+            itemCount: items.length >= 100 ? 100 : items.length,
+            itemBuilder: (context, index) {
+              return PostCard(item: items[index],
+                  index: index,
+                  userId: userModel.id,
+                  avatar: userModel.avatar);
+            },
+          ) : items.length == 0 ? Container(
+            child: Center(
+              child: InkWell(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text("暂无关注用户的帖子"),
+                    Text("点击首页图标上的小红点查看推荐数据")
+                  ],
+                ),
               ),
             ),
-          ),
-          height: MediaQuery.of(context).size.height * 0.8,
-        ) : Container(
-          height: MediaQuery.of(context).size.height * 0.8,
-          alignment: Alignment.center,
-          child: Center(
-            child: CircularProgressIndicator(),
+            height: MediaQuery.of(context).size.height * 0.8,
+          ) : Container(
+            height: MediaQuery.of(context).size.height * 0.8,
+            alignment: Alignment.center,
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
           ),
         ),
       ),

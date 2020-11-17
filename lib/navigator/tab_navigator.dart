@@ -134,6 +134,7 @@ class _TabNavigatorState extends State<TabNavigator> {
             ),
       bottomNavigationBar: GestureDetector(
         onDoubleTap: (){
+          print("第二点击");
           if(_currentIndex == 0){
             childKey.currentState.ref();
           }

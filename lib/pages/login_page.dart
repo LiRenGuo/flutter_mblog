@@ -66,8 +66,8 @@ class _LoginPageState extends State<LoginPage> {
               Container(
                 child: TextFormField(
                     decoration: InputDecoration(
-                      labelText: "手机号",
-                      hintText: "请输入手机号",
+                      labelText: "账号",
+                      hintText: "请输入手机号/学号/工号",
                       prefixIcon: Icon(Icons.person),
                     ),
                     style: hintTips,

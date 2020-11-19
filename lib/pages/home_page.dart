@@ -232,19 +232,25 @@ class _HomePageState extends State<HomePage> with RouteAware {
                   userId: userModel.id,
                   avatar: userModel.avatar);
             },
-          ) : items.length == 0 ? Container(
-            child: Center(
-              child: InkWell(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text("暂无关注用户的帖子"),
-                    Text("点击首页图标上的小红点查看推荐数据")
-                  ],
+          ) : items.length == 0 ? InkWell(
+            child: Container(
+              child: Center(
+                child: InkWell(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text("暂无关注用户的帖子"),
+                      //Text("点击首页图标上的小红点查看推荐数据")
+                      Text("点击开始吧")
+                    ],
+                  ),
                 ),
               ),
+              height: MediaQuery.of(context).size.height * 0.8,
             ),
-            height: MediaQuery.of(context).size.height * 0.8,
+            onTap: (){
+              this.ref();
+            },
           ) : Container(
             height: MediaQuery.of(context).size.height * 0.8,
             alignment: Alignment.center,
@@ -287,13 +293,13 @@ class _HomePageState extends State<HomePage> with RouteAware {
           Shared_pre.Shared_setTwitter(newPostModel);
           setState(() {
             items.insertAll(0, ramdomList.content);
-            _loading = true;
           });
         });
       } else {
         MyToast.show("暂无更多数据");
       }
     });
+    _loading = true;
   }
 
 // 加载用户信息

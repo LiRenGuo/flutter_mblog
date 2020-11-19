@@ -279,7 +279,7 @@ class _TweetsState extends State<Tweets> {
                                       , _item.rPostItem.id, _item.rPostItem.ctime.toString()
                                       , _item.rPostItem.content, _item.rPostItem.photos),
                         if (_item.website != null) Container(
-                          child: UrlWebWidget(_item.website),
+                          child: UrlWebWidget(_item.website,widget.userId),
                           margin: EdgeInsets.only(top: 5),
                         ),
                         SizedBox(height: 5,),

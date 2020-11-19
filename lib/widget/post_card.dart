@@ -187,7 +187,10 @@ class _PostCardState extends State<PostCard> {
                       child: _content(context),
                     ),
                     item.photos != null && item.photos.length != 0
-                        ? FourSquareGridImage.buildImage(context, item.photos)
+                        ? Container(
+                          child: FourSquareGridImage.buildImage(context, item.photos),
+                          margin: EdgeInsets.only(bottom: 5),
+                        )
                         : Container(),
                     if (item.postId != null)
                       item.postId == "*"
@@ -195,9 +198,10 @@ class _PostCardState extends State<PostCard> {
                           : RetweetWidget(item.user.avatar, item.user.name, item.user.username
                           , item.forwardPost.id, item.forwardPost.ctime.toString()
                           , item.forwardPost.content, item.forwardPost.photos),
-                    if (item.website != null) UrlWebWidget(item.website),
+                    if (item.website != null) UrlWebWidget(item.website,widget.userId),
+
                     Container(
-                      margin: EdgeInsets.only(top: 10),
+                      margin: EdgeInsets.only(top: 5),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[

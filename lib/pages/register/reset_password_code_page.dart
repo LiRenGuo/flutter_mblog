@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_mblog/pages/register/rest_password_end_page.dart';
+import 'package:flutter_mblog/pages/register/reset_password_end_page.dart';
 import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
@@ -106,7 +106,6 @@ class _RestPasswordPageState extends State<RestPasswordPage> {
         "${Auth.ipaddress}/api/forget/password/code/send?username=${widget.phone}",
       );
       if (response.statusCode == 200) {
-        final responseData = response.data;
         MyToast.show("发送成功");
       }
     }on DioError catch(e) {

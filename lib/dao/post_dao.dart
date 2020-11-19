@@ -28,6 +28,7 @@ final FIND_KEYWORD_BY_POST = "${Auth.ipaddress}/api/post/search";
 ///
 /// 帖子接口
 class PostDao {
+
   /// TODO
   /// 获取首页随机帖子数，后期可能会修改
   static Future<PostModel> getRandomList(BuildContext context) async {

@@ -8,6 +8,7 @@ import 'package:flutter_mblog/pages/mine_page.dart';
 import 'package:flutter_mblog/pages/settings/settings_page.dart';
 import 'package:flutter_mblog/util/check_update_tools.dart';
 import 'package:flutter_mblog/util/image_process_tools.dart';
+import 'package:flutter_mblog/util/shared_pre.dart';
 
 class MyDrawer extends StatelessWidget {
   final UserModel userModel;

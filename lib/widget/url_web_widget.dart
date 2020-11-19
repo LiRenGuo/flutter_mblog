@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mblog/model/user_model.dart';
 import 'package:flutter_mblog/util/AdaptiveTools.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -7,8 +8,10 @@ import 'browser_page.dart';
 // ignore: must_be_immutable
 class UrlWebWidget extends StatefulWidget {
   String urlWeb;
+  /// 谁点开了这个网页
+  String userId;
 
-  UrlWebWidget(this.urlWeb);
+  UrlWebWidget(this.urlWeb,this.userId);
 
   @override
   _UrlWebWidgetState createState() => _UrlWebWidgetState();
@@ -20,6 +23,7 @@ class _UrlWebWidgetState extends State<UrlWebWidget> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget.userId);
     return Padding(
       child: Container(
         child: Column(
@@ -30,7 +34,7 @@ class _UrlWebWidgetState extends State<UrlWebWidget> {
                 children: [
                   Container(
                     child: WebView(
-                      initialUrl: widget.urlWeb,
+                      initialUrl: "${widget.urlWeb}?userId=${widget.userId}",
                       onWebViewCreated: (controller) {
                         _webViewController = controller;
                       },
@@ -75,7 +79,7 @@ class _UrlWebWidgetState extends State<UrlWebWidget> {
                             height: AdaptiveTools.setRpx(10),
                           ),
                           Text(
-                            "${widget.urlWeb}",
+                            "${widget.urlWeb}?userId=${widget.userId}",
                             overflow: TextOverflow.ellipsis,
                           )
                         ],
@@ -89,7 +93,7 @@ class _UrlWebWidgetState extends State<UrlWebWidget> {
                           context,
                           MaterialPageRoute(
                               builder: (context) => BrowserPage(
-                                url: widget.urlWeb,
+                                url: widget.urlWeb + "?userId=${widget.userId}",
                                 title: _title,
                               )));
                     },

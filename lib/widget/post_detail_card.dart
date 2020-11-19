@@ -183,7 +183,7 @@ class _PostDetailCardState extends State<PostDetailCard> {
                 , widget.item.forwardPost.id, widget.item.forwardPost.ctime.toString()
                 , widget.item.forwardPost.content, widget.item.forwardPost.photos),
                 SizedBox(height: 5,),
-                if (widget.item.website != null) UrlWebWidget(widget.item.website),
+                if (widget.item.website != null && isOkAttention) UrlWebWidget(widget.item.website,userModel.id),
                 Padding(
                   padding: EdgeInsets.only(top: 5),
                   child: Row(

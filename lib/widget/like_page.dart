@@ -172,7 +172,7 @@ class _LikePageState extends State<LikePage> {
                               :  RetweetWidget(_item.userDto.avatar, _item.userDto.name, _item.userDto.username
                               , _item.rPostLikeItem.id, _item.rPostLikeItem.ctime.toString()
                               , _item.rPostLikeItem.content, _item.rPostLikeItem.photos),
-                        if (_item.website != null) UrlWebWidget(_item.website),
+                        if (_item.website != null) UrlWebWidget(_item.website,widget.userId),
                         SizedBox(height: 5,),
                         Container(
                           child: Row(

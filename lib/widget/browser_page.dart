@@ -74,9 +74,9 @@ class _BrowserPageState extends State<BrowserPage> {
                   _title = result;
                 });
               });
-              _controller?.evaluateJavascript('sendUserIdFormJs("${userModel.id}")').then((value){
+              /*_controller?.evaluateJavascript('sendUserIdFormJs("${userModel.id}")').then((value){
                 print("成功调用了 >> $value");
-              });
+              });*/
             },
             navigationDelegate: (NavigationRequest request) {
               print("request.url >> ${request.url}");
@@ -87,7 +87,6 @@ class _BrowserPageState extends State<BrowserPage> {
               }
               return NavigationDecision.prevent;
             },
-
             javascriptMode: JavascriptMode.unrestricted,
           ) : Container(),
         ),

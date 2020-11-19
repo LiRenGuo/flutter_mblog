@@ -6,8 +6,8 @@ import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/net_utils.dart';
 import 'package:flutter_mblog/widget/lcfarm_code_input.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
+// ignore: must_be_immutable
 class CheckCodePage extends StatefulWidget {
   RegisterUser registerUser;
   CheckCodePage(this.registerUser);

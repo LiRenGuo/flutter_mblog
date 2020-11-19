@@ -147,7 +147,6 @@ class _RestPasswordEndPageState extends State<RestPasswordEndPage> {
           "${Auth.ipaddress}/api/forget/password",data: formData
       );
       if (response.statusCode == 200) {
-        final responseData = response.data;
         Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
       }
     }on DioError catch(e){

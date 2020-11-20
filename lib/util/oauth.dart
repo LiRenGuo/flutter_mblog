@@ -111,33 +111,37 @@ class Oauth_2 {
     try {
       var result =  await NetUtils.postdata(Auth.TokenUrl, params: params, options: options);
       print("请求Token:${result}");
-      if (result == 400 || result == 401) {
-        Navigator.pushAndRemoveUntil(
-            mContext,
-            MaterialPageRoute(builder: (context) => WelcomePage()),
-                (route) => route == null);
-      } else if(result == 302){
-        Navigator.pushAndRemoveUntil(
-            mContext,
-            MaterialPageRoute(builder: (context) => WelcomePage()),
-                (route) => route == null);
-      } else {
-        Shared_pre.Shared_setToken(result['access_token']);
-        Shared_pre.Shared_setResToken(result['refresh_token']);
-        if (isLogin) {
+      if(result != null) {
+        if (result == 400 || result == 401) {
           Navigator.pushAndRemoveUntil(
               mContext,
-              MaterialPageRoute(builder: (context) => TabNavigator()),
+              MaterialPageRoute(builder: (context) => WelcomePage()),
                   (route) => route == null);
+        } else if(result == 302){
+          Navigator.pushAndRemoveUntil(
+              mContext,
+              MaterialPageRoute(builder: (context) => WelcomePage()),
+                  (route) => route == null);
+        } else {
+          Shared_pre.Shared_setToken(result['access_token']);
+          Shared_pre.Shared_setResToken(result['refresh_token']);
+          if (isLogin) {
+            Navigator.pushAndRemoveUntil(
+                mContext,
+                MaterialPageRoute(builder: (context) => TabNavigator()),
+                    (route) => route == null);
+          }
         }
       }
     } on DioError catch (e) {
-      if (e.response.statusCode == 401) {
+      if (e.response != null && e.response.statusCode == 401) {
         //401代表refresh_token过期
         Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => WelcomePage()),
                 (route) => route == null);
+      }else{
+        DioErrorProcess.dioError(context, e);
       }
     }
   }

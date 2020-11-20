@@ -81,6 +81,8 @@ class UserDao {
     try {
       String token = await Shared_pre.Shared_getToken();
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
+      dio.options.connectTimeout = 3000;
+      dio.options.receiveTimeout = 5000;
       final response = await dio.get(
           "$USER_FOLLOWING_LIST/$userId",
           options: options);
@@ -100,8 +102,8 @@ class UserDao {
     try {
       String token = await Shared_pre.Shared_getToken();
       Options options = Options(headers: {'Authorization': 'Bearer $token'});
-      dio.options.connectTimeout = 5000;
-      dio.options.receiveTimeout = 10000;
+      dio.options.connectTimeout = 3000;
+      dio.options.receiveTimeout = 5000;
       final response = await dio.get(
           "$USER_FOLLOWERS$userId",
           options: options);

@@ -81,8 +81,24 @@ class _AboutUsPageState extends State<AboutUsPage> {
                     ),
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(vertical: 10,horizontal: 20),
-                    margin: EdgeInsets.all(10),
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    margin: EdgeInsets.fromLTRB(10,10,10,0),
+                    child: Column(
+                      children: [
+                        Divider(height: 5,color: Colors.black38,),
+                        ListTile(
+                          title: Text("功能介绍"),
+                          trailing: Icon(Icons.chevron_right),
+                          onTap: (){
+
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    margin: EdgeInsets.fromLTRB(10,0,10,10),
                     child: Column(
                       children: [
                         Divider(height: 5,color: Colors.black38,),

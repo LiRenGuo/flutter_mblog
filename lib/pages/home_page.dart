@@ -152,6 +152,9 @@ class _HomePageState extends State<HomePage> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
+    print(isOkAttention);
+    print(_loading);
+    print(items.length != 0);
     if (items.length > 100) {
       items.removeRange(101, items.length);
     }

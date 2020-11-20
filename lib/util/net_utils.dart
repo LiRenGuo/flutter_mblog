@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_mblog/util/dio_error_process.dart';
+import 'package:flutter_mblog/util/my_toast.dart';
 import 'package:flutter_mblog/util/shared_pre.dart';
 
 import 'dart:async';
@@ -50,11 +52,16 @@ class NetUtils {
   static Future postdata(String url,
       {Map<String, dynamic> params, options}) async {
     try {
+      dio.options.connectTimeout = 3000;
+      dio.options.receiveTimeout = 5000;
       var respose = await dio.post(url, queryParameters: params, options: options);
       return respose.data;
     } on DioError catch (a) {
-      print(a);
-      return a.response.statusCode;
+      if(a.response != null ) {
+        return a.response.statusCode;
+      }else{
+        MyToast.show("请求超时");
+      }
       //  Register.fromJson(a.response);
     }
   }

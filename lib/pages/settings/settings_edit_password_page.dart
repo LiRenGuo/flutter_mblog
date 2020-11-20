@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mblog/navigator/tab_navigator.dart';
 import 'package:flutter_mblog/util/Configs.dart';
 import 'package:flutter_mblog/util/common_util.dart';
 import 'package:flutter_mblog/util/my_toast.dart';
@@ -43,7 +45,7 @@ class _SettingsEditPasswordPageState extends State<SettingsEditPasswordPage> {
                     Container(
                       padding: EdgeInsets.fromLTRB(9, 5, 10, 0),
                       child: Text(
-                        "当前密码",
+                        "原密码",
                         style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w100,
@@ -188,7 +190,11 @@ class _SettingsEditPasswordPageState extends State<SettingsEditPasswordPage> {
       }
     }on DioError catch(e){
       Navigator.pop(context);
-      MyToast.show("修改密码错误");
+      if(e.response.data["oldpassword"] != null){
+        MyToast.show(e.response.data["oldpassword"]);
+      }else{
+        MyToast.show("修改密码错误");
+      }
     }
   }
 }

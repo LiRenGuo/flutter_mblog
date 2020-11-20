@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mblog/model/user_model.dart';
+import 'package:flutter_mblog/navigator/tab_navigator.dart';
 import 'package:flutter_mblog/pages/settings/settings_edit_mobile_password_page.dart';
 import 'package:flutter_mblog/pages/settings/settings_edit_password_page.dart';
 import 'package:flutter_mblog/pages/settings/settings_edit_username_page.dart';
@@ -24,6 +25,12 @@ class _SettingsPageState extends State<SettingsPage> {
         appBar: AppBar(
           backgroundColor: Colors.white,
           iconTheme: IconThemeData(color: Colors.blue),
+          leading: BackButton(
+            onPressed: (){
+//              Navigator.push(context, MaterialPageRoute(builder: (context) => TabNavigator()));
+              Navigator.pop(context);
+            },
+          ),
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[

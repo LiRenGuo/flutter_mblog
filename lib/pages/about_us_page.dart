@@ -63,7 +63,7 @@ class _AboutUsPageState extends State<AboutUsPage> {
                         Container(
                           margin: EdgeInsets.only(top: 10),
                           child: Text(
-                            "微博客",
+                            "校园社交",
                             style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -99,7 +99,14 @@ class _AboutUsPageState extends State<AboutUsPage> {
                   ),
                   Spacer(),
                   Container(
-                    padding: EdgeInsets.all(15),
+                    child: Column(
+                      children: [
+                        Text("深圳技师学院",style: TextStyle(fontSize: AdaptiveTools.setRpx(24),color: Colors.black38),)
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(15, 5, 15, 15),
                     child: Column(
                       children: [
                         Text("极客工作室 提供技术支持",style: TextStyle(fontSize: AdaptiveTools.setRpx(24),color: Colors.black38),)

@@ -108,8 +108,12 @@ class CheckUpdateTools {
 
   /// 检查版本
   Future<bool> _checkVersion(bool isShowToast) async {
-    var res = await Dio().get("http://10.1.53.16:8990/demo/version").catchError((e) {
+    Dio dio = new Dio();
+    dio.options.connectTimeout = 3000;
+    dio.options.receiveTimeout = 10000;
+    var res = await dio.get("http://10.1.53.16:8990/demo/version").catchError((e) {
       print('获取版本号失败---------- ${e}');
+      MyToast.show("获取版本号失败");
       return;
     });
     if (res != null && res.statusCode == 200) {
